@@ -1,0 +1,132 @@
+// Archivo: prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output = "./node_modules/.prisma/client" 
+}
+
+// ----------------------------------------------------
+// 1. GESTIÓN DE USUARIOS Y ROLES
+// ----------------------------------------------------
+
+model Rol {
+  id_rol          Int       @id @default(autoincrement()) @map("id_rol")
+  nombre_rol      String    @unique @map("nombre_rol")
+  permiso_rol     String?   @map("permiso_rol")
+  
+  usuarios        Usuario[]
+}
+
+model Usuario {
+  id_usuario       Int       @id @default(autoincrement()) @map("id_usuario")
+  nombre           String?   
+  apellido_paterno String?   @map("apellido_paterno")
+  correo           String    @unique
+  contrasena       String    // Contraseña cifrada (RNF02)
+  
+  // Relación FK a Rol
+  id_rol           Int       @map("id_rol") 
+  rol              Rol       @relation(fields: [id_rol], references: [id_rol])
+  
+  // Relaciones de Dominio
+  reservas         Reserva[] @relation("ReservasUsuario")
+}
+
+
+// ----------------------------------------------------
+// 2. PRODUCTO Y PROVEEDOR
+// ----------------------------------------------------
+
+model Proveedor {
+  id_proveedor     Int       @id @default(autoincrement()) @map("id_proveedor")
+  proveedor        String?   
+  contacto         Int?      
+  productos        Producto[]
+}
+
+model Producto {
+  cod_producto      Int       @id @default(autoincrement()) @map("cod_producto")
+  nombre_producto   String?   @map("nombre_producto")
+  stock_actual      Int?      @map("stock_actual")
+  precio_unitario   Float?    @map("precio_unitario")
+  disponible        Boolean?  
+  tipo_producto     String?   @map("tipo_producto") // Urna, Accesorio, Servicio
+  
+  // FK a PROVEEDOR (RF14)
+  id_proveedor      Int?      @map("id_proveedor")
+  proveedor         Proveedor? @relation(fields: [id_proveedor], references: [id_proveedor])
+  
+  detalles_reserva  DetalleReserva[]
+}
+
+// ----------------------------------------------------
+// 3. MASCOTA Y RESERVA (Núcleo de la Transacción)
+// ----------------------------------------------------
+
+model Mascota {
+  id_mascota        Int       @id @default(autoincrement()) @map("id_mascota")
+  nombre_mascota    String?   @map("nombre_mascota")
+  peso              Float?    
+  
+  // Relaciones
+  reservas          Reserva[]
+}
+
+model Reserva {
+  id_reserva        Int       @id @default(autoincrement()) @map("id_reserva")
+  cod_trazabilidad  String    @unique @default(cuid()) @map("cod_trazabilidad") // RF01
+  fecha_reservada   DateTime? @map("fecha_reservada")
+  estado            String?   @map("estado") // Estado del Tracking (RF02)
+  precio_total      Float?    @map("precio_total")
+  
+  // FK a USUARIO (Cliente)
+  id_usuario        Int?      @map("id_usuario")
+  usuario           Usuario?  @relation("ReservasUsuario", fields: [id_usuario], references: [id_usuario])
+  
+  // FK a MASCOTA (RU04)
+  id_mascota        Int?      @map("id_mascota")
+  mascota           Mascota?  @relation(fields: [id_mascota], references: [id_mascota])
+  
+  // FK a Pago (Relación 1:1)
+  id_pago           Int?      @unique @map("id_pago") // UNIQUE para forzar la relación 1:1
+  pago              Pago?     @relation(fields: [id_pago], references: [id_pago])
+
+  // FK a DetalleReserva (Restricción XOR)
+  id_detalle_reserva Int      @unique @map("id_detalle_reserva") // Clave Única y requerida
+  detalle_reserva    DetalleReserva @relation(fields: [id_detalle_reserva], references: [id_detalle_reserva])
+}
+
+// RESTINCIÓN XOR (Detalle de Reserva)
+model DetalleReserva {
+  id_detalle_reserva Int       @id @default(autoincrement()) @map("id_detalle_reserva")
+  nombre_servicio    String?   @map("nombre_servicio")
+  precio_servicio    String?   @map("precio_servicio")
+  cantidad           Int?      
+  
+  // FK a PRODUCTO
+  cod_producto       Int?      @map("cod_producto")
+  producto           Producto? @relation(fields: [cod_producto], references: [cod_producto])
+  
+  // Relación 1:1 con Reserva (Relación explícita)
+  reserva            Reserva?
+}
+
+// ----------------------------------------------------
+// 4. MÉTODOS DE PAGO (RU03)
+// ----------------------------------------------------
+
+model Pago {
+    id_pago           Int       @id @default(autoincrement()) @map("id_pago")
+    nombre_metodo     String?   @map("nombre_metodo")
+    fecha_pago        DateTime? @map("fecha_pago")
+    monto             Float?    
+    estado            String?   
+    
+    // Relación 1:1 con Reserva
+    reserva           Reserva?  // La relación se gestiona desde Reserva
+}
