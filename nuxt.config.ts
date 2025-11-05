@@ -1,5 +1,13 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  // CORRECCIÓN CLAVE 1: Configura 'app/' como la carpeta fuente principal para 'pages' y 'layouts'.
+  srcDir: 'app/',
+  
+  // CORRECCIÓN CLAVE 2: Anula el comportamiento de srcDir para la carpeta 'plugins'.
+  // Esto le dice a Nuxt: busca plugins en la raíz del proyecto (donde está nuxt.config.ts).
+  dir: {
+    plugins: '../plugins' // Sube un nivel desde 'app/' para encontrar la carpeta 'plugins'
+  },
+  
   app: {
     head: {
       link: [
@@ -12,7 +20,7 @@ export default defineNuxtConfig({
     }
   },
   
-  // 🔑 CORRECCIÓN CLAVE: Carga global del CSS de Font Awesome
+  // ¡ESTO ARREGLA LOS ÍCONOS! Carga global del CSS de Font Awesome.
   css: [
     '@fortawesome/fontawesome-svg-core/styles.css' 
   ],

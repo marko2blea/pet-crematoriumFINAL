@@ -1,44 +1,34 @@
-// Archivo: /plugins/fontawesome.ts
+import { library, config } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-/// <reference types="~~/types/plugins" /> // FIX: Asegura que TypeScript reconozca defineNuxtPlugin
-
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
-// 1. IMPORTACIONES DE ÍCONOS SÓLIDOS (fas)
-// Incluye todos los íconos usados en el layout y las páginas de tu proyecto.
+// --- Importaciones de Íconos ---
 import { 
-    faShoppingCart, faMoneyCheckAlt, faCreditCard,
-    faPencilAlt, faSave, faPlusCircle, faPlus, faTrash, faTimes, faTimesCircle, faCheckCircle, 
-    faSearch, faMapMarkerAlt, faHome, faInfoCircle, faBuilding, faCross, faRoute, 
-    faChartLine, faBook, faFileAlt, faEllipsisV, faUser, faUserEdit, faSignOutAlt, 
-    faPhone, faEnvelope, faBars, faPhoneAlt
-} from '@fortawesome/free-solid-svg-icons' 
-
-// 2. IMPORTACIONES DE ÍCONOS DE MARCA (fab)
+    faHome, faUsers, faCogs, 
+    faBoxes, faPlus, faEdit, faTrash, 
+    faFeatherAlt, faPaperPlane, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, faChevronDown, faPaw, faPlusCircle,
+    faFilter, faShoppingCart, faHeart, faBox, faQuestionCircle, faEllipsisV,
+    faHandshake, faCreditCard, faUniversity, faArrowRight, faUser, faUserCog, faArrowUp, faArrowDown
+} from '@fortawesome/free-solid-svg-icons';
 import { 
-    faWhatsapp,
-    faCcVisa,
-    faCcMastercard,
-    faPaypal,
-    faFacebookF, 
-    faInstagram 
-} from '@fortawesome/free-brands-svg-icons' 
+    faFacebook, faInstagram, faWhatsapp, faCcVisa, faCcMastercard 
+} from '@fortawesome/free-brands-svg-icons';
+import { defineNuxtPlugin } from 'nuxt/app';
 
-
-// 3. AÑADIR TODOS A LA LIBRERÍA
+// Añadir todos los íconos a la librería
 library.add(
-    // Íconos Sólidos
-    faShoppingCart, faMoneyCheckAlt, faCreditCard,
-    faPencilAlt, faSave, faPlusCircle, faPlus, faTrash, faTimes, faTimesCircle, faCheckCircle, 
-    faSearch, faMapMarkerAlt, faHome, faInfoCircle, faBuilding, faCross, faRoute, 
-    faChartLine, faBook, faFileAlt, faEllipsisV, faUser, faUserEdit, faSignOutAlt, 
-    faPhone, faEnvelope, faBars, faPhoneAlt,
-    // Íconos de Marca
-    faWhatsapp, faCcVisa, faCcMastercard, faPaypal, faFacebookF, faInstagram
-)
+    faHome, faUsers, faCogs, 
+    faBoxes, faPlus, faEdit, faTrash, 
+    faFeatherAlt, faPaperPlane, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, faChevronDown, faPaw, faPlusCircle,
+    faFilter, faShoppingCart, faHeart, faBox, faQuestionCircle, faEllipsisV,
+    faHandshake, faCreditCard, faUsers, faClock, faArrowRight, faUniversity, faUser, faUserCog, faArrowUp, faArrowDown,
+    faFacebook, faInstagram, faWhatsapp, faCcVisa, faCcMastercard
+);
 
-// Registramos el componente de ícono globalmente
+config.autoAddCss = false;
+
+
+// Aquí usamos defineNuxtPlugin, que Nuxt inyecta automáticamente.
 export default defineNuxtPlugin((nuxtApp) => {
-    nuxtApp.vueApp.component('font-awesome-icon', FontAwesomeIcon)
-})
+  nuxtApp.vueApp.component('font-awesome-icon', FontAwesomeIcon);
+});
+//defineNuxtPlugin((nuxtApp)
