@@ -72,7 +72,7 @@
         <slot /> 
     </main>
     
-    <footer class="bg-dark-gray text-white p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
+    <footer class="bg-purple-deep text-white p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-start space-y-8 md:space-y-0 md:space-x-8">
         
         <div class="md:w-1/4 space-y-3">
@@ -99,7 +99,7 @@
                 <font-awesome-icon icon="fab fa-cc-mastercard" title="Mastercard" class="hover:text-white transition" />
                 <font-awesome-icon icon="fas fa-money-check-alt" title="Transferencia" class="hover:text-white transition" />
             </div>
-            <p class="text-sm text-gray-400 pt-2">Aceptamos transferencias y tarjetas de crédito principales.</p>
+            <p class="text-sm text-white pt-2">Aceptamos transferencias y tarjetas de crédito principales.</p>
         </div>
 
         <div class="md:w-1/4 space-y-4 text-center md:text-left">
@@ -115,11 +115,11 @@
         </div>
         
         <div class="md:w-1/4 space-y-3 text-right">
-            <p class="text-xs font-semibold text-gray-400">Horario de Oficina:</p>
+            <p class="text-xs font-semibold text-white">Horario de Oficina:</p>
             <p class="text-sm font-medium">Lun - Sáb: 09:00 a 18:00 hrs.</p>
             <p class="text-sm text-red-400 font-bold">Emergencias 24/7</p>
             <hr class="border-gray-700 mt-4">
-            <p class="text-xs text-gray-500 mt-2">&copy; 2025 Crematorio San Antonio. Todos los derechos reservados.</p>
+            <p class="text-xs text-white mt-2">&copy; 2025 Crematorio San Antonio. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
@@ -204,6 +204,16 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
 .bg-bd-purple-light { background-color: #AB47BC; } 
 .text-bd-purple-light { color: #AB47BC; }
 .border-bd-purple-light { border-color: #AB47BC; }
+
+.bg-purple-deep {
+    background-color: #5C2A72; 
+}
+.bg-purple-light {
+    background-color: #6C3483; 
+}
+.text-bd-gold-accent { 
+    color: #FFD700,
+}
 
 /* MORADO OSCURO DE HOVER (bd-purple-dark-hover) - Efecto hover de la navegación */
 .bg-bd-purple-dark-hover { background-color: #6A1B9A; } 

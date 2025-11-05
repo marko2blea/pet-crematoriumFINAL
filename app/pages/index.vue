@@ -23,7 +23,7 @@
     <div class="container mx-auto px-4 -mt-16 relative z-20">
       <div class="bg-white-subtle p-6 md:p-8 rounded-xl shadow-2xl border border-gray-100">
         <h2 class="text-lg font-bold text-purple-dark mb-4">
-             <font-awesome-icon icon="fas fa-filter" class="mr-2 text-purple-dark" /> Filtro de búsqueda
+              <font-awesome-icon icon="fas fa-filter" class="mr-2 text-purple-dark" /> Filtro de búsqueda
         </h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
@@ -72,10 +72,16 @@
 
 
     <div class="container mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-4 text-purple-dark border-b-2 border-gray-300 pb-2">
-            <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" /> Servicios de Cremación
-        </h2>
-
+        <div class="flex justify-between items-center mb-4 border-b-2 border-gray-300 pb-2">
+            <h2 class="text-2xl font-bold text-purple-dark">
+                <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" /> Servicios de Cremación
+            </h2>
+            <router-link to="/admin/inventario">
+                <button class="bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md whitespace-nowrap">
+                    Ver Inventario
+                </button>
+            </router-link>
+        </div>
         <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             
             <div 
@@ -106,7 +112,7 @@
                 <h2 class="text-xl font-bold mb-3 text-purple-dark mt-2">{{ servicio.nombre }}</h2>
                 
                 <div class="w-full h-40 bg-gray-200 rounded-md mb-4 flex items-center justify-center text-gray-500 font-sans overflow-hidden">
-                     <img 
+                    <img 
                         :src="servicio.imagenUrl || '/placeholder/producto.jpg'" 
                         :alt="`Imagen de ${servicio.nombre}`" 
                         class="w-full h-full object-cover"
@@ -130,23 +136,18 @@
             <p v-if="serviciosFiltrados.length === 0 && (busquedaTexto || filtroTipo !== 'todos' || filtroPrecio !== 'todos')" class="text-gray-500">No se encontraron servicios de cremación con estos criterios.</p>
         </section>
 
-
-        <h2 class="text-2xl font-bold mb-6 text-purple-dark border-b-2 border-gray-300 pb-2">
-            <font-awesome-icon icon="fas fa-box" class="mr-2 text-purple-dark" /> Urnas y Accesorios Disponibles
-        </h2>
-
+        <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 pb-2">
+            <h2 class="text-2xl font-bold text-purple-dark">
+                <font-awesome-icon icon="fas fa-box" class="mr-2 text-purple-dark" /> Urnas y Accesorios Disponibles
+            </h2>
+            <router-link to="/admin/inventario">
+                <button class="bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md whitespace-nowrap">
+                    Ver Inventario
+                </button>
+            </router-link>
+        </div>
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             
-            <div 
-                @click="goToAdminInventario"
-                class="bg-gray-100 p-6 rounded-lg shadow-lg border-t-4 border-gray-400 hover:shadow-2xl transition duration-300 cursor-pointer hover:bg-gray-200"
-            >
-                <div class="h-full flex flex-col justify-center items-center">
-                    <font-awesome-icon icon="fas fa-plus-circle" class="text-5xl text-purple-dark mb-2" />
-                    <h2 class="text-lg font-semibold text-gray-600 mt-2 text-center">Agregar Ítem</h2>
-                </div>
-            </div>
-
             <div 
                 v-for="item in accesoriosFiltrados" 
                 :key="item.id" 
@@ -237,7 +238,7 @@ interface Product {
     precio: number;
     descripcion: string;
     requierePersonalizacion: boolean;
-    imagenUrl?: string; // Nuevo campo opcional para la URL de la imagen
+    imagenUrl?: string;
 }
 
 const router = useRouter();
@@ -261,29 +262,28 @@ const servicios: Ref<Product[]> = ref([
     { id: 'S003', nombre: 'Servicio Premium', tipo: 'Servicio', precio: 165000, 
       descripcion: 'INCLUYE: Trazabilidad, Recogida a domicilio, Urna personalizable y Certificado.', 
       requierePersonalizacion: true,
-      imagenUrl: '/servicios/premium.jpg' // COMENTARIO: Imagen para Servicio Premium
+      imagenUrl: '/servicios/premium.jpg' 
     }, 
     { id: 'S002', nombre: 'Servicio Estándar', tipo: 'Servicio', precio: 95000, 
       descripcion: 'INCLUYE: Servicio de cremación y opción de elegir una urna personalizable.', 
       requierePersonalizacion: true,
-      imagenUrl: '/servicios/estandar.jpg' // COMENTARIO: Imagen para Servicio Estándar
+      imagenUrl: '/servicios/estandar.jpg' 
     },
     { id: 'S001', nombre: 'Servicio Económico', tipo: 'Servicio', precio: 40000, 
       descripcion: 'INCLUYE: Proceso colectivo y certificado. No incluye urna ni recuperación de cenizas.', 
       requierePersonalizacion: false,
-      imagenUrl: '/servicios/economico.jpg' // COMENTARIO: Imagen para Servicio Económico
+      imagenUrl: '/servicios/economico.jpg' 
     }, 
 ] as Product[]);
 
 const productosAccesoriosRaw: Ref<Product[]> = ref([
-    { id: 'U001', nombre: 'Urna de Mármol "Eternidad"', tipo: 'Urna', precio: 85000, descripcion: 'Urna de mármol elegante y solemne para un recuerdo duradero.', requierePersonalizacion: true, imagenUrl: '/71zmEWBSB6L._AC_UF894,1000_QL80_.jpg' }, // COMENTARIO: Imagen Urna de Mármol (URL corregida)
-    { id: 'U002', nombre: 'Urna de Madera "Paz"', tipo: 'Urna', precio: 50000, descripcion: 'Urna de madera noble, sobria y cálida.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_madera.jpg' }, // COMENTARIO: Imagen Urna de Madera
-    { id: 'U003', nombre: 'Urna "Siembra Vida"', tipo: 'Urna', precio: 60000, descripcion: 'Urna ecológica diseñada para plantar un árbol en memoria de tu mascota.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_siembra.jpg' }, // COMENTARIO: Imagen Urna Siembra Vida
-    { id: 'U004', nombre: 'Urna Metálica "Guardián"', tipo: 'Urna', precio: 45000, descripcion: 'Urna metálica resistente y moderna.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_metalica.jpg' }, // COMENTARIO: Imagen Urna Metálica
-    { id: 'U005', nombre: 'Urna Cobre "Luminiscente"', tipo: 'Urna', precio: 90000, descripcion: 'Urna de cobre con un acabado brillante y distintivo.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_cobre.jpg' }, // COMENTARIO: Imagen Urna Cobre
-    { id: 'A001', nombre: 'Grabado Láser (Adicional)', tipo: 'Accesorio', precio: 15000, descripcion: 'Grabado de nombre, fecha o mensaje corto.', requierePersonalizacion: true, imagenUrl: '/accesorios/grabado_laser.jpg' }, // COMENTARIO: Imagen Grabado Láser
-    { id: 'A002', nombre: 'Cofre de Huella', tipo: 'Accesorio', precio: 25000, descripcion: 'Un recuerdo tierno para conservar la huella de tu mascota.', requierePersonalizacion: false, imagenUrl: '/accesorios/cofre_huella.jpg' }, // COMENTARIO: Imagen Cofre de Huella
-    { id: 'L001', nombre: 'Servicio de Recogida', tipo: 'Servicio Extra', precio: 20000, descripcion: 'Recogida de su mascota en el domicilio.', requierePersonalizacion: false, imagenUrl: '/servicios/recogida_extra.jpg' }, // COMENTARIO: Imagen Servicio de Recogida Extra
+    { id: 'U001', nombre: 'Urna de Mármol "Eternidad"', tipo: 'Urna', precio: 85000, descripcion: 'Urna de mármol elegante y solemne para un recuerdo duradero.', requierePersonalizacion: true, imagenUrl: '/71zmEWBSB6L._AC_UF894,1000_QL80_.jpg' },
+    { id: 'U002', nombre: 'Urna de Madera "Paz"', tipo: 'Urna', precio: 50000, descripcion: 'Urna de madera noble, sobria y cálida.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_madera.jpg' },
+    { id: 'U003', nombre: 'Urna "Siembra Vida"', tipo: 'Urna', precio: 60000, descripcion: 'Urna ecológica diseñada para plantar un árbol en memoria de tu mascota.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_siembra.jpg' },
+    { id: 'U004', nombre: 'Urna Metálica "Guardián"', tipo: 'Urna', precio: 45000, descripcion: 'Urna metálica resistente y moderna.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_metalica.jpg' },
+    { id: 'U005', nombre: 'Urna Cobre "Luminiscente"', tipo: 'Urna', precio: 90000, descripcion: 'Urna de cobre con un acabado brillante y distintivo.', requierePersonalizacion: true, imagenUrl: '/urnas/urna_cobre.jpg' }, 
+    { id: 'A001', nombre: 'Grabado Láser (Adicional)', tipo: 'Accesorio', precio: 15000, descripcion: 'Grabado de nombre, fecha o mensaje corto.', requierePersonalizacion: true, imagenUrl: '/accesorios/grabado_laser.jpg' },
+    { id: 'A002', nombre: 'Cofre de Huella', tipo: 'Accesorio', precio: 25000, descripcion: 'Un recuerdo tierno para conservar la huella de tu mascota.', requierePersonalizacion: false, imagenUrl: '/accesorios/cofre_huella.jpg' }
 ] as Product[]);
 
 
@@ -383,9 +383,6 @@ const iniciarReserva = (producto: Product) => {
     console.log(`Producto ${producto.nombre} añadido al pedido.`);
 };
 
-const goToAdminInventario = () => {
-    console.log('Redirigiendo a la Gestión de Inventario para añadir un nuevo ítem.');
-};
 
 definePageMeta({
     title: 'Catálogo de Servicios'
