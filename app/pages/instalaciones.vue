@@ -2,7 +2,7 @@
   <div class="container mx-auto px-4 py-16 font-sans pt-20">
     
     <div class="flex justify-center items-center mb-6 max-w-4xl mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">Nuestras Instalaciones</h1>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-purple-dark">Nuestras Instalaciones</h1>
     </div>
     
     <p 

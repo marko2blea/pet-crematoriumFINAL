@@ -109,15 +109,10 @@
                     <!-- Menú Desplegable -->
                     <div v-if="activeMenu === servicio.id && activeMenuType === 'servicio'"
                             class="menu-dropdown absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl py-1 z-30 border border-gray-200">
-                        
-                        <button @click.stop="verDetalleProducto(servicio)"
-                                class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-purple-card text-sm transition duration-100">
-                            <font-awesome-icon icon="fas fa-question-circle" class="mr-2 text-purple-deep" /> Ver Detalle
-                        </button>
 
                         <button @click.stop="simularEliminar(servicio)"
                                 class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 text-sm transition duration-100">
-                                <font-awesome-icon icon="fas fa-trash-alt" class="mr-2" /> Eliminar (Admin)
+                                <font-awesome-icon icon="fas fa-trash-alt" class="mr-2" /> Eliminar
                         </button>
                     </div>
                 </div>
@@ -198,15 +193,10 @@
                     <!-- Menú Desplegable -->
                     <div v-if="activeMenu === item.id && activeMenuType === 'accesorio'"
                             class="menu-dropdown absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-xl py-1 z-30 border border-gray-200">
-                        
-                        <button @click.stop="verDetalleProducto(item)"
-                                class="block w-full text-left px-3 py-1.5 text-gray-800 hover:bg-purple-card text-xs transition duration-100">
-                            <font-awesome-icon icon="fas fa-question-circle" class="mr-2 text-purple-deep" /> Ver Detalle
-                        </button>
 
                         <button @click.stop="simularEliminar(item)"
                                 class="block w-full text-left px-3 py-1.5 text-red-600 hover:bg-red-50 text-xs transition duration-100">
-                            <font-awesome-icon icon="fas fa-trash-alt" class="mr-2" /> Eliminar (Admin)
+                            <font-awesome-icon icon="fas fa-trash-alt" class="mr-2" /> Eliminar
                         </button>
                     </div>
                 </div>

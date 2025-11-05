@@ -4,13 +4,13 @@
         <div class="relative w-full h-80 overflow-hidden bg-purple-dark shadow-xl">
             <div 
                 class="absolute inset-0 bg-cover bg-center opacity-30" 
-                style="background-image: url('/paw-print.jpg');" 
+                style="background-image: url('/banner2.avif');" 
                 alt="Fondo de huella de mascota"
             ></div>
             
             <div class="relative z-10 text-white text-center flex flex-col justify-center h-full container mx-auto px-4">
                 <h1 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight drop-shadow-lg text-bd-gold-accent">
-                    Muro de la Memoria y el Honor
+                    Muro de la Memoria
                 </h1>
                 <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto drop-shadow-md text-gray-200">
                     Un espacio para honrar la vida de los compañeros de cuatro patas que tocaron nuestros corazones.

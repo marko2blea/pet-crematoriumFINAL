@@ -11,7 +11,7 @@
         <div class="bg-white p-5 rounded-xl shadow-xl border-t-4 border-green-500">
             <p class="text-sm font-medium text-gray-500">Valor Neto (VAN)</p>
             <p class="text-3xl font-extrabold text-green-600 mt-1">$958.801 CLP</p>
-            [cite_start]<p class="text-xs text-gray-500">Resultado de viabilidad[cite: 144].</p>
+            <p class="text-xs text-gray-500">Resultado de viabilidad.</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow-xl border-t-4 border-purple-deep">
@@ -29,7 +29,7 @@
         <div class="bg-white p-5 rounded-xl shadow-xl border-t-4 border-red-500">
             <p class="text-sm font-medium text-gray-500">Urnas Bajo Stock</p>
             <p class="text-3xl font-extrabold text-red-600 mt-1">{{ stats.lowStockItems }}</p>
-            [cite_start]<p class="text-xs text-gray-500">Requiere acción inmediata[cite: 192].</p>
+            <p class="text-xs text-gray-500">Requiere acción inmediata.</p>
         </div>
     </section>
 
@@ -72,7 +72,7 @@
                  <div class="h-24 flex items-center justify-center bg-green-50 rounded-lg text-4xl font-extrabold text-green-600">
                      16%
                  </div>
-                 [cite_start]<p class="text-xs text-gray-500 mt-2 text-center">Tasa Interna de Retorno (TIR)[cite: 145].</p>
+                 <p class="text-xs text-gray-500 mt-2 text-center">Tasa Interna de Retorno (TIR).</p>
             </div>
         </div>
     </section>
