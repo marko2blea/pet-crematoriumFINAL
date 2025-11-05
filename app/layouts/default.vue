@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col font-sans">
+  <div class="min-h-screen flex flex-col font-sans main-background">
     
     <header class="bg-bd-purple-dark shadow-lg py-2 fixed top-0 left-0 right-0 z-50">
       <div class="container mx-auto px-4 flex justify-between items-center text-white">
@@ -10,7 +10,7 @@
             </NuxtLink>
         </div>
 
-        <div class="flex items-center space-x-3 justify-center mx-4"> 
+        <div class="hidden lg:flex items-center space-x-3 justify-center mx-4"> 
           
           <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap shadow-md w-36 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-home" class="text-white" /><span>Inicio</span>
@@ -42,18 +42,17 @@
         <nav class="flex items-center space-x-4 flex-shrink-0">
           
           <NuxtLink to="/carrito" title="Carrito de Compras" class="text-white hover:text-gray-200 transition duration-150">
-              <font-awesome-icon icon="fas fa-shopping-cart" class="text-xl" />
-          </NuxtLink>
+                <font-awesome-icon icon="fas fa-shopping-cart" class="text-xl" />
+            </NuxtLink>
           
           <div class="relative">
             <button @click="toggleMenu" class="text-white hover:text-gray-200 transition duration-150 p-2 rounded-full hover:bg-bd-purple-dark-hover" title="Opciones de Usuario">
                 <font-awesome-icon icon="fas fa-user" class="text-xl" />
             </button>
             <div v-if="isMenuOpen" 
-                  v-click-outside="closeMenu"
-                  class="absolute right-0 mt-3 w-48 bg-white text-gray-800 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-200">
+              class="absolute right-0 mt-3 w-48 bg-white text-gray-800 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-200">
               
-              <NuxtLink to="/editar-cuenta" @click="isMenuOpen = false" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm">
+              <NuxtLink to="/editar-cuenta" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm">
                 <font-awesome-icon icon="fas fa-user-edit" class="mr-2 text-bd-gold-accent" />Editar Cuenta</NuxtLink>
               
               <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm text-red-600 border-t border-gray-200">
@@ -64,14 +63,14 @@
           <NuxtLink to="/login" class="bg-white text-bd-purple-dark py-2 px-4 rounded-lg font-bold hover:bg-gray-100 transition duration-150 flex-shrink-0 shadow-md">
             Iniciar sesión 
           </NuxtLink>
+          
         </nav>
       </div>
     </header>
 
-    <div class="pt-14">
-      <main class="flex-grow">
-        <slot /> </main>
-    </div>
+    <main class="flex-grow pt-14">
+        <slot /> 
+    </main>
     
     <footer class="bg-dark-gray text-white p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-start space-y-8 md:space-y-0 md:space-x-8">
@@ -141,7 +140,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'; 
 import { useRoute } from 'vue-router';
-// Asumimos que Font Awesome se carga correctamente desde el plugin /plugins/fontawesome.ts
+// Importamos la librería para añadir los iconos al componente
+import { library } from '@fortawesome/fontawesome-svg-core';
+// Importamos las constantes de TODOS los íconos solid (incluyendo carrito y usuario)
+import { faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, faHome, faInfoCircle, faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
+// Importamos las constantes de TODOS los íconos brands
+import { faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram } from '@fortawesome/free-brands-svg-icons'; 
+
+// 1. CORRECCIÓN CLAVE: Añadir TODOS los íconos usados en el Layout a la librería del componente
+library.add(faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram, faHome, faInfoCircle, faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt);
+
 
 const route = useRoute();
 const isMenuOpen = ref(false); 
@@ -160,7 +168,7 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
     const isSubRouteActive = path !== '/' && currentPath.startsWith(path);
     const isActiveLink = isRootHome || isSubRouteActive;
     
-    // Clase para alinear el icono y el texto
+    // Clase para alinear el icono y el texto (Ya está incluida en el retorno)
     const alignmentClasses = 'flex items-center space-x-2 justify-center w-36';
     
     if (isActiveLink) {
@@ -189,20 +197,20 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
 */
 
 /* MORADO OSCURO (bd-purple-dark) - Color Principal */
-.bg-bd-purple-dark { background-color: #4A148C; } /* Deep Purple 800 */
+.bg-bd-purple-dark { background-color: #4A148C; } 
 .text-bd-purple-dark { color: #4A148C; }
 
 /* MORADO CLARO/BRILLANTE (bd-purple-light) - Color de Botones de Acción */
-.bg-bd-purple-light { background-color: #AB47BC; } /* Purple 400 */
+.bg-bd-purple-light { background-color: #AB47BC; } 
 .text-bd-purple-light { color: #AB47BC; }
 .border-bd-purple-light { border-color: #AB47BC; }
 
 /* MORADO OSCURO DE HOVER (bd-purple-dark-hover) - Efecto hover de la navegación */
-.bg-bd-purple-dark-hover { background-color: #6A1B9A; } /* Purple 700 */
+.bg-bd-purple-dark-hover { background-color: #6A1B9A; } 
 
 
 /* DORADO/OCRE (bd-gold-accent) - Color de Acento (Bordes Activos y Footer) */
-.bg-bd-gold-accent { background-color: #FFC107; } /* Gold/Amber */
+.bg-bd-gold-accent { background-color: #FFC107; } 
 .text-bd-gold-accent { color: #FFC107; }
 .border-bd-gold-accent { border-color: #FFC107; }
 
@@ -211,4 +219,11 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
 .bg-dark-gray { background-color: #34495e; } /* Fondo del footer (Oscuro) */
 .bg-whatsapp { background-color: #25d366; } /* Color de WhatsApp (Verde) */
 
+/* Estilo para el Logo (Borde blanco en fondo púrpura) */
+.logo-border {
+    border: 3px solid white;
+    border-radius: 6px; 
+    padding: 2px;
+    background-color: white; 
+}
 </style>

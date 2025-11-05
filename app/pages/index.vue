@@ -1,7 +1,7 @@
 <template>
-<div class="min-h-screen bg-gray-50 pt-14">
+<div class="min-h-screen pt-14"> 
     
-    <div class="relative w-full h-96 overflow-hidden">
+    <div class="relative w-full h-96 overflow-hidden -mt-14">
       <div 
         class="relative w-full h-full bg-cover bg-center shadow-xl hero-background" 
         style="background-image: url('/photo-1544568100-847a948585b9.jpg');" 
@@ -22,8 +22,8 @@
 
     <div class="container mx-auto px-4 -mt-16 relative z-20">
       <div class="bg-white-subtle p-6 md:p-8 rounded-xl shadow-2xl border border-gray-100">
-        <h2 class="text-lg font-bold text-dark-primary-blue mb-4">
-            <font-awesome-icon icon="fas fa-filter" class="mr-2 text-purple-dark" /> Filtro de búsqueda
+        <h2 class="text-lg font-bold text-purple-dark mb-4">
+             <font-awesome-icon icon="fas fa-filter" class="mr-2 text-purple-dark" /> Filtro de búsqueda
         </h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
@@ -72,7 +72,7 @@
 
 
     <div class="container mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-4 text-dark-primary-blue border-b-2 border-gray-300 pb-2">
+        <h2 class="text-2xl font-bold mb-4 text-purple-dark border-b-2 border-gray-300 pb-2">
             <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" /> Servicios de Cremación
         </h2>
 
@@ -131,8 +131,8 @@
         </section>
 
 
-        <h2 class="text-2xl font-bold mb-6 text-dark-primary-blue border-b-2 border-gray-300 pb-2">
-            <font-awesome-icon icon="fas fa-box" class="mr-2 text-purple-deep" /> Urnas y Accesorios Disponibles
+        <h2 class="text-2xl font-bold mb-6 text-purple-dark border-b-2 border-gray-300 pb-2">
+            <font-awesome-icon icon="fas fa-box" class="mr-2 text-purple-dark" /> Urnas y Accesorios Disponibles
         </h2>
 
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -150,7 +150,7 @@
             <div 
                 v-for="item in accesoriosFiltrados" 
                 :key="item.id" 
-                class="bg-purple-card p-5 rounded-lg shadow-md border-t-4 border-purple-deep hover:shadow-xl transition duration-300 relative"
+                class="bg-white-subtle p-5 rounded-lg shadow-md border-t-4 border-purple-deep hover:shadow-xl transition duration-300 relative"
             >
                 
                 <div 
@@ -172,7 +172,7 @@
                 </div>
 
 
-                <h3 class="text-lg font-semibold mb-2 text-dark-primary-blue">{{ item.nombre }}</h3>
+                <h3 class="text-lg font-semibold mb-2 text-purple-dark">{{ item.nombre }}</h3>
                 <p class="text-xs font-bold text-purple-deep mb-1">{{ item.tipo.toUpperCase() }}</p>
                 
                 <div class="w-full h-32 bg-gray-200 rounded-md mb-3 flex items-center justify-center text-gray-500 text-sm overflow-hidden">
@@ -183,13 +183,13 @@
                     >
                 </div>
 
-                <p class="text-sm font-bold mb-4 text-gray-800">
+                <p class="text-sm font-bold mb-4 text-dark-primary-blue">
                     Precio: ${{ item.precio.toLocaleString('es-CL') }} CLP
                 </p>
                 
                 <button 
                     @click="iniciarReserva(item)"
-                    class="w-full bg-purple-deep text-white py-2 rounded-md font-semibold hover:bg-purple-light transition duration-150 text-sm"
+                    class="w-full bg-purple-deep text-white py-2 rounded-md font-semibold hover:bg-purple-light transition duration-150"
                 >
                     <font-awesome-icon icon="fas fa-shopping-cart" class="mr-2" /> Añadir al Pedido
                 </button>
@@ -225,12 +225,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'; 
 import { useRouter } from 'vue-router';
-// 1. IMPORTAR LIBRERÍA DE ICONOS PARA USARLAS EN EL COMPONENTE
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faEllipsisV, faPlusCircle, faSearch, faShoppingCart, faHeart, faBox, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV, faPlusCircle, faSearch, faShoppingCart, faHeart, faBox, faQuestionCircle, faFilter } from '@fortawesome/free-solid-svg-icons';
 
-// 2. AÑADIR LOS ÍCONOS AL COMPONENTE (Mínimo necesario para este archivo)
-library.add(faEllipsisV, faPlusCircle, faSearch, faShoppingCart, faHeart, faBox, faQuestionCircle); 
+library.add(faEllipsisV, faPlusCircle, faSearch, faShoppingCart, faHeart, faBox, faQuestionCircle, faFilter); 
 
 interface Product {
     id: string;
@@ -257,7 +255,7 @@ const activeMenu = ref<string | null>(null);
 const activeMenuType = ref<string | null>(null);
 
 
-// --- ARRAYS DE DATOS (RESTAURADOS) ---
+// --- ARRAYS DE DATOS ---
 
 const servicios: Ref<Product[]> = ref([
     { id: 'S003', nombre: 'Servicio Premium', tipo: 'Servicio', precio: 165000, 
@@ -430,6 +428,9 @@ definePageMeta({
 
 /* 4. FONDOS DE TARJETA */
 .bg-white-subtle { background-color: #F8F4FA; }
+
+/* 5. DORADO (Para texto de acento) */
+.text-bd-gold-accent { color: #FFC107; }
 
 /* CLASE CRUCIAL: Definición de la imagen de fondo */
 .hero-background {

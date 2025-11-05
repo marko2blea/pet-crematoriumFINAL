@@ -11,10 +11,16 @@ export default defineNuxtConfig({
       ]
     }
   },
-    modules: [
+  
+  // 🔑 CORRECCIÓN CLAVE: Carga global del CSS de Font Awesome
+  css: [
+    '@fortawesome/fontawesome-svg-core/styles.css' 
+  ],
+  
+  modules: [
     '@nuxtjs/tailwindcss' 
   ],
+  
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true }
 })
-

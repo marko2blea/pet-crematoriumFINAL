@@ -35,6 +35,10 @@
           </p>
           
           <p class="text-lg font-semibold text-purple-deep">
+            Proveedor: <span class="font-normal text-gray-700">{{ producto.proveedor || 'N/A' }}</span>
+          </p>
+
+          <p class="text-lg font-semibold text-purple-deep">
             Categoría: <span class="font-normal text-gray-700">{{ producto.tipo }}</span>
           </p>
 
@@ -68,7 +72,6 @@
             <label class="block text-sm font-semibold text-dark-primary-blue mb-1">Nombre del Producto</label>
             <input type="text" v-model="form.nombre" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition" />
           </div>
-
           <div>
             <label class="block text-sm font-semibold text-dark-primary-blue mb-1">Precio (CLP)</label>
             <input type="number" v-model.number="form.precio" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition" />
@@ -82,6 +85,11 @@
               <option value="Accesorio">Accesorio</option>
               <option value="Servicio Extra">Servicio Extra</option>
             </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-semibold text-purple-dark mb-1">Proveedor (Escribir Nombre)</label>
+            <input type="text" v-model="form.proveedor" placeholder="Ej: San Antonio Maderas" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition" />
           </div>
           
           <div>
@@ -183,13 +191,33 @@ library.add(faArrowLeft, faEdit, faSave, faCheckCircle, faTimesCircle, fasStar, 
 
 const router = useRouter();
 
+// Interfaz para la estructura de datos del producto
+interface ProductData {
+    id: number;
+    nombre: string;
+    tipo: 'Servicio' | 'Urna' | 'Accesorio' | 'Servicio Extra';
+    precio: number;
+    descripcion: string;
+    requierePersonalizacion: boolean;
+    imagenUrl?: string;
+    proveedor?: string; 
+}
+
 // Define la estructura para el producto (lo que se muestra)
-const producto = ref<any>({});
+const producto = ref<ProductData>({} as ProductData);
 // Define el estado del formulario (lo que se edita)
-const form = ref<any>({});
+const form = ref<ProductData>({} as ProductData);
 const isEditing = ref(false);
 
-// --- Lógica de Reseñas ---
+// Proveedores simulados para el campo select
+const suppliers = ref([
+    { id: 1, name: 'San Antonio Maderas' },
+    { id: 2, name: 'Fundición Metálica Alfa' },
+    { id: 3, name: 'Urnas Ecológicas Bio' },
+]);
+
+
+// --- Lógica de Reseñas (Mantenida) ---
 
 interface Review {
     id: number;
@@ -236,15 +264,23 @@ const submitReview = () => {
 // --- Lógica de Edición y Carga ---
 
 onMounted(() => {
+    // Definición segura del proveedor por defecto
+    const defaultSupplier = suppliers.value?.[0]?.name || 'N/A';
+    
     const savedProduct = sessionStorage.getItem('detalle_producto');
     if (savedProduct) {
-        const productData = JSON.parse(savedProduct);
+        const productData: ProductData = JSON.parse(savedProduct);
+        
+        // Asignación segura del proveedor al cargar
+        productData.proveedor = productData.proveedor || defaultSupplier; 
+
         producto.value = productData;
         form.value = { ...productData };
     } else {
-        // Datos por defecto si no se encontró producto
-        producto.value = { id: 999, nombre: 'Urna Memorial Clásica', tipo: 'Urna', precio: 150000, descripcion: 'Esta es la descripción por defecto del producto.', requierePersonalizacion: true, imagenUrl: '/placeholder/default.jpg' };
-        form.value = { ...producto.value };
+        // Datos por defecto si no se encontró producto (usa el valor seguro)
+        const defaultProd: ProductData = { id: 999, nombre: 'Urna Memorial Clásica', tipo: 'Urna', precio: 150000, descripcion: 'Esta es la descripción por defecto del producto.', requierePersonalizacion: true, imagenUrl: '/placeholder/default.jpg', proveedor: defaultSupplier };
+        producto.value = defaultProd;
+        form.value = { ...defaultProd };
     }
 });
 
@@ -260,10 +296,14 @@ const cancelEditing = () => {
 
 const saveChanges = () => {
     console.log('Simulación: Guardando cambios...', form.value);
+    
+    // 1. Actualizar el producto
     producto.value = { ...form.value };
+    // 2. Simular persistencia
     sessionStorage.setItem('detalle_producto', JSON.stringify(producto.value));
+    
     isEditing.value = false;
-    // alert(`SIMULACIÓN: Los cambios para "${producto.value.nombre}" han sido guardados.`);
+    alert(`SIMULACIÓN: Los cambios para "${producto.value.nombre}" han sido guardados.`);
 };
 
 
@@ -288,6 +328,7 @@ definePageMeta({
 .bg-purple-deep { background-color: #5C2A72; } 
 .border-purple-deep { border-color: #5C2A72; } 
 .text-purple-deep { color: #5C2A72; } 
+
 .bg-white-subtle { background-color: #F8F4FA; } /* Fondo de tarjeta claro con tinte púrpura */
 
 /* Gris Carbón para texto general/etiquetas */
@@ -305,4 +346,5 @@ definePageMeta({
 
 /* Estilos de estrellas */
 .text-yellow-500 { color: #F59E0B; }
+.bg-white { background-color: white; }
 </style>
