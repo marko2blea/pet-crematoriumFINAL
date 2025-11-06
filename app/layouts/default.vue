@@ -12,19 +12,19 @@
 
         <div class="hidden lg:flex items-center space-x-3 justify-center mx-4"> 
           
-          <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap shadow-md w-36 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-36 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-home" class="text-white" /><span>Inicio</span>
           </NuxtLink>
-          <NuxtLink to="/about" :class="isActive('/about')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap shadow-md w-36 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/about" :class="isActive('/about')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-36 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-info-circle" class="text-white" /><span>Nosotros</span>
           </NuxtLink>
-          <NuxtLink to="/instalaciones" :class="isActive('/instalaciones')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap shadow-md w-36 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/instalaciones" :class="isActive('/instalaciones')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-36 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-building" class="text-white" /><span>Instalaciones</span>
           </NuxtLink>
-          <NuxtLink to="/memorial" :class="isActive('/memorial')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap shadow-md w-36 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/memorial" :class="isActive('/memorial')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrapw-36 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-cross" class="text-white" /><span>Memorial</span>
           </NuxtLink>
-          <NuxtLink to="/tracking" :class="isActive('/tracking')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap shadow-md w-36 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/tracking" :class="isActive('/tracking')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-36 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-route" class="text-white" /><span>Seguimiento</span>
           </NuxtLink>
           

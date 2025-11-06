@@ -79,12 +79,12 @@
         <!-- SECCIÓN: SERVICIOS DE CREMACIÓN -->
         <div class="flex justify-between items-center mb-6 border-b-2 border-purple-deep pb-2">
             <h2 class="text-3xl font-bold text-purple-dark">
-                <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" /> Servicios de Cremación
+                <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" /> Nuestros servicios
             </h2>
             <!-- Simulación de enlace de administrador -->
             <router-link to="/admin/inventario" class="hidden md:block">
                 <button class="bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md whitespace-nowrap">
-                    Ver Inventario (Admin)
+                    Ver Inventario
                 </button>
             </router-link>
         </div>
@@ -163,12 +163,12 @@
         <!-- SECCIÓN: URNAS Y ACCESORIOS -->
         <div class="flex justify-between items-center mb-6 border-b-2 border-purple-deep pb-2 mt-12">
             <h2 class="text-3xl font-bold text-purple-dark">
-                <font-awesome-icon icon="fas fa-box" class="mr-2 text-bd-gold-accent" /> Urnas y Accesorios
+                <font-awesome-icon icon="fas fa-box" class="mr-2 text-bd-gold-accent" /> Productos especiales para recordar a tu mascota
             </h2>
             <!-- Simulación de enlace de administrador -->
             <router-link to="/admin/inventario" class="hidden md:block">
                 <button class="bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md whitespace-nowrap">
-                    Ver Inventario (Admin)
+                    Ver Inventario
                 </button>
             </router-link>
         </div>
@@ -315,18 +315,18 @@ const activeMenuType = ref<string | null>(null);
 // --- ARRAYS DE DATOS SIMULADOS (Con URLs de placeholder) ---
 
 const servicios: Ref<Product[]> = ref([
-    { id: 'S003', nombre: 'Servicio Premium Plus', tipo: 'Servicio', precio: 165000, 
-      descripcion: 'INCLUYE: Trazabilidad completa, Recogida, Urna personalizable de alta gama y Certificado.', 
+    { id: 'S003', nombre: 'Cremación tradicional', tipo: 'Servicio', precio: 165000, 
+      descripcion: 'Un proceso individual y respetuoso con urna de madera nativa incluida.', 
       requierePersonalizacion: true,
       imagenUrl: 'https://placehold.co/600x400/5C2A72/FFD700?text=Premium+Plus' 
     }, 
-    { id: 'S002', nombre: 'Servicio Estándar', tipo: 'Servicio', precio: 95000, 
-      descripcion: 'INCLUYE: Proceso de cremación individual y opción de elegir una urna personalizable.', 
+    { id: 'S002', nombre: 'Cremación presencial', tipo: 'Servicio', precio: 95000, 
+      descripcion: 'Opción para presenciar el proceso en nuestra sala de despedida.', 
       requierePersonalizacion: true,
       imagenUrl: 'https://placehold.co/600x400/4A235A/FFFFFF?text=Estandar' 
     },
-    { id: 'S001', nombre: 'Servicio Económico', tipo: 'Servicio', precio: 40000, 
-      descripcion: 'INCLUYE: Proceso colectivo y certificado. No incluye urna ni recuperación de cenizas.', 
+    { id: 'S001', nombre: 'Servicio de eutanasia', tipo: 'Servicio', precio: 40000, 
+      descripcion: 'Realizado por personal médico veterinario calificado.', 
       requierePersonalizacion: false,
       imagenUrl: 'https://placehold.co/600x400/777777/FFFFFF?text=Economico' 
     }, 
@@ -445,7 +445,7 @@ const verDetalleProducto = (producto: Product) => {
     // Guardamos el producto seleccionado para simular que la página de detalle lo cargará
     sessionStorage.setItem('detalle_producto_seleccionado', JSON.stringify(producto));
     // Navegación a la ruta /detalle-producto/:id
-    router.push(`/detalle-producto/${producto.id}`); 
+    router.push(`/detalle-producto`); 
 };
 
 const simularEliminar = (producto: Product) => {

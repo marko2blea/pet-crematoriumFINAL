@@ -137,9 +137,13 @@ const getStatusClass = (status: Reserva['status']) => {
 // --- FUNCIONES DE ACCIÓN ---
 
 const viewDetails = (reserva: Reserva) => {
-    console.log(`Viendo detalles de la reserva ID: ${reserva.id}`);
-    // Simulación: Redirigir a la página de detalle de la reserva
-    // router.push(`/admin/reservas/${reserva.id}/details`);
+    const reservaCodigo = reserva.id; 
+    
+    console.log(`Viendo detalles de la reserva Código: ${reservaCodigo}`);
+    
+    // **USANDO router.push()**
+    // Esto redirige a la ruta: /admin/reservas/detalles/9CF8A2B6E1D7
+    router.push(`/admin/detalle-reserva`);
 };
 
 const editDetails = (reserva: Reserva) => {
