@@ -10,6 +10,12 @@
         <p class="text-gray-600 font-medium">Crea tu cuenta de cliente en San Antonio.</p>
       </div>
 
+      <!-- MENSAJE DE ERROR/ÉXITO (NUEVO) -->
+      <div v-if="message" class="mb-4 p-3 rounded-lg text-center text-sm"
+           :class="isError ? 'bg-red-100 border border-red-400 text-red-700' : 'bg-green-100 border border-green-400 text-green-700'">
+        {{ message }}
+      </div>
+
       <form @submit.prevent="handleRegister">
         
         <div class="grid md:grid-cols-2 gap-4 mb-5">
@@ -17,36 +23,41 @@
             <label for="firstName" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre</label>
             <input 
               id="firstName" 
-              v-model="firstName" 
+              v-model="nombre" 
               type="text" 
               required
               class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
               placeholder="Tu Nombre"
+              @input="clearMessages"
             />
           </div>
           <div>
             <label for="lastName" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido</label>
             <input 
               id="lastName" 
-              v-model="lastName" 
+              v-model="apellido_paterno" 
               type="text" 
               required
               class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
               placeholder="Tu Apellido"
+              @input="clearMessages"
             />
           </div>
         </div>
         
         <div class="mb-5">
-          <label for="phoneNumber" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono de Contacto</label>
+          <label for="phoneNumber" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono de Contacto (Ej: 912345678)</label>
           <div class="relative">
             <input 
               id="phoneNumber" 
-              v-model="phoneNumber" 
+              v-model="telefono" 
               type="tel" 
               required
               class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-              placeholder="Ej: +56 9 1234 5678"
+              placeholder="912345678"
+              pattern="[0-9]{9}"
+              title="Debe ser un número de 9 dígitos (ej: 912345678)"
+              @input="clearMessages"
             />
             <font-awesome-icon icon="fas fa-phone" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
@@ -57,11 +68,12 @@
           <div class="relative">
             <input 
               id="email" 
-              v-model="email" 
+              v-model="correo" 
               type="email" 
               required
               class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
               placeholder="usuario@ejemplo.cl"
+              @input="clearMessages"
             />
             <font-awesome-icon icon="fas fa-envelope" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
@@ -73,11 +85,13 @@
             <div class="relative">
               <input 
                 id="password" 
-                v-model="password" 
+                v-model="contraseña" 
                 type="password" 
                 required
+                minlength="8"
                 class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
                 placeholder="Mínimo 8 caracteres"
+                @input="clearMessages"
               />
               <font-awesome-icon icon="fas fa-key" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
@@ -91,15 +105,18 @@
               required
               class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
               placeholder="Repetir contraseña"
+              @input="clearMessages"
             />
           </div>
         </div>
 
         <button 
           type="submit" 
-          class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold uppercase tracking-wider hover:bg-purple-light transition duration-150 shadow-lg shadow-purple-200/50"
+          :disabled="isLoading"
+          class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold uppercase tracking-wider hover:bg-purple-light transition duration-150 shadow-lg shadow-purple-200/50
+                 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Crear Cuenta
+          {{ isLoading ? 'Creando cuenta...' : 'Crear Cuenta' }}
         </button>
 
       </form>
@@ -116,23 +133,83 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // Importar useRouter
 import { library } from '@fortawesome/fontawesome-svg-core';
-// Se agrega faPhone para el campo de teléfono
 import { faEnvelope, faKey, faPhone } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faEnvelope, faKey, faPhone); // Incluido en la librería
+library.add(faEnvelope, faKey, faPhone);
 
-const firstName = ref('');
-const lastName = ref('');
-const phoneNumber = ref(''); // NUEVO: Estado para el teléfono
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
+// --- ESTADO DEL FORMULARIO ---
+// Los nombres coinciden con el 'body' esperado en la API
+const nombre = ref('');
+const apellido_paterno = ref('');
+const telefono = ref('');
+const correo = ref('');
+const contraseña = ref('');
+const confirmPassword = ref(''); // Solo para validación frontend
 
-const handleRegister = () => {
-  console.log('Intento de Registro con:', email.value, 'y teléfono:', phoneNumber.value);
-  alert('Simulación de registro exitoso.');
-  // Aquí se llamaría a la API de registro y se redirigiría.
+// --- ESTADO DE UI ---
+const message = ref('');
+const isError = ref(false);
+const isLoading = ref(false);
+const router = useRouter();
+
+const clearMessages = () => {
+  message.value = '';
+  isError.value = false;
+};
+
+// --- FUNCIÓN DE REGISTRO (ACTUALIZADA) ---
+const handleRegister = async () => {
+  clearMessages();
+  
+  // 1. Validar contraseña
+  if (contraseña.value !== confirmPassword.value) {
+    message.value = 'Las contraseñas no coinciden.';
+    isError.value = true;
+    return;
+  }
+  
+  if (contraseña.value.length < 8) {
+    message.value = 'La contraseña debe tener al menos 8 caracteres.';
+    isError.value = true;
+    return;
+  }
+
+  isLoading.value = true;
+
+  try {
+    // 2. Llamar a la API de registro
+    const response = await $fetch('/api/auth/registro', {
+      method: 'POST',
+      body: {
+        nombre: nombre.value,
+        apellido_paterno: apellido_paterno.value,
+        telefono: telefono.value, // La API lo parseará a Int
+        correo: correo.value,
+        contraseña: contraseña.value,
+      },
+    });
+
+    // 3. Éxito
+    isLoading.value = false;
+    isError.value = false;
+    message.value = '¡Usuario creado! Redirigiendo al login...';
+
+    // 4. Redirigir al login después de 2 segundos
+    setTimeout(() => {
+      router.push('/login');
+    }, 2000);
+
+  } catch (error: any) {
+    // 5. Manejar error
+    isLoading.value = false;
+    isError.value = true;
+    console.error('Error en el registro:', error);
+    
+    // 'error.data.statusMessage' es el mensaje de la API (ej: "El correo ya existe")
+    message.value = error.data?.statusMessage || 'Error desconocido. Intente de nuevo.';
+  }
 };
 
 definePageMeta({
@@ -158,4 +235,8 @@ definePageMeta({
 .text-dark-primary-blue { color: #34495e; } /* Gris Carbón */
 /* Sombra Púrpura sutil para el botón */
 .shadow-purple-200\/50 { --tw-shadow-color: #e0b4f8; --tw-shadow: var(--tw-shadow-ring-offset-shadow, 0 0 #0000), var(--tw-shadow-ring-shadow, 0 0 #0000), 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color); }
+
+/* (NUEVO) Estilos para el estado deshabilitado del botón */
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 </style>
