@@ -1,132 +1,158 @@
-// Archivo: prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-  output = "./node_modules/.prisma/client" 
+model cementerio {
+  id_cementerio Int       @id @default(autoincrement())
+  seccion       String?   @db.VarChar(100)
+  num_parcela   String?   @db.VarChar(50)
+  disponible    Boolean?
+  region        String?   @db.VarChar(100)
+  comuna        String?   @db.VarChar(100)
+  direccion     String?   @db.VarChar(255)
+  reserva       reserva[]
 }
 
-// ----------------------------------------------------
-// 1. GESTIÓN DE USUARIOS Y ROLES
-// ----------------------------------------------------
-
-model Rol {
-  id_rol          Int       @id @default(autoincrement()) @map("id_rol")
-  nombre_rol      String    @unique @map("nombre_rol")
-  permiso_rol     String?   @map("permiso_rol")
-  
-  usuarios        Usuario[]
+model detalle_reserva {
+  id_detalle_reserva Int       @id @default(autoincrement())
+  nombre_servicio    String?   @db.VarChar(255)
+  precio_servicio    Decimal?  @db.Decimal(10, 2)
+  tipo_servicio      String?   @db.VarChar(100)
+  desc_servicio      String?   @db.VarChar(500)
+  cantidad           Int?
+  precio_total       Decimal?  @db.Decimal(10, 2)
+  cod_producto       Int?
+  producto           producto? @relation(fields: [cod_producto], references: [cod_producto], onDelete: NoAction, onUpdate: NoAction)
+  reserva            reserva[]
 }
 
-model Usuario {
-  id_usuario       Int       @id @default(autoincrement()) @map("id_usuario")
-  nombre           String?   
-  apellido_paterno String?   @map("apellido_paterno")
-  correo           String    @unique
-  contrasena       String    // Contraseña cifrada (RNF02)
-  
-  // Relación FK a Rol
-  id_rol           Int       @map("id_rol") 
-  rol              Rol       @relation(fields: [id_rol], references: [id_rol])
-  
-  // Relaciones de Dominio
-  reservas         Reserva[] @relation("ReservasUsuario")
+model especie {
+  id_especie     Int       @id @default(autoincrement())
+  tipo_mascota   String?   @db.VarChar(100)
+  nombre_especie String?   @db.VarChar(100)
+  raza           String?   @db.VarChar(100)
+  mascota        mascota[]
 }
 
-
-// ----------------------------------------------------
-// 2. PRODUCTO Y PROVEEDOR
-// ----------------------------------------------------
-
-model Proveedor {
-  id_proveedor     Int       @id @default(autoincrement()) @map("id_proveedor")
-  proveedor        String?   
-  contacto         Int?      
-  productos        Producto[]
+model mascota {
+  id_mascota            Int       @id @default(autoincrement())
+  nombre_mascota        String?   @db.VarChar(100)
+  peso                  Decimal?  @db.Decimal(5, 2)
+  edad                  Int?
+  diagnostico_sanitario String?   @db.VarChar(500)
+  notas_manipulacion    String?   @db.VarChar(500)
+  id_especie            Int?
+  especie               especie?  @relation(fields: [id_especie], references: [id_especie], onDelete: NoAction, onUpdate: NoAction)
+  usuario               usuario[]
 }
 
-model Producto {
-  cod_producto      Int       @id @default(autoincrement()) @map("cod_producto")
-  nombre_producto   String?   @map("nombre_producto")
-  stock_actual      Int?      @map("stock_actual")
-  precio_unitario   Float?    @map("precio_unitario")
-  disponible        Boolean?  
-  tipo_producto     String?   @map("tipo_producto") // Urna, Accesorio, Servicio
-  
-  // FK a PROVEEDOR (RF14)
-  id_proveedor      Int?      @map("id_proveedor")
-  proveedor         Proveedor? @relation(fields: [id_proveedor], references: [id_proveedor])
-  
-  detalles_reserva  DetalleReserva[]
+model metodo_pago {
+  id_metodo                     Int     @id @default(autoincrement())
+  nombre_metodo                 String? @db.VarChar(100)
+  n_recibo_efectivo             Int?
+  url_comprobante_transferencia String? @db.VarChar(255)
+  rut_emisor                    String? @db.VarChar(20)
+  banco_emisor                  String? @db.VarChar(100)
+  tipo_cuenta                   String? @db.VarChar(50)
+  num_cuenta                    String? @db.VarChar(50)
+  num_transaccion_externa       String? @db.VarChar(100)
+  pago                          pago[]
 }
 
-// ----------------------------------------------------
-// 3. MASCOTA Y RESERVA (Núcleo de la Transacción)
-// ----------------------------------------------------
-
-model Mascota {
-  id_mascota        Int       @id @default(autoincrement()) @map("id_mascota")
-  nombre_mascota    String?   @map("nombre_mascota")
-  peso              Float?    
-  
-  // Relaciones
-  reservas          Reserva[]
+model pago {
+  id_pago       Int          @id @default(autoincrement())
+  nombre_metodo String?      @db.VarChar(100)
+  fecha_pago    DateTime?    @db.Date
+  monto         Decimal?     @db.Decimal(10, 2)
+  estado        String?      @db.VarChar(50)
+  id_metodo     Int?
+  metodo_pago   metodo_pago? @relation(fields: [id_metodo], references: [id_metodo], onDelete: NoAction, onUpdate: NoAction)
+  reserva       reserva[]
 }
 
-model Reserva {
-  id_reserva        Int       @id @default(autoincrement()) @map("id_reserva")
-  cod_trazabilidad  String    @unique @default(cuid()) @map("cod_trazabilidad") // RF01
-  fecha_reservada   DateTime? @map("fecha_reservada")
-  estado            String?   @map("estado") // Estado del Tracking (RF02)
-  precio_total      Float?    @map("precio_total")
-  
-  // FK a USUARIO (Cliente)
-  id_usuario        Int?      @map("id_usuario")
-  usuario           Usuario?  @relation("ReservasUsuario", fields: [id_usuario], references: [id_usuario])
-  
-  // FK a MASCOTA (RU04)
-  id_mascota        Int?      @map("id_mascota")
-  mascota           Mascota?  @relation(fields: [id_mascota], references: [id_mascota])
-  
-  // FK a Pago (Relación 1:1)
-  id_pago           Int?      @unique @map("id_pago") // UNIQUE para forzar la relación 1:1
-  pago              Pago?     @relation(fields: [id_pago], references: [id_pago])
-
-  // FK a DetalleReserva (Restricción XOR)
-  id_detalle_reserva Int      @unique @map("id_detalle_reserva") // Clave Única y requerida
-  detalle_reserva    DetalleReserva @relation(fields: [id_detalle_reserva], references: [id_detalle_reserva])
+model producto {
+  cod_producto    Int               @id @default(autoincrement())
+  nombre_producto String?           @db.VarChar(255)
+  stock_actual    Int?
+  precio_unitario Decimal?          @db.Decimal(10, 2)
+  disponible      Boolean?
+  tipo_producto   String?           @db.VarChar(100)
+  id_proveedor    Int?
+  detalle_reserva detalle_reserva[]
+  proveedor       proveedor?        @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction)
 }
 
-// RESTINCIÓN XOR (Detalle de Reserva)
-model DetalleReserva {
-  id_detalle_reserva Int       @id @default(autoincrement()) @map("id_detalle_reserva")
-  nombre_servicio    String?   @map("nombre_servicio")
-  precio_servicio    String?   @map("precio_servicio")
-  cantidad           Int?      
-  
-  // FK a PRODUCTO
-  cod_producto       Int?      @map("cod_producto")
-  producto           Producto? @relation(fields: [cod_producto], references: [cod_producto])
-  
-  // Relación 1:1 con Reserva (Relación explícita)
-  reserva            Reserva?
+model proveedor {
+  id_proveedor Int        @id @default(autoincrement())
+  proveedor    String?    @db.VarChar(255)
+  contacto     Int?
+  region       String?    @db.VarChar(100)
+  comuna       String?    @db.VarChar(100)
+  direccion    String?    @db.VarChar(255)
+  disponible   Boolean?
+  producto     producto[]
 }
 
-// ----------------------------------------------------
-// 4. MÉTODOS DE PAGO (RU03)
-// ----------------------------------------------------
+model reserva {
+  id_reserva         Int              @id @default(autoincrement())
+  cod_trazabilidad   String?          @db.Char(9)
+  fecha_reservada    DateTime?        @db.Date
+  hora_reservada     DateTime?        @db.Time(6)
+  region             String?          @db.VarChar(100)
+  comuna             String?          @db.VarChar(100)
+  direccion          String?          @db.VarChar(255)
+  precio_total       Decimal?         @db.Decimal(10, 2)
+  estado             Boolean?
+  id_usuario         Int?
+  id_cementerio      Int?
+  id_pago            Int?
+  id_detalle_reserva Int?
+  cementerio         cementerio?      @relation(fields: [id_cementerio], references: [id_cementerio], onDelete: NoAction, onUpdate: NoAction)
+  detalle_reserva    detalle_reserva? @relation(fields: [id_detalle_reserva], references: [id_detalle_reserva], onDelete: NoAction, onUpdate: NoAction)
+  pago               pago?            @relation(fields: [id_pago], references: [id_pago], onDelete: NoAction, onUpdate: NoAction)
+  usuario            usuario?         @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
 
-model Pago {
-    id_pago           Int       @id @default(autoincrement()) @map("id_pago")
-    nombre_metodo     String?   @map("nombre_metodo")
-    fecha_pago        DateTime? @map("fecha_pago")
-    monto             Float?    
-    estado            String?   
-    
-    // Relación 1:1 con Reserva
-    reserva           Reserva?  // La relación se gestiona desde Reserva
+model rol {
+  id_rol           Int                @id @default(autoincrement())
+  nombre_rol       String?            @db.VarChar(100)
+  descripcion_rol  String?            @db.VarChar(255)
+  usuario          usuario[]
+  usuario_permisos usuario_permisos[]
+}
+
+model usuario {
+  id_usuario       Int                @id @default(autoincrement())
+  nombre           String?            @db.VarChar(100)
+  apellido_paterno String?            @db.VarChar(100)
+  apellido_materno String?            @db.VarChar(100)
+  fecha_nacimiento DateTime?          @db.Date
+  correo           String?            @unique @db.VarChar(255)
+  contrase_a       String?            @map("contraseña") @db.VarChar(255)
+  telefono         Int?
+  fecha_registro   DateTime?          @db.Date
+  region           String?            @db.VarChar(100)
+  comuna           String?            @db.VarChar(100)
+  direccion        String?            @db.VarChar(255)
+  id_rol           Int?
+  id_mascota       Int?
+  reserva          reserva[]
+  mascota          mascota?           @relation(fields: [id_mascota], references: [id_mascota], onDelete: NoAction, onUpdate: NoAction)
+  rol              rol?               @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
+  usuario_permisos usuario_permisos[]
+}
+
+model usuario_permisos {
+  id_rol     Int
+  id_usuario Int
+  estado     String? @db.VarChar(50)
+  rol        rol     @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
+  usuario    usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id_rol, id_usuario])
 }

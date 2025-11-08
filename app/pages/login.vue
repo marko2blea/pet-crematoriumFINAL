@@ -10,6 +10,11 @@
         <p class="text-gray-600 font-medium">Inicia sesión con tus credenciales.</p>
       </div>
 
+      <!-- MENSAJE DE ERROR (NUEVO) -->
+      <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-sm">
+        {{ errorMessage }}
+      </div>
+
       <form @submit.prevent="handleLogin">
         
         <div class="mb-5">
@@ -22,6 +27,7 @@
               required
               class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
               placeholder="usuario@ejemplo.cl"
+              @input="errorMessage = ''"
             />
             <font-awesome-icon icon="fas fa-user" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
@@ -37,16 +43,20 @@
               required
               class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
               placeholder="••••••••"
+              @input="errorMessage = ''"
             />
             <font-awesome-icon icon="fas fa-lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
         </div>
 
+        <!-- BOTÓN ACTUALIZADO CON ESTADO DE CARGA -->
         <button 
           type="submit" 
-          class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold uppercase tracking-wider hover:bg-purple-light transition duration-150 shadow-lg shadow-purple-200/50"
+          :disabled="isLoading"
+          class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold uppercase tracking-wider hover:bg-purple-light transition duration-150 shadow-lg shadow-purple-200/50
+                 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Iniciar Sesión
+          {{ isLoading ? 'Iniciando...' : 'Iniciar Sesión' }}
         </button>
 
       </form>
@@ -67,17 +77,52 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // Importar useRouter
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 
 library.add(faUser, faLock);
 
+// --- ESTADO DEL FORMULARIO ---
 const email = ref('');
 const password = ref('');
+const errorMessage = ref(''); // Para mostrar errores de la API
+const isLoading = ref(false); // Para deshabilitar el botón
+const router = useRouter(); // Para redirigir
 
-const handleLogin = () => {
-  console.log('Intento de Login con:', email.value);
-  // Aquí se llamaría a la API de autenticación y se redirigiría.
+// --- FUNCIÓN DE LOGIN (ACTUALIZADA) ---
+const handleLogin = async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  try {
+    // 1. Llamar a la API que creamos
+    const response = await $fetch('/api/auth/login', {
+      method: 'POST',
+      body: {
+        correo: email.value,
+        contraseña: password.value,
+      },
+    });
+
+    // 2. Éxito
+    isLoading.value = false;
+    console.log('Login exitoso:', response.user);
+
+    // Opcional: Guardar el usuario en un estado global (ej: useState)
+    // const userState = useState('user', () => response.user);
+
+    // 3. Redirigir al dashboard
+    router.push('/admin/dashboard');
+
+  } catch (error: any) {
+    // 4. Manejar error
+    isLoading.value = false;
+    console.error('Error en el login:', error);
+    
+    // 'error.data.statusMessage' es el mensaje que pusimos en createError()
+    errorMessage.value = error.data?.statusMessage || 'Error desconocido. Intente de nuevo.';
+  }
 };
 
 definePageMeta({
@@ -103,4 +148,8 @@ definePageMeta({
 .text-dark-primary-blue { color: #34495e; } /* Gris Carbón */
 /* Sombra Púrpura sutil para el botón */
 .shadow-purple-200\/50 { --tw-shadow-color: #e0b4f8; --tw-shadow: var(--tw-shadow-ring-offset-shadow, 0 0 #0000), var(--tw-shadow-ring-shadow, 0 0 #0000), 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color); }
+
+/* (NUEVO) Estilos para el estado deshabilitado del botón */
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 </style>

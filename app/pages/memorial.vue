@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen pt-14 bg-gray-50">
         
-        <div class="relative w-full h-80 overflow-hidden bg-purple-dark shadow-xl">
+        <div class="relative w-full h-80 overflow-hidden shadow-xl">
             <div 
                 class="absolute inset-0 bg-cover bg-center opacity-30" 
                 style="background-image: url('/banner2.avif');" 

@@ -55,6 +55,11 @@
               <NuxtLink to="/editar-cuenta" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm">
                 <font-awesome-icon icon="fas fa-user-edit" class="mr-2 text-bd-gold-accent" />Editar Cuenta</NuxtLink>
               
+              <NuxtLink to="/admin/gestionar-usuario" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm"
+              >
+                <font-awesome-icon icon="fas fa-users-cog" class="mr-2 text-bd-purple-dark" />Gestionar de Usuarios
+              </NuxtLink>
+              
               <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm text-red-600 border-t border-gray-200">
                 <font-awesome-icon icon="fas fa-sign-out-alt" class="mr-2" />Cerrar Sesión</button>
             </div>
