@@ -162,6 +162,11 @@
                 <h2 class="text-3xl font-bold text-purple-dark">
                     <font-awesome-icon icon="fas fa-box" class="mr-2 text-bd-gold-accent" /> Productos y Urnas
                 </h2>
+                <NuxtLink to="/admin/inventario" class="hidden md:block">
+                    <button class="bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md whitespace-nowrap">
+                        Ver Inventario
+                    </button>
+                </NuxtLink>
             </div>
             
             <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">

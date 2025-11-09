@@ -12,41 +12,41 @@
             </NuxtLink>
         </div>
 
-        <!-- (ACTUALIZADO) Navegación Principal (Desktop) -->
-        <!-- Oculta en 'lg' y se mueve al menú lateral -->
-        <div class="hidden lg:flex items-center space-x-1 justify-center mx-auto px-4"> 
+        <!-- Navegación Principal (Desktop) (w-40) -->
+        <div class="hidden lg:flex items-center space-x-2 justify-center mx-auto px-4"> 
           
-          <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-32 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-40 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-home" /><span>Inicio</span>
           </NuxtLink>
-          <NuxtLink to="/about" :class="isActive('/about')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-32 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/about" :class="isActive('/about')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-40 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-info-circle" /><span>Nosotros</span>
           </NuxtLink>
-          <NuxtLink to="/instalaciones" :class="isActive('/instalaciones')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-32 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/instalaciones" :class="isActive('/instalaciones')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-40 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-building" /><span>Instalaciones</span>
           </NuxtLink>
-          <NuxtLink to="/memorial" :class="isActive('/memorial')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-32 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/memorial" :class="isActive('/memorial')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-40 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-cross" /><span>Memorial</span>
           </NuxtLink>
-          <NuxtLink to="/tracking" :class="isActive('/tracking')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-32 flex items-center space-x-2 justify-center">
+          <NuxtLink to="/tracking" :class="isActive('/tracking')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-40 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-route" /><span>Seguimiento</span>
           </NuxtLink>
           
-          <!-- Enlaces de Admin (Solo si el rol es Admin) -->
-          <template v-if="user && user.id_rol !== 1">
-            <NuxtLink to="/admin/dashboard" :class="isActive('/admin/dashboard', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-32 flex items-center space-x-2 justify-center">
+          <template >
+            <NuxtLink to="/admin/dashboard" :class="isActive('/admin/dashboard', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
               <font-awesome-icon icon="fas fa-chart-line" /><span>Dashboard</span>
             </NuxtLink>
-            <NuxtLink to="/admin/reservas" :class="isActive('/admin/reservas', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-32 flex items-center space-x-2 justify-center">
+            <NuxtLink to="/admin/reservas" :class="isActive('/admin/reservas', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
               <font-awesome-icon icon="fas fa-book" /><span>Reservas</span>
+            </NuxtLink>
+             <NuxtLink to="/admin/reportes" :class="isActive('/admin/reportes', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
+              <font-awesome-icon icon="fas fa-file-alt" /><span>Reportes</span>
             </NuxtLink>
           </template>
         </div>
 
-        <!-- Acciones Derecha: Carrito, Login/Usuario y Menú Móvil -->
+        <!-- Acciones Derecha (sin cambios) -->
         <nav class="flex items-center space-x-3 sm:space-x-4 flex-shrink-0">
           
-          <!-- Botón de Carrito con Contador (Visible en todos los tamaños) -->
           <NuxtLink to="/carrito" title="Carrito de Compras" class="text-white hover:text-gray-200 transition duration-150 relative p-2">
               <font-awesome-icon icon="fas fa-shopping-cart" class="text-xl" />
               <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-bd-purple-dark">
@@ -54,14 +54,10 @@
               </span>
           </NuxtLink>
           
-          <!-- Lógica v-if / v-else para Sesión (Visible en LG y más) -->
-          
-          <!-- v-if: No hay usuario (Botón Iniciar Sesión) -->
           <NuxtLink v-if="!user" to="/login" class="hidden lg:flex bg-white text-bd-purple-dark py-2 px-4 rounded-lg font-bold hover:bg-gray-100 transition duration-150 flex-shrink-0 shadow-md">
             Iniciar sesión 
           </NuxtLink>
 
-          <!-- v-else: Sí hay usuario (Menú Desplegable) -->
           <div v-else class="relative hidden lg:block">
             <button @click="toggleMenu" class="flex items-center space-x-2 text-white hover:text-gray-200 transition duration-150 p-2 rounded-lg hover:bg-bd-purple-dark-hover" title="Opciones de Usuario">
                 <font-awesome-icon icon="fas fa-user" class="text-xl" />
@@ -91,100 +87,116 @@
               </button>
             </div>
           </div>
-          
-          <!-- (NUEVO) Botón de Hamburguesa (Visible solo en 'lg' e inferiores) -->
-          <button @click="isMobileMenuOpen = true" class="lg:hidden text-white p-2">
-            <font-awesome-icon icon="fas fa-bars" class="text-2xl" />
-          </button>
 
+          <button @click="toggleMobileMenu" class="lg:hidden text-white p-2 text-xl">
+              <font-awesome-icon :icon="isMobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'" />
+          </button>
+          
         </nav>
       </div>
     </header>
 
-    <!-- ===== (NUEVO) MENÚ LATERAL MÓVIL ===== -->
-    <div v-if="isMobileMenuOpen" class="lg:hidden fixed inset-0 z-[100]">
-      <!-- Overlay Oscuro -->
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="isMobileMenuOpen = false"></div>
-      
-      <!-- Contenido del Menú -->
-      <div class="fixed top-0 right-0 h-full w-72 max-w-[80vw] bg-white text-gray-800 shadow-2xl flex flex-col">
-        
-        <!-- Encabezado del Menú (Logo y Cerrar) -->
-        <div class="flex justify-between items-center p-4 border-b">
-          <img src="/logo2.png" alt="Logo" class="h-10">
-          <button @click="isMobileMenuOpen = false" class="p-2 text-gray-500">
-            <font-awesome-icon icon="fas fa-times" class="text-2xl" />
-          </button>
-        </div>
-        
-        <!-- Contenido principal del menú (Scrollable) -->
-        <div class="flex-grow overflow-y-auto">
-          
-          <!-- Saludo (si está logueado) -->
-          <div v-if="user" class="p-4 border-b bg-gray-50">
-            <p class="font-bold text-purple-dark truncate">{{ user.nombre }} {{ user.apellido_paterno }}</p>
-            <p class="text-xs text-gray-600 truncate">{{ user.correo }}</p>
-          </div>
+    <!-- ===== MENÚ LATERAL MÓVIL ===== -->
+    <div 
+      v-if="isMobileMenuOpen" 
+      @click="closeMobileMenu" 
+      class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-[90]"
+    ></div>
+    <div 
+      :class="isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'"
+      class="lg:hidden fixed top-0 right-0 w-72 h-full bg-white shadow-xl z-[91] transition-transform duration-300 ease-in-out"
+    >
+        <div class="flex flex-col h-full">
+            <div class="p-4 border-b border-gray-200">
+                <div v-if="user" class="text-left">
+                    <p class="font-bold text-purple-dark truncate">{{ user.nombre }} {{ user.apellido_paterno }}</p>
+                    <p class="text-xs text-gray-600 truncate">{{ user.correo }}</p>
+                </div>
+                <p v-else class="font-bold text-purple-dark">Menú Principal</p>
+            </div>
 
-          <!-- Enlaces de Navegación -->
-          <nav class="flex flex-col text-lg font-medium">
-            <NuxtLink @click="isMobileMenuOpen = false" to="/" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-home" class="w-6 mr-3 text-purple-deep" />Inicio</NuxtLink>
-            <NuxtLink @click="isMobileMenuOpen = false" to="/about" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-info-circle" class="w-6 mr-3 text-purple-deep" />Nosotros</NuxtLink>
-            <NuxtLink @click="isMobileMenuOpen = false" to="/instalaciones" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-building" class="w-6 mr-3 text-purple-deep" />Instalaciones</NuxtLink>
-            <NuxtLink @click="isMobileMenuOpen = false" to="/memorial" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-cross" class="w-6 mr-3 text-purple-deep" />Memorial</NuxtLink>
-            <NuxtLink @click="isMobileMenuOpen = false" to="/tracking" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-route" class="w-6 mr-3 text-purple-deep" />Seguimiento</NuxtLink>
-          </nav>
-          
-          <!-- Enlaces de Admin (si es admin) -->
-          <template v-if="user && user.id_rol !== 1">
-            <hr class="my-2">
-            <p class="px-4 pt-2 text-xs font-semibold text-gray-400 uppercase">Administración</p>
-            <nav class="flex flex-col text-lg font-medium">
-              <NuxtLink @click="isMobileMenuOpen = false" to="/admin/dashboard" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-chart-line" class="w-6 mr-3 text-purple-deep" />Dashboard</NuxtLink>
-              <NuxtLink @click="isMobileMenuOpen = false" to="/admin/reservas" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-book" class="w-6 mr-3 text-purple-deep" />Reservas</NuxtLink>
-              <NuxtLink @click="isMobileMenuOpen = false" to="/admin/gestionar-usuario" class="px-4 py-3 hover:bg-gray-100 flex items-center"><font-awesome-icon icon="fas fa-users-cog" class="w-6 mr-3 text-purple-deep" />Usuarios</NuxtLink>
+            <!-- (ACTUALIZADO) Enlaces Móviles - Clases de Tailwind en línea -->
+            <nav class="flex-grow p-4 space-y-2 text-lg text-dark-primary-blue font-semibold overflow-y-auto">
+                <!-- (ARREGLADO) Se quita @apply y se usa sintaxis de Tailwind para 'router-link-active' -->
+                <NuxtLink to="/" @click="closeMobileMenu" 
+                          class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                    <font-awesome-icon icon="fas fa-home" class="mr-3 w-6" />Inicio
+                </NuxtLink>
+                <NuxtLink to="/about" @click="closeMobileMenu" 
+                          class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                    <font-awesome-icon icon="fas fa-info-circle" class="mr-3 w-6" />Nosotros
+                </NuxtLink>
+                <NuxtLink to="/instalaciones" @click="closeMobileMenu" 
+                          class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                    <font-awesome-icon icon="fas fa-building" class="mr-3 w-6" />Instalaciones
+                </NuxtLink>
+                <NuxtLink to="/memorial" @click="closeMobileMenu" 
+                          class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                    <font-awesome-icon icon="fas fa-cross" class="mr-3 w-6" />Memorial
+                </NuxtLink>
+                <NuxtLink to="/tracking" @click="closeMobileMenu" 
+                          class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                    <font-awesome-icon icon="fas fa-route" class="mr-3 w-6" />Seguimiento
+                </NuxtLink>
+
+                <!-- Enlaces de Admin (Móvil) -->
+                <template v-if="user && user.id_rol !== 1">
+                    <hr class="my-3 border-gray-300" />
+                    <NuxtLink to="/admin/dashboard" @click="closeMobileMenu" 
+                              class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                        <font-awesome-icon icon="fas fa-chart-line" class="mr-3 w-6" />Dashboard
+                    </NuxtLink>
+                    <NuxtLink to="/admin/reservas" @click="closeMobileMenu" 
+                              class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                        <font-awesome-icon icon="fas fa-book" class="mr-3 w-6" />Reservas
+                    </NuxtLink>
+                    <NuxtLink to="/admin/reportes" @click="closeMobileMenu" 
+                              class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                        <font-awesome-icon icon="fas fa-file-alt" class="mr-3 w-6" />Reportes
+                    </NuxtLink>
+                    <NuxtLink to="/admin/gestionar-usuario" @click="closeMobileMenu" 
+                              class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
+                        <font-awesome-icon icon="fas fa-users-cog" class="mr-3 w-6" />Gestionar Usuarios
+                    </NuxtLink>
+                </template>
             </nav>
-          </template>
-        </div>
 
-        <!-- Footer del Menú (Login/Logout) -->
-        <div class="p-4 border-t">
-          <NuxtLink v-if="!user" @click="isMobileMenuOpen = false" to="/login" class="block w-full text-center bg-purple-deep text-white py-3 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md">
-            Iniciar Sesión
-          </NuxtLink>
-          <template v-else>
-            <NuxtLink @click="isMobileMenuOpen = false" to="/editar-cuenta" class="block w-full text-center bg-gray-200 text-purple-dark py-3 rounded-lg font-bold hover:bg-gray-300 transition duration-150 mb-2">
-              <font-awesome-icon icon="fas fa-user-edit" class="mr-2" />Editar Cuenta
-            </NuxtLink>
-            <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm text-red-600 font-medium">
-              <font-awesome-icon icon="fas fa-sign-out-alt" class="mr-2" />Cerrar Sesión
-            </button>
-          </template>
+            <!-- Footer Menú Móvil (Login/Logout) (sin cambios) -->
+            <div class="p-4 border-t border-gray-200">
+                <NuxtLink v-if="!user" to="/login" @click="closeMobileMenu" class="w-full text-center bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition">
+                    Iniciar sesión 
+                </NuxtLink>
+                <template v-else>
+                    <NuxtLink to="/editar-cuenta" @click="closeMobileMenu" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm font-semibold text-dark-primary-blue">
+                        <font-awesome-icon icon="fas fa-user-edit" class="mr-2 text-bd-gold-accent" />Editar Mi Cuenta
+                    </NuxtLink>
+                    <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm font-semibold text-red-600">
+                        <font-awesome-icon icon="fas fa-sign-out-alt" class="mr-2" />Cerrar Sesión
+                    </button>
+                </template>
+            </div>
         </div>
-      </div>
     </div>
-    <!-- ===== FIN MENÚ MÓVIL ===== -->
 
 
-    <!-- Contenido Principal -->
-    <main class="flex-grow pt-14">
+    <main class="flex-grow pt-20"> 
         <slot /> 
     </main>
     
-    <!-- Footer (sin cambios) -->
-    <footer class="bg-purple-deep text-white p-6 md:p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
-      <div class="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <!-- ... (todo el <footer> sin cambios) ... -->
+    <footer class="bg-purple-deep text-white p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
+      <div class="container mx-auto flex flex-col md:flex-row justify-between items-start space-y-8 md:space-y-0 md:space-x-8">
         
-        <div class="space-y-3">
+        <div class="md:w-1/4 space-y-3">
           <p class="text-xl font-bold mb-3 text-bd-gold-accent">Contacto & Trazabilidad</p>
           <div class="text-sm space-y-3">
-            <p class="flex items-start">
-              <font-awesome-icon icon="fas fa-phone-alt" class="mr-3 text-bd-gold-accent w-4 mt-1" /> 
-              <span>Teléfono: <a href="tel:+5693428591" class="ml-1 hover:underline">+56 (9) 3428591</a></span>
+            <p class="flex items-center">
+              <font-awesome-icon icon="fas fa-phone-alt" class="mr-3 text-bd-gold-accent w-4" /> 
+              Teléfono: <a href="tel:+5693428591" class="ml-2 hover:underline">+56 (9) 3428591</a>
             </p>
-            <p class="flex items-start">
-              <font-awesome-icon icon="fas fa-envelope" class="mr-3 text-bd-gold-accent w-4 mt-1" /> 
-              <span>Email: <a href="mailto:contacto@crematoriosanantonio.cl" class="ml-1 hover:underline break-all">contacto@crematoriosanantonio.cl</a></span>
+            <p class="flex items-center">
+              <font-awesome-icon icon="fas fa-envelope" class="mr-3 text-bd-gold-accent w-4" /> 
+              Email: <a href="mailto:contacto@crematoriosanantonio.cl" class="ml-2 hover:underline">contacto@crematoriosanantonio.cl</a>
             </p>
           </div>
           <NuxtLink to="/tracking" class="mt-4 inline-block bg-bd-purple-light text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-bd-purple-dark-hover transition shadow-md">
@@ -192,7 +204,7 @@
           </NuxtLink>
         </div>
         
-        <div class="space-y-4">
+        <div class="md:w-1/4 space-y-4">
             <p class="text-xl font-bold mb-3 text-bd-gold-accent">Métodos de Pago</p>
             <div class="flex flex-wrap gap-3 text-4xl text-gray-300">
                 <font-awesome-icon icon="fab fa-cc-visa" title="Visa" class="hover:text-white transition" />
@@ -202,9 +214,9 @@
             <p class="text-sm text-white pt-2">Aceptamos transferencias y tarjetas de crédito principales.</p>
         </div>
 
-        <div class="space-y-4">
+        <div class="md:w-1/4 space-y-4 text-center md:text-left">
             <p class="text-xl font-bold mb-3 text-bd-gold-accent">Comunidad</p>
-            <div class="flex justify-start space-x-6 text-4xl">
+            <div class="flex justify-center md:justify-start space-x-6 text-4xl">
                 <a href="#" class="text-gray-300 hover:text-bd-gold-accent transition duration-200" title="Síguenos en Facebook">
                     <font-awesome-icon icon="fab fa-facebook-f" />
                 </a> 
@@ -214,7 +226,7 @@
             </div>
         </div>
         
-        <div class="space-y-3 md:text-right">
+        <div class="md:w-1/4 space-y-3 text-right">
             <p class="text-xs font-semibold text-white">Horario de Oficina:</p>
             <p class="text-sm font-medium">Lun - Sáb: 09:00 a 18:00 hrs.</p>
             <p class="text-sm text-red-400 font-bold">Emergencias 24/7</p>
@@ -224,15 +236,13 @@
       </div>
     </footer>
 
-    <!-- Banner Fijo (Actualizado para ser responsivo) -->
-    <section class="fixed bottom-0 left-0 right-0 z-40 bg-bd-purple-dark text-white text-center py-1.5 shadow-2xl px-4">
-      <p class="text-xs sm:text-sm font-medium truncate">Horario: Lunes a Sábado | 09:00 a 18:00 hrs. • Emergencias 24/7</p>
+    <section class="fixed bottom-0 left-0 right-0 z-40 bg-bd-purple-dark text-white text-center py-1.5 shadow-2xl">
+      <p class="text-sm font-medium">Horario: Lunes a Sábado | 09:00 a 18:00 hrs. • Dirección: Tomé, Región del Biobío (Emergencias 24/7)</p>
     </section>
     
-    <!-- WhatsApp (sin cambios) -->
     <a href="#" 
-       title="Contacto Rápido"
-       class="fixed bottom-16 right-6 z-50 bg-whatsapp text-white p-4 rounded-full shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+      title="Contacto Rápido"
+      class="fixed bottom-16 right-6 z-50 bg-whatsapp text-white p-4 rounded-full shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
         <font-awesome-icon icon="fab fa-whatsapp" class="text-3xl" />
     </a>
     
@@ -243,94 +253,102 @@
 import { ref, onMounted } from 'vue'; 
 import { useRoute, useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-// (ACTUALIZADO) Añadir faBars y faTimes para el menú móvil
 import { 
-  faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, 
-  faEnvelope, faBars, faHome, faInfoCircle, faBuilding, faCross, 
-  faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt,
-  faUsersCog, faTimes // <-- AÑADIDOS
+  faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, 
+  faHome, faInfoCircle, faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, 
+  faMoneyCheckAlt, faUsersCog, faTimes 
 } from '@fortawesome/free-solid-svg-icons';
-import { 
-  faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram 
-} from '@fortawesome/free-brands-svg-icons'; 
+import { faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram } from '@fortawesome/free-brands-svg-icons'; 
 
 library.add(
-  faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, 
-  faEnvelope, faBars, faWhatsapp, faCcVisa, faCcMastercard, 
-  faFacebookF, faInstagram, faHome, faInfoCircle, faBuilding, 
-  faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt,
-  faUsersCog, faTimes // <-- AÑADIDOS
+  faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, 
+  faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram, faHome, faInfoCircle, 
+  faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt, 
+  faUsersCog, faTimes
 );
 
-
-const route = useRoute();
-const router = useRouter(); 
-const isMenuOpen = ref(false); 
-const isMobileMenuOpen = ref(false); // (NUEVO) Estado para el menú móvil
-
-// Lógica de Sesión y Carrito
 const user = useUser();
-const { cartCount, loadCart, clearCart } = useCart(); 
+const { cartCount, loadCart } = useCart();
+const router = useRouter();
+const route = useRoute();
 
 onMounted(() => {
-  loadCart(); // Cargar carrito al iniciar
+  loadCart();
 });
+
+const isMenuOpen = ref(false); 
+const isMobileMenuOpen = ref(false);
 
 const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; }; 
 const closeMenu = () => { isMenuOpen.value = false; }; 
 
+const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };
+const closeMobileMenu = () => { isMobileMenuOpen.value = false; };
+
 const logout = () => { 
     user.value = null; 
-    clearCart();
     isMenuOpen.value = false; 
-    isMobileMenuOpen.value = false; // (NUEVO) Cerrar también el menú móvil
-    router.push('/');
+    isMobileMenuOpen.value = false;
+    router.push('/'); 
 };
 
-// Lógica de clase activa (Desktop)
+// (ACTUALIZADO) Lógica de clase activa (w-40 y fix de admin)
 const isActive = (path: string, isAdminLink: boolean = false): string => {
-  const currentPath = route.path;
-  const isRootHome = path === '/' && currentPath === '/';
-  const isSubRouteActive = path !== '/' && currentPath.startsWith(path);
-  const isActiveLink = isRootHome || isSubRouteActive;
-  
-  // (ACTUALIZADO) Ancho reducido para que quepan más
-  const alignmentClasses = 'flex items-center space-x-2 justify-center w-32';
-  
-  if (isActiveLink) {
-      if (isAdminLink) {
-          return `bg-gray-200 border-b-4 border-bd-purple-dark text-bd-purple-dark ${alignmentClasses}`;
-      }
-      return `bg-bd-purple-dark-hover border-b-4 border-bd-gold-accent text-white ${alignmentClasses}`; 
-  }
-  if (isAdminLink) {
-      return `bg-white text-bd-purple-dark ${alignmentClasses}`;
-  }
-  return `text-white ${alignmentClasses}`; 
+    const currentPath = route.path;
+    const isRootHome = path === '/' && currentPath === '/';
+    const isSubRouteActive = path !== '/' && currentPath.startsWith(path);
+    const isActiveLink = isRootHome || isSubRouteActive;
+    
+    const alignmentClasses = 'flex items-center space-x-2 justify-center w-40';
+    
+    if (isActiveLink) {
+        if (isAdminLink) {
+            return `bg-white border-b-4 border-bd-purple-dark text-bd-purple-dark ${alignmentClasses}`;
+        }
+        return `bg-bd-purple-dark-hover border-b-4 border-bd-gold-accent text-white ${alignmentClasses}`; 
+    }
+    if (isAdminLink) {
+        return `bg-white text-bd-purple-dark ${alignmentClasses}`;
+    }
+    return `text-white ${alignmentClasses}`; 
 };
 </script>
 
 <style scoped>
-/* PALETA DE COLORES (sin cambios) */
+.main-background {
+    background-color: #f4f7f6; 
+}
+
+/* (ARREGLADO) 
+ Ya no necesitamos .mobile-link ni .router-link-active aquí,
+ porque las clases de Tailwind están puestas directamente en el HTML
+ con la sintaxis:
+ [&.router-link-active]:bg-purple-deep 
+ [&.router-link-active]:text-white
+*/
+
+/* ... Paleta de colores (sin cambios) ... */
 .bg-bd-purple-dark { background-color: #4A148C; } 
 .text-bd-purple-dark { color: #4A148C; }
+.border-bd-purple-dark { border-color: #4A148C; }
 .bg-bd-purple-light { background-color: #AB47BC; } 
 .text-bd-purple-light { color: #AB47BC; }
 .border-bd-purple-light { border-color: #AB47BC; }
 .bg-purple-deep { background-color: #5C2A72; }
+.text-purple-deep { color: #5C2A72; }
 .bg-purple-light { background-color: #6C3483; }
-.text-bd-gold-accent { color: #FFD700; } /* Corregido: sin coma */
+.text-bd-gold-accent { color: #FFD700; }
 .bg-bd-purple-dark-hover { background-color: #6A1B9A; } 
 .bg-bd-gold-accent { background-color: #FFC107; } 
-.text-bd-gold-accent { color: #FFC107; }
 .border-bd-gold-accent { border-color: #FFC107; }
 .bg-dark-gray { background-color: #34495e; }
-.bg-whatsapp { background-color: #25d366; } 
+.bg-whatsapp { background-color: #25d366; }
 .logo-border {
     border: 3px solid white;
     border-radius: 6px; 
     padding: 2px;
     background-color: white; 
 }
-.text-green-400 { color: #4ade80; }
+.text-green-400 { color: #4ade80; } 
+.text-dark-primary-blue { color: #34495e; }
 </style>

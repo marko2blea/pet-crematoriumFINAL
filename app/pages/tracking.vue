@@ -5,61 +5,74 @@
       <!-- Encabezado -->
       <div class="text-center mb-10">
         <h1 class="text-4xl font-extrabold text-purple-dark mb-3">Seguimiento de Servicio</h1>
-        <p class="text-lg text-gray-600">Ingrese el código de 9 dígitos proporcionado para ver el estado de su servicio.</p>
+        <p class="text-lg text-gray-600">Ingrese su código de trazabilidad para ver el estado de su reserva.</p>
       </div>
 
       <!-- Formulario de Búsqueda -->
-      <form @submit.prevent="handleTracking" class="bg-white p-8 rounded-xl shadow-2xl border-b-8 border-purple-light flex flex-col sm:flex-row items-end gap-4">
-        <div class="flex-grow w-full">
-            <label for="trackingCode" class="block text-sm font-semibold text-dark-primary-blue mb-2">Código de Trazabilidad</label>
+      <form @submit.prevent="buscarTracking" class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-purple-dark mb-8">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <div class="relative flex-grow">
             <input 
-              v-model="codigo" 
+              v-model="codigoBusqueda"
               type="text" 
-              id="trackingCode"
-              maxlength="9"
-              placeholder="ABC-12345"
-              @input="clearResult"
-              class="w-full p-4 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep text-lg font-mono tracking-widest"
-              required 
+              placeholder="Ej: ABC-12345"
+              class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-deep focus:ring-1 focus:ring-purple-deep focus:outline-none transition duration-150 shadow-inner"
+              required
             />
+            <font-awesome-icon icon="fas fa-barcode" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+          </div>
+          <button 
+            type="submit"
+            :disabled="isLoading"
+            class="py-4 px-6 bg-purple-deep text-white rounded-xl font-bold hover:bg-purple-light transition duration-150 shadow-lg flex items-center justify-center
+                   disabled:opacity-50 disabled:cursor-not-allowed">
+            <font-awesome-icon v-if="isLoading" icon="fas fa-spinner" class="animate-spin mr-2" />
+            <font-awesome-icon v-else icon="fas fa-search" class="mr-2" />
+            <span>{{ isLoading ? 'Buscando...' : 'Buscar' }}</span>
+          </button>
         </div>
-        <button 
-          type="submit"
-          :disabled="isLoading"
-          class="w-full sm:w-auto px-6 py-4 bg-purple-deep text-white rounded-lg font-bold uppercase tracking-wider hover:bg-purple-light transition duration-150 shadow-md
-                 disabled:opacity-50 disabled:cursor-not-allowed">
-          {{ isLoading ? 'Buscando...' : 'Buscar' }}
-        </button>
       </form>
 
-      <!-- Área de Resultados -->
-      <div v-if="isLoading" class="text-center mt-8">
-        <p class="text-lg text-purple-deep font-semibold">Buscando información...</p>
-      </div>
+      <!-- Resultados -->
+      <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-bd-gold-accent">
+          
+          <!-- Estado de Carga -->
+          <div v-if="isLoading" class="text-center py-6">
+              <p class="text-lg text-gray-600">Buscando información...</p>
+          </div>
+          
+          <!-- Estado de Error -->
+          <div v-else-if="errorMessage" class="text-center py-6">
+              <font-awesome-icon icon="fas fa-exclamation-triangle" class="text-red-500 text-4xl mb-4" />
+              <h3 class="text-xl font-bold text-red-700">Error en la Búsqueda</h3>
+              <p class="text-gray-600 mt-2">{{ errorMessage }}</p>
+          </div>
 
-      <!-- Mensaje de Error -->
-      <div v-if="errorMessage" class="mt-8 p-4 rounded-lg text-center text-base bg-red-100 border border-red-400 text-red-700">
-        {{ errorMessage }}
-      </div>
+          <!-- Estado de Éxito -->
+          <div v-else-if="resultado" class="space-y-4">
+              <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">Resultados del Seguimiento</h2>
+              <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-lg">
+                  <span class="font-semibold text-gray-600">Código:</span>
+                  <span class="font-bold text-dark-primary-blue">{{ resultado.codigo }}</span>
+                  
+                  <span class="font-semibold text-gray-600">Mascota:</span>
+                  <span class="font-bold text-dark-primary-blue">{{ resultado.mascota }}</span>
+                  
+                  <span class="font-semibold text-gray-600">Fecha de Reserva:</span>
+                  <span class="font-bold text-dark-primary-blue">{{ resultado.fecha }}</span>
+                  
+                  <span class="font-semibold text-gray-600">Estado:</span>
+                  <span class="px-3 py-1 text-base font-bold rounded-full inline-block" 
+                        :class="getStatusClass(resultado.estado)">
+                      {{ resultado.estado }}
+                  </span>
+              </div>
+          </div>
 
-      <!-- Resultados Encontrados -->
-      <div v-if="resultado" class="mt-8 bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-green-500">
-        <div class="p-6 bg-gray-50 border-b border-gray-200">
-            <h2 class="text-2xl font-bold text-purple-dark">Servicio Encontrado</h2>
-            <p class="text-base text-gray-600 mt-1">
-              Servicio para <span class="font-bold">{{ resultado.mascota }}</span> registrado el {{ resultado.fecha }}.
-            </p>
-        </div>
-        
-        <div class="p-8 text-center">
-          <p class="text-sm font-medium text-gray-500 uppercase">Estado Actual</p>
-          <p class="text-4xl font-extrabold my-2" :class="getStatusClass(resultado.estado).text">
-            {{ resultado.estado }}
-          </p>
-          <span class="px-3 py-1 text-sm font-semibold rounded-full" :class="getStatusClass(resultado.estado).bg">
-              Código: {{ resultado.codigo }}
-          </span>
-        </div>
+          <!-- Estado Inicial -->
+          <div v-else class="text-center py-6">
+              <p class="text-gray-500">Ingrese un código para ver el estado de su servicio.</p>
+          </div>
       </div>
 
     </div>
@@ -67,97 +80,114 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router'; // (NUEVO) Para leer la URL
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faSearch, faBarcode, faSpinner, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
-// No se necesita guardián, es una página pública
+library.add(faSearch, faBarcode, faSpinner, faExclamationTriangle, faCheckCircle);
+
 definePageMeta({
-  title: 'Seguimiento de Servicio'
+  title: 'Seguimiento'
 });
 
+const route = useRoute(); // (NUEVO)
+
 // --- Estado ---
-const codigo = ref('');
+const codigoBusqueda = ref('');
 const isLoading = ref(false);
 const errorMessage = ref('');
 
-// (NUEVO) Tipado para la respuesta de la API
-interface TrackingResult {
-  codigo: string;
+// (NUEVO) Tipo para la respuesta de la API
+type TrackingResult = {
+  codigo: string | null;
   mascota: string;
   fecha: string;
   estado: 'Pendiente' | 'En Proceso' | 'Finalizado' | 'Cancelado';
-}
+};
 const resultado = ref<TrackingResult | null>(null);
 
+
+// --- (NUEVO) Cargar desde URL ---
+// Esto se ejecuta cuando la página carga
+onMounted(() => {
+  // 1. Leer el '?codigo=' de la URL
+  const codigoUrl = route.query.codigo as string | undefined;
+
+  if (codigoUrl) {
+    // 2. Si existe, ponerlo en el formulario
+    codigoBusqueda.value = codigoUrl;
+    // 3. Y ejecutar la búsqueda automáticamente
+    buscarTracking();
+  }
+});
+
+
 // --- Funciones ---
-
-const clearResult = () => {
-  resultado.value = null;
-  errorMessage.value = '';
-}
-
-const handleTracking = async () => {
-  if (!codigo.value) return;
-
+const buscarTracking = async () => {
   isLoading.value = true;
-  clearResult();
+  errorMessage.value = '';
+  resultado.value = null;
+
+  if (!codigoBusqueda.value) {
+    errorMessage.value = 'Por favor, ingrese un código.';
+    isLoading.value = false;
+    return;
+  }
 
   try {
-    // 1. Llamar a la API (usamos $fetch porque es una acción, no una carga de página)
+    // 4. Llamar a la API de tracking (la que ya existe)
     const data = await $fetch<TrackingResult>('/api/tracking', {
-      query: { codigo: codigo.value.toUpperCase() } // Enviar el código como query param
+      params: { codigo: codigoBusqueda.value }
     });
-    
-    // 2. Éxito: Mostrar el resultado
     resultado.value = data;
 
   } catch (error: any) {
-    // 3. Error: Mostrar el mensaje de la API (ej: "Código no encontrado")
-    console.error('Error en el tracking:', error);
-    errorMessage.value = error.data?.statusMessage || 'Error desconocido.';
+    console.error('Error en tracking:', error);
+    errorMessage.value = error.data?.statusMessage || 'Error al buscar el código.';
   } finally {
     isLoading.value = false;
   }
 };
 
-// Lógica de UI (copiada de reservas.vue)
 const getStatusClass = (status: TrackingResult['estado']) => {
     switch (status) {
         case 'Pendiente':
-            return { bg: 'bg-yellow-100 text-yellow-800', text: 'text-yellow-600' };
+            return 'bg-yellow-100 text-yellow-800';
         case 'En Proceso':
-            return { bg: 'bg-purple-100 text-purple-deep', text: 'text-purple-deep' };
+            return 'bg-blue-100 text-blue-800';
         case 'Finalizado':
-            return { bg: 'bg-green-100 text-green-800', text: 'text-green-600' };
+            return 'bg-green-100 text-green-800';
         case 'Cancelado':
-            return { bg: 'bg-red-100 text-red-800', text: 'text-red-600' };
-        default:
-            return { bg: 'bg-gray-100 text-gray-800', text: 'text-gray-800' };
+            return 'bg-red-100 text-red-800';
     }
 };
 </script>
 
 <style scoped>
-/* Estilos (Copiados de login.vue y reservas.vue) */
-.text-purple-dark { color: #4A235A; } 
+/* Estilos (Copiados de checkout/reserva) */
+.text-purple-dark { color: #4A235A; }
+.bg-purple-dark { background-color: #4A235A; } 
 .bg-purple-light { background-color: #6C3483; }
+.bg-purple-deep { background-color: #5C2A72; } 
 .text-purple-deep { color: #5C2A72; } 
-.bg-purple-deep { background-color: #5C2A72; }
-.border-purple-deep { border-color: #5C2A72; } 
+.text-dark-primary-blue { color: #34495e; }
+.border-bd-gold-accent { border-color: #FFD700; }
 .focus\:border-purple-deep:focus { border-color: #5C2A72; }
 .focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
-.text-dark-primary-blue { color: #34495e; }
 .disabled\:opacity-50:disabled { opacity: 0.5; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
-.bg-red-100 { background-color: #fef2f2; }
-.border-red-400 { border-color: #fca5a5; }
+
+/* Colores de Badges (Copiados de admin/reservas) */
+.bg-yellow-100 { background-color: #fff3cd; }
+.text-yellow-800 { color: #856404; }
+.bg-blue-100 { background-color: #d1ecf1; }
+.text-blue-800 { color: #0c5460; }
+.bg-green-100 { background-color: #d4edda; }
+.text-green-800 { color: #155724; }
+.bg-red-100 { background-color: #f8d7da; }
+.text-red-800 { color: #721c24; }
+.text-red-500 { color: #dc3545; }
 .text-red-700 { color: #b91c1c; }
-.text-red-600 { color: #dc3545; }
-.border-green-500 { border-color: #22c55e; }
-.text-green-600 { color: #16a34a; }
-.bg-green-100 { background-color: #dcfce7; }
-.text-green-800 { color: #15803d; }
-.bg-yellow-100 { background-color: #fffbeb; }
-.text-yellow-800 { color: #b45309; }
-.text-yellow-600 { color: #d97706; }
-.bg-purple-100 { background-color: #f3e5f5; }
+.bg-red-50 { background-color: #fef2f2; }
 </style>

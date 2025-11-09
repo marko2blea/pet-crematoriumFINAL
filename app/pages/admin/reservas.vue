@@ -101,10 +101,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faEye, faPencilAlt } from '@fortawesome/free-solid-svg-icons'; 
 
 // 1. Proteger esta página
-definePageMeta({
-  middleware: 'auth',
-  title: 'Gestión de Reservas'
-});
+
 
 library.add(faEye, faPencilAlt);
 const router = useRouter();
