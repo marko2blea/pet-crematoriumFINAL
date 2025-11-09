@@ -1,275 +1,237 @@
 <template>
-  <div class="container mx-auto px-4 py-8 min-h-screen bg-gray-50 font-sans">
-    <h1 class="text-3xl font-bold mb-6 text-dark-primary-blue">
-      <i class="fas fa-edit text-cyan-700 mr-2"></i> Editar Reserva: {{ reserva.codigo }}
-    </h1>
+  <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
 
-    <form @submit.prevent="guardarCambios" class="bg-white p-6 rounded-xl shadow-2xl max-w-4xl mx-auto">
-      <p class="text-gray-600 mb-8 border-b pb-4">
-        Utilice las secciones para gestionar y actualizar los detalles del servicio funerario.
-      </p>
+    <!-- (NUEVO) Estado de Carga -->
+    <div v-if="pending" class="text-center p-10 bg-white rounded-xl shadow-lg">
+      <h1 class="text-3xl font-bold text-dark-primary-blue">
+        Cargando datos del producto...
+      </h1>
+      <p class="text-gray-500 mt-2">Por favor, espere un momento.</p>
+    </div>
 
-      <div class="accordion-item" :class="{ 'active': activeSection === 'detalles' }">
-        <div class="accordion-header" @click="toggleSection('detalles')">
-          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-            <i class="fas fa-file-invoice mr-3"></i> 1. Datos Generales y Cliente
-          </h2>
-          <i class="fas fa-chevron-down transform transition-transform" :class="{ 'rotate-180': activeSection === 'detalles' }"></i>
+    <!-- (NUEVO) Estado de Error -->
+    <div v-else-if="error || !form" class="text-center p-10 bg-red-50 rounded-xl shadow-lg border border-red-300">
+      <h1 class="text-3xl font-bold text-red-700">Error al Cargar el Producto</h1>
+      <p class="text-gray-600 mt-2">{{ error?.statusMessage || 'El producto no pudo ser encontrado.' }}</p>
+      <button @click="router.push('/admin/inventario')"
+        class="mt-6 px-5 py-2 bg-purple-dark text-white rounded-lg hover:bg-purple-deep transition shadow-lg">
+        Volver al Inventario
+      </button>
+    </div>
+    
+    <!-- (NUEVO) Formulario Principal -->
+    <form v-else @submit.prevent="guardarCambios" class="max-w-3xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-purple-dark">
+        <!-- Encabezado -->
+        <div class="p-6 bg-gray-50 border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-purple-dark">Editar Producto</h1>
+            <p class="text-lg text-gray-600 mt-1">{{ form.nombre }} (ID: {{ form.id }})</p>
         </div>
 
-        <div class="accordion-content p-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-500">Cód. Trazabilidad:</label>
-              <p class="mt-1 p-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 font-mono">{{ reserva.codigo }}</p>
-            </div>
-            <div>
-              <label for="cliente-nombre" class="block text-sm font-bold text-gray-700">Cliente</label>
-              <input type="text" id="cliente-nombre" v-model="reserva.cliente"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition" />
-            </div>
-            <div>
-              <label for="cliente-telefono" class="block text-sm font-bold text-gray-700">Teléfono</label>
-              <input type="text" id="cliente-telefono" v-model="reserva.telefono"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition" />
-            </div>
-            <div>
-              <label for="cliente-email" class="block text-sm font-bold text-gray-700">Email</label>
-              <input type="email" id="cliente-email" v-model="reserva.email"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item mt-4" :class="{ 'active': activeSection === 'servicio' }">
-        <div class="accordion-header" @click="toggleSection('servicio')">
-          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-            <i class="fas fa-paw mr-3"></i> 2. Mascota, Peso y Servicio
-          </h2>
-          <i class="fas fa-chevron-down transform transition-transform" :class="{ 'rotate-180': activeSection === 'servicio' }"></i>
+        <!-- Mensaje de Éxito/Error al Guardar -->
+        <div v-if="saveMessage" 
+             :class="saveError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
+             class="m-6 p-4 rounded-lg border text-sm font-medium text-center">
+            {{ saveMessage }}
         </div>
 
-        <div class="accordion-content p-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Cuerpo del Formulario -->
+        <div class="p-6 md:p-8 space-y-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nombre del Producto -->
+                <div>
+                    <label for="nombre" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre del Producto</label>
+                    <input v-model="form.nombre" type="text" id="nombre"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                           required />
+                </div>
+                
+                <!-- Tipo de Producto -->
+                <div>
+                    <label for="tipo" class="block text-sm font-semibold text-dark-primary-blue mb-2">Tipo de Producto</label>
+                    <select v-model="form.tipo" id="tipo"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
+                        <option value="Urna">Urna</option>
+                        <option value="Servicio">Servicio</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Stock -->
+                <div>
+                    <label for="stock" class="block text-sm font-semibold text-dark-primary-blue mb-2">Stock Actual</label>
+                    <input v-model.number="form.stock" type="number" id="stock"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                           required />
+                </div>
+                
+                <!-- Precio -->
+                <div>
+                    <label for="precio" class="block text-sm font-semibold text-dark-primary-blue mb-2">Precio Unitario (CLP)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <input v-model.number="form.precio" type="number" id="precio"
+                               class="w-full p-3 pl-7 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                               required />
+                    </div>
+                </div>
+
+                <!-- Disponibilidad -->
+                <div>
+                    <label for="disponible" class="block text-sm font-semibold text-dark-primary-blue mb-2">Disponibilidad</label>
+                    <select v-model="form.disponible" id="disponible"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
+                        <option :value="true">Disponible</option>
+                        <option :value="false">Agotado / No Disponible</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Proveedor (Opcional) -->
             <div>
-              <label for="mascota-nombre" class="block text-sm font-bold text-gray-700">Nombre Mascota</label>
-              <input type="text" id="mascota-nombre" v-model="reserva.mascota"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition" />
+                <label for="proveedor" class="block text-sm font-semibold text-dark-primary-blue mb-2">Proveedor</label>
+                <select v-model="form.id_proveedor" id="proveedor"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
+                    <option :value="null">-- Sin Proveedor --</option>
+                    <!-- (NUEVO) Cargar lista de proveedores -->
+                    <option v-for="proveedor in proveedores" :key="proveedor.id_proveedor" :value="proveedor.id_proveedor">
+                        {{ proveedor.proveedor }}
+                    </option>
+                </select>
             </div>
-            <div>
-              <label for="mascota-peso" class="block text-sm font-bold text-gray-700">Peso (Kg)</label>
-              <input type="number" step="0.01" id="mascota-peso" v-model="reserva.peso"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition" />
-            </div>
-            <div class="col-span-full">
-              <label for="servicio-tipo" class="block text-sm font-bold text-gray-700">Servicio / Urna</label>
-              <select id="servicio-tipo" v-model="reserva.servicio"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition">
-                <option value="Cremación Individual Premium">Cremación Individual Premium</option>
-                <option value="Cremación Individual Estándar">Cremación Individual Estándar</option>
-                <option value="Cremación Comunitaria">Cremación Comunitaria</option>
-                <option value="Urna Personalizada">Urna Personalizada</option>
-              </select>
-            </div>
-          </div>
+            
         </div>
-      </div>
 
-      <div class="accordion-item status-section mt-4" :class="{ 'active': activeSection === 'trazabilidad' }">
-        <div class="accordion-header" @click="toggleSection('trazabilidad')">
-          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-            <i class="fas fa-code-branch mr-3"></i> 3. Trazabilidad y Estado del Servicio
-          </h2>
-          <i class="fas fa-chevron-down transform transition-transform" :class="{ 'rotate-180': activeSection === 'trazabilidad' }"></i>
+        <!-- Acciones -->
+        <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+            <button type="button" @click="router.push('/admin/inventario')" 
+                    class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
+                Cancelar
+            </button>
+            <button type="submit" 
+                    :disabled="isSaving"
+                    class="px-5 py-2 bg-purple-deep text-white rounded-lg hover:bg-purple-light transition duration-150 shadow-md
+                           disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
         </div>
-
-        <div class="accordion-content p-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label for="estado" class="block text-sm font-bold text-gray-700">Estado del Proceso</label>
-              <select id="estado" v-model="reserva.estado"
-                class="mt-1 block w-full p-3 border border-cyan-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition">
-                <option value="Pendiente">1. Reserva Confirmada</option>
-                <option value="Mascota Recibida">2. Mascota Recibida</option>
-                <option value="En Proceso">3. Cremación en Proceso</option>
-                <option value="Urna Lista">4. Urna/Restos Listos</option>
-                <option value="Finalizada">5. Servicio Finalizado (Retiro/Entrega)</option>
-              </select>
-            </div>
-            <div>
-              <label for="fecha" class="block text-sm font-bold text-gray-700">Fecha Agendada / Recibida</label>
-              <input type="date" id="fecha" v-model="reserva.fecha"
-                class="mt-1 block w-full p-3 border border-cyan-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item payment-section mt-4" :class="{ 'active': activeSection === 'pagos' }">
-        <div class="accordion-header" @click="toggleSection('pagos')">
-          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-            <i class="fas fa-dollar-sign mr-3"></i> 4. Gestión de Pagos
-          </h2>
-          <i class="fas fa-chevron-down transform transition-transform" :class="{ 'rotate-180': activeSection === 'pagos' }"></i>
-        </div>
-
-        <div class="accordion-content p-5">
-          <div class="p-4 rounded-lg bg-yellow-50 border border-yellow-300 mb-6">
-            <p class="font-semibold text-yellow-800">Estado Financiero:</p>
-            <p class="text-sm text-yellow-700">Total: **$120.000 CLP** | Abonado: **$60.000 CLP** | **Saldo Pendiente: $60.000 CLP**</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label for="monto-abono" class="block text-sm font-bold text-gray-700">Registrar Nuevo Abono</label>
-              <input type="number" id="monto-abono" placeholder="Monto en CLP"
-                class="mt-1 block w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-700 transition" />
-            </div>
-            <div>
-              <label for="monto-abono" class="block text-sm font-bold text-white invisible">Acción</label>
-              <button type="button" class="mt-1 w-full px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300 transition">
-                <i class="fas fa-plus mr-2"></i> Registrar Pago
-              </button>
-            </div>
-          </div>
-          
-          <div class="mt-8 pt-4 border-t border-gray-200">
-             <button type="button" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition mr-3">
-                <i class="fas fa-receipt mr-2"></i> Generar Documento de Venta
-             </button>
-             <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-                <i class="fas fa-bell mr-2"></i> Enviar Recordatorio
-             </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-10 pt-6 border-t flex justify-end gap-3">
-        <button type="button" @click="navigateTo('/admin/reservas')"
-          class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-          <i class="fas fa-times-circle mr-2"></i> Cancelar
-        </button>
-        <button type="submit"
-          class="px-6 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-800 transition shadow-md">
-          <i class="fas fa-save mr-2"></i> Guardar Cambios
-        </button>
-      </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, watchEffect } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-definePageMeta({
-  middleware: 'auth'
-});
+// 1. Proteger esta página
 
-import { ref } from 'vue';
-import { navigateTo } from '#app'; 
-import { onMounted } from 'vue'; // Importar onMounted para inicializar
 
-interface Reserva {
-  codigo: string;
-  cliente: string;
-  email: string; // Nuevo campo para edición
-  telefono: string; // Nuevo campo para edición
-  mascota: string;
-  peso: number; // Nuevo campo para edición (RF14)
-  servicio: string;
-  estado: string;
-  fecha: string;
+const route = useRoute();
+const router = useRouter();
+const productoId = ref(route.query.id as string);
+
+// --- (NUEVO) Definir Tipos ---
+interface ProductoForm {
+  id: number;
+  nombre: string;
+  stock: number;
+  precio: number;
+  disponible: boolean;
+  tipo: string;
+  id_proveedor: number | null;
+}
+interface Proveedor {
+    id_proveedor: number;
+    proveedor: string;
 }
 
-// Estado para controlar qué sección del acordeón está abierta
-const activeSection = ref('detalles'); // Inicia con la sección 'detalles' abierta
+// --- Estado del Formulario ---
+const form = ref<ProductoForm | null>(null);
+const isSaving = ref(false);
+const saveMessage = ref('');
+const saveError = ref(false);
 
-// Inicialización de la reserva con datos de ejemplo para edición
-const reserva = ref<Reserva>({
-  codigo: 'R-9CF8A2B6E1D7', // Cód. de trazabilidad (RF01)
-  cliente: 'Juan Pérez', 
-  email: 'juan.perez@email.com',
-  telefono: '+56 9 1234 5678',
-  mascota: 'Fido', 
-  peso: 15.5, // Peso de la mascota (RF14)
-  servicio: 'Cremación Individual Premium', 
-  estado: 'Mascota Recibida', 
-  fecha: '2025-11-06' // Usar fecha actual simulada
+// --- Carga de Datos ---
+
+// 2. Cargar el producto a editar (usando la API GET)
+const { data: loadedData, pending, error } = await useAsyncData<ProductoForm>(
+  'producto-detalle',
+  () => {
+    if (!productoId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de producto' });
+    return $fetch('/api/admin/producto-detalle', { query: { id: productoId.value } })
+  },
+  { watch: [productoId] }
+);
+
+// (NUEVO) Cargar la lista de proveedores para el menú desplegable
+// (Esta es una API simple que no hemos creado, pero podemos hacerla ahora o en el futuro)
+// Por ahora, usaremos datos de prueba para los proveedores
+const { data: proveedores } = await useAsyncData('lista-proveedores', 
+  () => Promise.resolve([
+      { id_proveedor: 1, proveedor: 'Insumos Patitas' },
+      { id_proveedor: 2, proveedor: 'Urnas del Sur' }
+  ])
+  // Reemplazar con: () => $fetch('/api/admin/lista-proveedores')
+);
+
+// 3. Rellenar el formulario reactivo cuando los datos carguen
+watchEffect(() => {
+  if (loadedData.value) {
+    // Usamos 'structuredClone' para evitar editar los datos cargados directamente
+    form.value = structuredClone(loadedData.value);
+  }
 });
 
-// Función para alternar la sección activa del acordeón
-const toggleSection = (section: string) => {
-  activeSection.value = activeSection.value === section ? '' : section;
+// --- Guardar Cambios ---
+
+// 4. Función para guardar (usando la API PUT)
+const guardarCambios = async () => {
+  if (!form.value) return;
+
+  isSaving.value = true;
+  saveMessage.value = '';
+  saveError.value = false;
+
+  try {
+    await $fetch('/api/admin/editar-producto', {
+      method: 'PUT',
+      body: form.value
+    });
+
+    saveMessage.value = '¡Producto actualizado con éxito! Redirigiendo...';
+    setTimeout(() => {
+      router.push('/admin/inventario');
+    }, 2000);
+
+  } catch (err: any) {
+    isSaving.value = false;
+    saveError.value = true;
+    saveMessage.value = err.data?.statusMessage || 'Error al guardar el producto.';
+  }
 };
-
-const guardarCambios = () => {
-  alert(`Simulando guardar cambios para la Reserva ${reserva.value.codigo}.`);
-  // Lógica de PUT/PATCH API REST aquí
-  navigateTo('/admin/reservas');
-};
-
-
 </script>
 
 <style scoped>
-/* Colores y fuentes del proyecto */
-.text-dark-primary-blue { color: #34495e; } /* Azul oscuro profesional */
-.text-cyan-700, .bg-cyan-700 { color: #17a2b8; background-color: #17a2b8; }
-.border-cyan-700 { border-color: #17a2b8; }
-.focus\:ring-cyan-700:focus { --tw-ring-color: #17a2b8; }
+/* CLASES DE COLOR: Consistencia con la paleta Púrpura */
+.text-purple-dark { color: #4A235A; }
+.bg-purple-dark { background-color: #4A235A; } 
+.text-purple-deep { color: #5C2A72; } 
+.bg-purple-deep { background-color: #5C2A72; }
+.bg-purple-light { background-color: #6C3483; }
+.text-dark-primary-blue { color: #34495e; } /* Texto principal */
 
-/* Estilos base para el acordeón (simulación Tailwind) */
-.accordion-item {
-    border: 1px solid #e5e7eb; /* gray-200 */
-    border-radius: 0.5rem; /* rounded-lg */
-    overflow: hidden;
-}
+/* Estado deshabilitado */
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 
-.accordion-header {
-    padding: 1rem 1.25rem;
-    background-color: #f3f4f6; /* gray-100 */
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.accordion-header:hover {
-    background-color: #e5e7eb; /* gray-200 */
-}
-
-.accordion-header .fa-chevron-down {
-    transition: transform 0.3s ease;
-}
-
-.accordion-item.active .accordion-header .fa-chevron-down {
-    transform: rotate(180deg);
-}
-
-.accordion-content {
-    display: none;
-    border-top: 1px solid #e5e7eb;
-}
-
-.accordion-item.active .accordion-content {
-    display: block;
-}
-
-/* Estilos para secciones con significado especial (como propusimos) */
-.status-section .accordion-header {
-    background-color: #fff3cd; /* yellow-100 */
-    color: #856404; /* yellow-800 */
-}
-.status-section .accordion-header h2 {
-    color: #856404;
-}
-
-.payment-section .accordion-header {
-    background-color: #d4edda; /* green-100 */
-    color: #155724; /* green-800 */
-}
-.payment-section .accordion-header h2 {
-    color: #155724;
-}
+/* Colores de Mensajes */
+.bg-green-100 { background-color: #d4edda; } 
+.text-green-700 { color: #155724; } 
+.border-green-300 { border-color: #c3e6cb; }
+.bg-red-100 { background-color: #f8d7da; }
+.text-red-700 { color: #721c24; }
+.border-red-300 { border-color: #f5c6cb; }
+.bg-red-50 { background-color: #fef2f2; }
 </style>

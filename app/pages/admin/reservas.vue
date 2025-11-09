@@ -6,6 +6,7 @@
         
         <div class="flex space-x-3 items-center">
             <label for="statusFilter" class="text-sm font-medium text-purple-dark">Filtrar por Estado:</label>
+            <!-- (ACTUALIZADO) Este select ahora controla la API -->
             <select v-model="filterStatus" id="statusFilter" 
                     class="p-2 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-sm">
                 <option value="Todos">Todos</option>
@@ -18,7 +19,18 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
+        
+        <!-- (NUEVO) Indicador de carga -->
+        <div v-if="pending" class="text-center py-10 text-gray-500">
+            Cargando reservas...
+        </div>
+
+        <!-- (NUEVO) Indicador de error -->
+        <div v-else-if="error" class="text-center py-10 text-red-600 bg-red-50">
+            Error al cargar las reservas: {{ error.message }}
+        </div>
+        
+        <table v-else class="min-w-full divide-y divide-gray-200">
             <thead class="bg-purple-dark text-white">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider w-1/12">ID</th>
@@ -31,11 +43,13 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="reserva in filteredReservas" :key="reserva.id" class="hover:bg-purple-card transition duration-150">
+                <!-- (ACTUALIZADO) El v-for ahora usa 'reservas' (los datos de la API) -->
+                <tr v-for="reserva in reservas" :key="reserva.id" class="hover:bg-purple-card transition duration-150">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-primary-blue">{{ reserva.id }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <p class="text-sm font-semibold text-purple-dark">{{ reserva.clientName }}</p>
-                        <p class="text-xs text-gray-500">{{ reserva.petName }} ({{ reserva.petBreed }})</p>
+                        <!-- (ACTUALIZADO) Mostramos petName (la raza la omitimos por ahora) -->
+                        <p class="text-xs text-gray-500">{{ reserva.petName }}</p>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {{ reserva.serviceName }}
@@ -53,6 +67,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium flex justify-center space-x-2">
                         
+                        <!-- (ACTUALIZADO) Botón Ver Detalles ahora envía el ID -->
                         <button @click="viewDetails(reserva)" 
                                 class="text-purple-deep hover:text-purple-light p-1 rounded-full transition duration-150" 
                                 title="Ver Detalles">
@@ -69,7 +84,8 @@
             </tbody>
         </table>
 
-        <div v-if="filteredReservas.length === 0" class="text-center py-10 text-gray-500">
+        <!-- (ACTUALIZADO) Mensaje si no hay resultados -->
+        <div v-if="!pending && reservas && reservas.length === 0" class="text-center py-10 text-gray-500">
             No se encontraron reservas con el estado seleccionado.
         </div>
     </div>
@@ -77,23 +93,48 @@
 </template>
 
 <script setup lang="ts">
-
-definePageMeta({
-  middleware: 'auth'
-});
-
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-// Se agrega faPencilAlt para el botón de edición
 import { faFileAlt, faPencilAlt } from '@fortawesome/free-solid-svg-icons'; 
 
-library.add(faFileAlt, faPencilAlt);
+// 1. Proteger esta página
 
+
+library.add(faFileAlt, faPencilAlt);
 const router = useRouter();
 
-// --- SIMULACIÓN DE DATOS ---
+// --- (ACTUALIZADO) Carga de Datos ---
 
+// 2. Estado del filtro (este 'ref' ahora controla la API)
+const filterStatus = ref('Todos');
+
+// 3. Objeto computado para los parámetros de la API
+const queryParams = computed(() => ({
+  status: filterStatus.value,
+}));
+
+// 4. Llamada a la API
+const { 
+  data: reservas, 
+  pending, 
+  error, 
+  refresh 
+} = await useAsyncData(
+  'lista-reservas',
+  () => $fetch('/api/admin/reservas', { 
+    query: queryParams.value 
+  }),
+  {
+    watch: [queryParams], // Vuelve a llamar a la API automáticamente cuando 'queryParams' cambia
+    default: () => [] // Valor por defecto mientras carga
+  }
+);
+
+
+// --- Lógica de UI ---
+
+// Tipado para la data (coincide con el formato de la API)
 interface Reserva {
     id: number;
     clientName: string;
@@ -104,25 +145,6 @@ interface Reserva {
     status: 'Pendiente' | 'En Proceso' | 'Finalizado' | 'Cancelado';
     amount: number;
 }
-
-const filterStatus = ref('Todos');
-
-const reservas = ref<Reserva[]>([
-    { id: 101, clientName: 'Ana G.', petName: 'Max', petBreed: 'Labrador', serviceName: 'Premium + Urna', trackingCode: 'TRC-101', status: 'En Proceso', amount: 250000 },
-    { id: 102, clientName: 'Javier S.', petName: 'Luna', petBreed: 'Siamesa', serviceName: 'Estándar', trackingCode: 'TRC-102', status: 'Finalizado', amount: 95000 },
-    { id: 103, clientName: 'Familia P.', petName: 'Toby', petBreed: 'Poodle', serviceName: 'Económico', trackingCode: null, status: 'Pendiente', amount: 40000 },
-    { id: 104, clientName: 'Marta D.', petName: 'Rocky', petBreed: 'Pastor Alemán', serviceName: 'Premium', trackingCode: 'TRC-104', status: 'En Proceso', amount: 165000 },
-    { id: 105, clientName: 'Pedro C.', petName: 'Rex', petBreed: 'Bulldog', serviceName: 'Estándar', trackingCode: 'TRC-105', status: 'Cancelado', amount: 95000 },
-]);
-
-// --- LÓGICA COMPUTADA ---
-
-const filteredReservas = computed(() => {
-    if (filterStatus.value === 'Todos') {
-        return reservas.value;
-    }
-    return reservas.value.filter(reserva => reserva.status === filterStatus.value);
-});
 
 const getStatusClass = (status: Reserva['status']) => {
     switch (status) {
@@ -139,24 +161,17 @@ const getStatusClass = (status: Reserva['status']) => {
     }
 };
 
-// --- FUNCIONES DE ACCIÓN ---
+// --- (ACTUALIZADO) Funciones de Acción ---
 
 const viewDetails = (reserva: Reserva) => {
-    const reservaCodigo = reserva.id; 
-    
-    console.log(`Viendo detalles de la reserva Código: ${reservaCodigo}`);
-    
-    // **USANDO router.push()**
-    // Esto redirige a la ruta: /admin/reservas/detalles/9CF8A2B6E1D7
-    router.push(`/admin/detalle-reserva`);
+    // (ACTUALIZADO) Navegamos a la página de detalle, pasando el ID como query param
+    router.push(`/admin/detalle-reserva?id=${reserva.id}`);
 };
 
 const editDetails = (reserva: Reserva) => {
-    console.log(`Editando reserva ID: ${reserva.id}. Redirigiendo a /admin/editar-reserva.`);
-    // REDIRECCIÓN SOLICITADA
+    // (Esta ya estaba correcta)
     router.push(`/admin/editar-reserva?id=${reserva.id}`);
 };
-
 </script>
 
 <style scoped>
@@ -183,4 +198,14 @@ th {
 .hover\:bg-purple-card:hover {
     background-color: #fcfaff; /* Tinte muy sutil al pasar el ratón */
 }
+
+/* Clases de estado (copiadas de detalle-reserva para consistencia) */
+.bg-green-100 { background-color: #d4edda; } 
+.text-green-800 { color: #155724; } 
+.bg-yellow-100 { background-color: #fff3cd; } 
+.text-yellow-800 { color: #856404; } 
+.bg-red-100 { background-color: #f8d7da; }
+.text-red-800 { color: #721c24; }
+.bg-gray-100 { background-color: #f8f9fa; }
+.text-gray-800 { color: #343a40; }
 </style>
