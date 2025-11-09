@@ -1,350 +1,143 @@
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-4xl pt-20">
+  <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
     
-    <button @click="router.back()" class="text-purple-light hover:text-purple-dark transition duration-150 mb-6 flex items-center">
-      <font-awesome-icon icon="fas fa-arrow-left" class="mr-2" /> Volver al Catálogo
-    </button>
-
-    <div v-if="!producto.id" class="text-center p-10 bg-white-subtle shadow-lg rounded-lg border border-purple-light">
-      <h1 class="text-3xl font-bold text-red-600">Producto No Encontrado</h1>
-      <p class="mt-4 text-gray-600">Por favor, regrese al catálogo y seleccione un producto.</p>
+    <!-- (NUEVO) Estado de Carga -->
+    <div v-if="pending" class="text-center p-10 bg-white rounded-xl shadow-lg">
+      <h1 class="text-3xl font-bold text-dark-primary-blue">
+        Cargando producto...
+      </h1>
     </div>
 
-    <div v-else class="bg-white-subtle p-8 rounded-lg shadow-xl border-b-4 border-purple-deep">
-      
-      <div class="flex justify-between items-center border-b pb-4 mb-6">
-        <h1 class="text-3xl font-bold text-purple-dark">{{ producto.nombre }}</h1>
-        <button 
-          @click="startEditing" 
-          v-if="!isEditing"
-          class="bg-purple-deep text-white py-2 px-4 rounded-lg font-semibold hover:bg-purple-light transition duration-150 shadow-md"
-        >
-          <font-awesome-icon icon="fas fa-edit" class="mr-2" /> Editar Producto
-        </button>
-      </div>
-
-      <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        <div class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 text-lg overflow-hidden">
-             <img :src="producto.imagenUrl || '/placeholder/producto_lg.jpg'" :alt="producto.nombre" class="w-full h-full object-cover">
-        </div>
-
-        <div class="space-y-4">
-          <p class="text-2xl font-bold text-gray-800">
-            Precio: ${{ producto.precio.toLocaleString('es-CL') }} CLP
-          </p>
-          
-          <p class="text-lg font-semibold text-purple-deep">
-            Proveedor: <span class="font-normal text-gray-700">{{ producto.proveedor || 'N/A' }}</span>
-          </p>
-
-          <p class="text-lg font-semibold text-purple-deep">
-            Categoría: <span class="font-normal text-gray-700">{{ producto.tipo }}</span>
-          </p>
-
-          <p class="text-gray-600 leading-relaxed pt-2">
-            <span class="font-semibold text-purple-dark block mb-1">Descripción:</span>
-            {{ producto.descripcion }}
-          </p>
-          
-          <p v-if="producto.requierePersonalizacion" class="text-sm text-green-600 flex items-center">
-            <font-awesome-icon icon="fas fa-check-circle" class="mr-2" /> Este ítem requiere personalización.
-          </p>
-          <p v-else class="text-sm text-gray-500 flex items-center">
-            <font-awesome-icon icon="fas fa-times-circle" class="mr-2" /> No requiere personalización.
-          </p>
-
-          <button 
-            @click="iniciarReserva(producto)"
-            class="mt-6 w-full bg-purple-deep text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-light transition duration-150 shadow-md"
-          >
-            Añadir al Pedido
-          </button>
-        </div>
-      </div>
-
-      <div v-else class="space-y-6 p-4 border border-purple-light rounded-lg bg-white">
-        <h2 class="text-2xl font-bold text-purple-dark border-b pb-2">Editando: {{ producto.nombre }}</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <div>
-            <label class="block text-sm font-semibold text-dark-primary-blue mb-1">Nombre del Producto</label>
-            <input type="text" v-model="form.nombre" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-dark-primary-blue mb-1">Precio (CLP)</label>
-            <input type="number" v-model.number="form.precio" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition" />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-dark-primary-blue mb-1">Categoría</label>
-            <select v-model="form.tipo" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition bg-white">
-              <option value="Servicio">Servicio de Cremación</option>
-              <option value="Urna">Urna</option>
-              <option value="Accesorio">Accesorio</option>
-              <option value="Servicio Extra">Servicio Extra</option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-purple-dark mb-1">Proveedor (Escribir Nombre)</label>
-            <input type="text" v-model="form.proveedor" placeholder="Ej: San Antonio Maderas" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition" />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-dark-primary-blue mb-1">¿Requiere Personalización?</label>
-            <select v-model="form.requierePersonalizacion" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition bg-white">
-              <option :value="true">Sí</option>
-              <option :value="false">No</option>
-            </select>
-          </div>
-          
-          <div class="md:col-span-2">
-            <label class="block text-sm font-semibold text-dark-primary-blue mb-1">Descripción</label>
-            <textarea v-model="form.descripcion" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-deep focus:border-purple-deep transition"></textarea>
-          </div>
-        </div>
-        
-        <div class="flex justify-end space-x-4 pt-4">
-          <button @click="cancelEditing" class="py-2 px-5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-            Cancelar
-          </button>
-          <button @click="saveChanges" class="bg-purple-deep text-white py-2 px-5 rounded-lg font-semibold hover:bg-purple-light transition shadow-md">
-            <font-awesome-icon icon="fas fa-save" class="mr-2" /> Guardar Cambios
-          </button>
-        </div>
-
-      </div>
-
+    <!-- (NUEVO) Estado de Error -->
+    <div v-else-if="error || !producto" class="text-center p-10 bg-red-50 rounded-xl shadow-lg border border-red-300">
+      <h1 class="text-3xl font-bold text-red-700">Error al Cargar el Producto</h1>
+      <p class="text-gray-600 mt-2">{{ error?.statusMessage || 'El producto no pudo ser encontrado.' }}</p>
+      <button @click="router.push('/')"
+        class="mt-6 px-5 py-2 bg-purple-dark text-white rounded-lg hover:bg-purple-deep transition shadow-lg">
+        Volver al Catálogo
+      </button>
     </div>
 
-    <section class="mt-12">
-        <h2 class="text-3xl font-bold text-purple-dark mb-6 border-b pb-2">Opiniones de Clientes</h2>
+    <!-- (ACTUALIZADO) Contenido Principal -->
+    <div v-else class="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2">
         
-        <div class="bg-white p-6 rounded-lg shadow-lg mb-8 border border-gray-100">
-            <h3 class="text-xl font-semibold text-purple-dark mb-4">Deja tu Opinión</h3>
-            
-            <form @submit.prevent="submitReview" class="space-y-4">
-                
-                <div>
-                    <label class="block text-sm font-medium text-dark-primary-blue mb-2">Tu Calificación:</label>
-                    <div class="flex items-center space-x-1 text-2xl text-yellow-500 cursor-pointer">
-                        <font-awesome-icon 
-                            v-for="star in 5" 
-                            :key="star" 
-                            :icon="star <= reviewForm.rating ? 'fas fa-star' : 'far fa-star'" 
-                            @click="reviewForm.rating = star"
-                            class="transition duration-150"
-                        />
-                        <span class="ml-3 text-base text-gray-500">{{ reviewForm.rating }} / 5</span>
-                    </div>
-                </div>
-                
-                <div>
-                    <label for="reviewComment" class="block text-sm font-medium text-dark-primary-blue mb-1">Tu Comentario:</label>
-                    <textarea id="reviewComment" v-model="reviewForm.comment" rows="4" required
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-deep focus:border-purple-deep transition"
-                            placeholder="Comparte tu experiencia con este producto..."></textarea>
-                </div>
-
-                <button type="submit" class="bg-purple-deep text-white py-2 px-6 rounded-lg font-semibold hover:bg-purple-light transition duration-150 shadow-md">
-                    Enviar Reseña
-                </button>
-            </form>
+        <!-- Columna de Imagen (Placeholder) -->
+        <div class="bg-gray-200 flex items-center justify-center p-8 min-h-[300px]">
+            <img src="/logo2.png" alt="Logo de producto" class="h-40 opacity-30"/>
         </div>
 
-        <div class="space-y-6">
-            <div v-for="review in reviews" :key="review.id" class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-purple-deep">
-                
-                <div class="flex justify-between items-start mb-2">
-                    <div class="flex items-center space-x-1 text-lg text-yellow-500">
-                        <font-awesome-icon v-for="star in 5" :key="star" :icon="star <= review.rating ? 'fas fa-star' : 'far fa-star'" />
-                    </div>
-                    <span class="text-sm text-gray-500">{{ review.date }}</span>
-                </div>
+        <!-- Columna de Información -->
+        <div class="p-8 flex flex-col">
+          <span class="bg-purple-deep text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm mb-3 inline-block self-start">
+              {{ producto.tipo }}
+          </span>
 
-                <p class="font-semibold text-gray-800 mb-1">{{ review.author }}</p>
-                <p class="text-gray-700 text-sm">{{ review.comment }}</p>
-                
-            </div>
+          <h1 class="text-4xl font-extrabold text-purple-dark mb-4">
+            {{ producto.nombre }}
+          </h1>
+
+          <div class="text-5xl font-extrabold text-bd-gold-accent mb-6">
+              ${{ producto.precio.toLocaleString('es-CL') }}
+          </div>
+          
+          <!-- Descripción Estática (como en index.vue) -->
+          <h3 class="text-lg font-semibold text-dark-primary-blue mb-2">Este servicio incluye:</h3>
+          <ul class="text-sm text-gray-700 space-y-2 mb-8 flex-grow">
+              <li class="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Certificado de Cremación</li>
+              <li class="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Urna (Modelo Básico)</li>
+              <li class="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Placa Recordatoria</li>
+              <li class_s="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Seguimiento del proceso</li>
+          </ul>
+
+          <!-- Botones de Acción -->
+          <div class="space-y-3 mt-auto">
+            <!-- (ACTUALIZADO) Botón "Añadir al Carrito" -->
+            <button 
+              @click="handleAddToCart"
+              class="w-full py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
+                     bg-purple-deep text-white hover:bg-purple-light hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-deep/50">
+                <font-awesome-icon icon="fas fa-shopping-cart" class="mr-2" />
+                Añadir al Carrito
+            </button>
+            <button 
+              @click="router.push('/carrito')"
+              class="w-full py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
+                     bg-bd-gold-accent text-purple-dark hover:bg-yellow-500 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-bd-gold-accent/50">
+                <font-awesome-icon icon="fas fa-arrow-right" class="mr-2" />
+                Ir al Carrito
+            </button>
+          </div>
         </div>
-        
-        <p v-if="!reviews.length" class="text-gray-500 text-center py-6">Sé el primero en dejar una opinión sobre este producto.</p>
-        
-    </section>
-
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-// Importación de iconos sólida (fasStar) y de contorno (farStar)
-import { faArrowLeft, faEdit, faSave, faCheckCircle, faTimesCircle, faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
-import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
+import { faCheck, faShoppingCart, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+// (NUEVO) Importamos el tipo 'Product' que ya definimos
+import type { Product } from '~/types';
 
-// Añade todos los iconos a la librería
-library.add(faArrowLeft, faEdit, faSave, faCheckCircle, faTimesCircle, fasStar, farStar);
+library.add(faCheck, faShoppingCart, faArrowRight);
 
-
+const route = useRoute();
 const router = useRouter();
+// (NUEVO) Obtenemos el carrito
+const { addToCart } = useCart();
 
-// Interfaz para la estructura de datos del producto
-interface ProductData {
-    id: number;
-    nombre: string;
-    tipo: 'Servicio' | 'Urna' | 'Accesorio' | 'Servicio Extra';
-    precio: number;
-    descripcion: string;
-    requierePersonalizacion: boolean;
-    imagenUrl?: string;
-    proveedor?: string; 
-}
+// --- (ACTUALIZADO) Carga de Datos ---
+const productoId = computed(() => route.query.id as string);
 
-// Define la estructura para el producto (lo que se muestra)
-const producto = ref<ProductData>({} as ProductData);
-// Define el estado del formulario (lo que se edita)
-const form = ref<ProductData>({} as ProductData);
-const isEditing = ref(false);
-
-// Proveedores simulados para el campo select
-const suppliers = ref([
-    { id: 1, name: 'San Antonio Maderas' },
-    { id: 2, name: 'Fundición Metálica Alfa' },
-    { id: 3, name: 'Urnas Ecológicas Bio' },
-]);
-
-
-// --- Lógica de Reseñas (Mantenida) ---
-
-interface Review {
-    id: number;
-    author: string;
-    rating: number;
-    comment: string;
-    date: string;
-}
-
-const reviewForm = ref({
-    rating: 0,
-    comment: '',
-});
-
-const reviews = ref<Review[]>([
-    { id: 1, author: 'Carlos R.', rating: 5, comment: 'Hermosa urna, muy digna y con un acabado perfecto. El servicio fue muy respetuoso.', date: '2025-10-15' },
-    { id: 2, author: 'Laura G.', rating: 4, comment: 'Cumplió con mis expectativas. El proceso fue sencillo, aunque la entrega tardó un día más de lo esperado.', date: '2025-09-28' },
-]);
-
-const submitReview = () => {
-    if (reviewForm.value.rating === 0) {
-        alert('Por favor, selecciona una calificación con estrellas.');
-        return;
+const { 
+  data: producto, 
+  pending, 
+  error 
+} = await useAsyncData<Product>(
+  'detalle-producto-publico',
+  () => {
+    if (!productoId.value) {
+      throw createError({ statusCode: 404, statusMessage: 'Producto no encontrado.' });
     }
-    
-    const newDate: string = new Date().toISOString().split('T')[0] || ''; 
-    
-    const newReview: Review = {
-        id: Date.now(),
-        author: 'Nuevo Usuario',
-        rating: reviewForm.value.rating,
-        comment: reviewForm.value.comment.trim(),
-        date: newDate,
-    };
-    
-    reviews.value.unshift(newReview);
-    
-    reviewForm.value.rating = 0;
-    reviewForm.value.comment = '';
-    alert('¡Gracias! Tu reseña ha sido enviada (simulación).');
+    // 1. Llamar a la nueva API pública
+    return $fetch('/api/producto', {
+      query: { id: productoId.value }
+    });
+  },
+  { watch: [productoId] }
+);
+
+// --- (NUEVO) Funciones de Acción ---
+const handleAddToCart = () => {
+  if (producto.value) {
+    addToCart(producto.value);
+    // (Opcional) Redirigir al carrito después de añadir
+    // router.push('/carrito');
+  }
 };
 
-
-// --- Lógica de Edición y Carga ---
-
-onMounted(() => {
-    // Definición segura del proveedor por defecto
-    const defaultSupplier = suppliers.value?.[0]?.name || 'N/A';
-    
-    const savedProduct = sessionStorage.getItem('detalle_producto');
-    if (savedProduct) {
-        const productData: ProductData = JSON.parse(savedProduct);
-        
-        // Asignación segura del proveedor al cargar
-        productData.proveedor = productData.proveedor || defaultSupplier; 
-
-        producto.value = productData;
-        form.value = { ...productData };
-    } else {
-        // Datos por defecto si no se encontró producto (usa el valor seguro)
-        const defaultProd: ProductData = { id: 999, nombre: 'Urna Memorial Clásica', tipo: 'Urna', precio: 150000, descripcion: 'Esta es la descripción por defecto del producto.', requierePersonalizacion: true, imagenUrl: '/placeholder/default.jpg', proveedor: defaultSupplier };
-        producto.value = defaultProd;
-        form.value = { ...defaultProd };
-    }
-});
-
-const startEditing = () => {
-    isEditing.value = true;
-    form.value = { ...producto.value };
-};
-
-const cancelEditing = () => {
-    isEditing.value = false;
-    form.value = { ...producto.value };
-};
-
-const saveChanges = () => {
-    console.log('Simulación: Guardando cambios...', form.value);
-    
-    // 1. Actualizar el producto
-    producto.value = { ...form.value };
-    // 2. Simular persistencia
-    sessionStorage.setItem('detalle_producto', JSON.stringify(producto.value));
-    
-    isEditing.value = false;
-    alert(`SIMULACIÓN: Los cambios para "${producto.value.nombre}" han sido guardados.`);
-};
-
-
-// --- Otras Funciones ---
-
-const iniciarReserva = (producto: any) => {
-    sessionStorage.setItem('producto_reserva', JSON.stringify(producto));
-    router.push('/carrito'); 
-};
-
-
-definePageMeta({
-    title: 'Detalle del Producto'
-});
 </script>
 
 <style scoped>
-/* CLASES DE COLOR (Para consistencia visual) */
-.text-purple-dark { color: #4A235A; } 
+/* Estilos (Copiados de index.vue) */
+.text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; } 
 .bg-purple-light { background-color: #6C3483; }
 .bg-purple-deep { background-color: #5C2A72; } 
-.border-purple-deep { border-color: #5C2A72; } 
 .text-purple-deep { color: #5C2A72; } 
+.text-dark-primary-blue { color: #34495e; }
+.text-bd-gold-accent { color: #FFD700; }
+.bg-bd-gold-accent { background-color: #FFD700; }
+.hover\:bg-yellow-500:hover { background-color: #ECC94B; }
+.focus\:ring-purple-deep\/50:focus { --tw-ring-color: rgba(92, 42, 114, 0.5); }
+.focus\:ring-bd-gold-accent\/50:focus { --tw-ring-color: rgba(255, 215, 0, 0.5); }
 
-.bg-white-subtle { background-color: #F8F4FA; } /* Fondo de tarjeta claro con tinte púrpura */
-
-/* Gris Carbón para texto general/etiquetas */
-.text-dark-primary-blue { color: #34495e; } 
-.border-dark-primary-blue { border-color: #34495e; }
-
-
-/* Estilos de FOCO en inputs (Púrpura) */
-.focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
-.focus\:border-purple-deep:focus { border-color: #5C2A72; }
-
-/* Estilos de botones de terceros (Green) */
-.bg-green-600 { background-color: #059669; }
-.hover\:bg-green-700:hover { background-color: #047857; }
-
-/* Estilos de estrellas */
-.text-yellow-500 { color: #F59E0B; }
-.bg-white { background-color: white; }
+/* Errores */
+.bg-red-50 { background-color: #fef2f2; }
+.border-red-300 { border-color: #fca5a5; }
+.text-red-700 { color: #b91c1c; }
+.text-green-500 { color: #22c55e; }
 </style>

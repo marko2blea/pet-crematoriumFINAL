@@ -106,9 +106,7 @@ import { useRouter } from 'vue-router';
 import type { User } from '../../app/types'; // Importamos el tipo 'User' que ya definimos
 
 // 1. Proteger esta página
-definePageMeta({
-  middleware: 'auth'
-});
+
 
 const router = useRouter();
 const user = useUser(); // <-- 1. Cargar el estado global del usuario

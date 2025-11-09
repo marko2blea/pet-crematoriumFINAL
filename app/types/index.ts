@@ -10,3 +10,15 @@ export interface User {
   comuna: string | null;         // <-- AÑADIDO
   direccion: string | null;      // <-- AÑADIDO
 }
+
+export interface Product {
+  id: number;
+  nombre: string;
+  precio: number;
+  tipo: string;
+}
+
+// (ESTO ES LO QUE FALTABA) Interfaz para un item en el carrito
+export interface CartItem extends Product {
+  quantity: number;
+}

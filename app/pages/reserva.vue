@@ -1,191 +1,318 @@
 <template>
-  <div class="flex flex-col items-center py-10 bg-gray-50 min-h-screen">
+  <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
     
-    <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-2xl">
-      <h1 class="text-3xl font-bold mb-8 text-center text-primary-dark">Proceso de Reserva</h1>
-
-      <div class="flex justify-between mb-8 border-b-2 border-gray-200">
-        <div :class="{'progress-step': true, 'active': step === 1}">1. Mascota y Datos</div>
-        <div :class="{'progress-step': true, 'active': step === 2}">2. Pago (Simulado)</div>
-        <div :class="{'progress-step': true, 'active': step === 3}">3. Confirmación</div>
+    <div class="max-w-4xl mx-auto">
+      <!-- Encabezado -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl font-extrabold text-purple-dark mb-3">Finalizar Reserva</h1>
+        <p class="text-lg text-gray-600">Complete los datos de su mascota y el lugar de retiro.</p>
       </div>
 
-      <div class="p-6">
-        
-        <div v-if="step === 1">
-          <h2 class="text-2xl font-semibold mb-4 text-accent">Paso 1: Detalles de la Mascota</h2>
-          <p class="mb-6 text-gray-600">Servicio: <strong class="text-primary-dark">{{ producto.nombre }}</strong> | Precio: <strong class="text-primary-dark">${{ producto.precio.toLocaleString('es-CL') }} CLP</strong></p>
-          
-          <form @submit.prevent="nextStep">
-            <div class="mb-4">
-              <label for="mascota-nombre" class="block text-sm font-medium text-gray-700 mb-2">Nombre de la Mascota:</label>
-              <input type="text" v-model="mascota.nombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-accent focus:border-accent">
-            </div>
-            
-            <div class="mb-4">
-              <label for="mascota-peso" class="block text-sm font-medium text-gray-700 mb-2">Peso Estimado (kg):</label>
-              <input type="number" v-model.number="mascota.peso" required min="0.1" step="0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-accent focus:border-accent">
-            </div>
+      <!-- (NUEVO) Mensaje de Error/Carga -->
+      <div v-if="isLoading" class="mb-4 p-4 rounded-lg text-center text-lg bg-blue-100 border border-blue-400 text-blue-700">
+        Procesando su reserva...
+      </div>
+      <div v-if="errorMessage" class="mb-4 p-4 rounded-lg text-center text-sm bg-red-100 border border-red-400 text-red-700">
+        {{ errorMessage }}
+      </div>
 
-            <div class="mt-8">
-              <button type="submit" class="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition duration-150">
-                Continuar al Pago
-              </button>
+      <!-- Formulario Principal -->
+      <form @submit.prevent="handleSubmit" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Columna Izquierda: Formularios -->
+        <div class="lg:col-span-2 space-y-8">
+          
+          <!-- Sección 1: Datos de la Mascota -->
+          <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-purple-dark">
+            <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">
+              1. Datos de la Mascota
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label for="petName" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre de la Mascota</label>
+                <input 
+                  v-model="formMascota.petName"
+                  id="petName" 
+                  type="text" 
+                  required
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  placeholder="Nombre de su mascota"
+                />
+              </div>
+              <div>
+                <label for="petWeight" class="block text-sm font-semibold text-dark-primary-blue mb-2">Peso (kg)</label>
+                <input 
+                  v-model.number="formMascota.petWeight"
+                  id="petWeight" 
+                  type="number" 
+                  step="0.1"
+                  min="0"
+                  required
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  placeholder="Ej: 10.5"
+                />
+              </div>
+               <div>
+                <label for="petAge" class="block text-sm font-semibold text-dark-primary-blue mb-2">Edad (años)</label>
+                <input 
+                  v-model.number="formMascota.petAge"
+                  id="petAge" 
+                  type="number" 
+                  min="0"
+                  required
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  placeholder="Ej: 5"
+                />
+              </div>
             </div>
-          </form>
+          </div>
+
+          <!-- Sección 2: Datos de Retiro/Entrega -->
+          <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-purple-dark">
+            <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">
+              2. Dirección de Retiro del Servicio
+            </h2>
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="region" class="block text-sm font-semibold text-dark-primary-blue mb-2">Región</label>
+                  <input 
+                    v-model="formDireccion.region"
+                    id="region" 
+                    type="text" 
+                    required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                    placeholder="Ej: Biobío"
+                  />
+                </div>
+                <div>
+                  <label for="comuna" class="block text-sm font-semibold text-dark-primary-blue mb-2">Comuna</label>
+                  <input 
+                    v-model="formDireccion.comuna"
+                    id="comuna" 
+                    type="text" 
+                    required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                    placeholder="Ej: Concepción"
+                  />
+                </div>
+              </div>
+              <div>
+                <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección de Retiro</label>
+                <input 
+                  v-model="formDireccion.direccion"
+                  id="direccion" 
+                  type="text" 
+                  required
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  placeholder="Calle, Número, Depto (Opcional)"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div v-if="step === 2">
-          <h2 class="text-2xl font-semibold mb-6 text-accent">Paso 2: Confirmación y Pago</h2>
-          
-          <div class="p-4 bg-gray-100 rounded-lg mb-6">
-            <p class="text-lg font-medium text-gray-700">Resumen:</p>
-            <p>Mascota: <strong>{{ mascota.nombre }}</strong> ({{ mascota.peso }} kg)</p>
-            <p>Servicio: <strong>{{ producto.nombre }}</strong></p>
-            <p class="text-2xl font-bold mt-2 text-red-600">Total: ${{ producto.precio.toLocaleString('es-CL') }} CLP</p>
-          </div>
+        <!-- Columna Derecha: Resumen del Pedido -->
+        <div class="lg:col-span-1">
+          <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-bd-gold-accent sticky top-24">
+            <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">Resumen</h2>
+            
+            <!-- (NUEVO) Lista de items en el resumen -->
+            <ul class="space-y-2 mb-4">
+              <li v-for="item in cart" :key="item.id" class="flex justify-between items-center text-sm">
+                <span class="text-gray-700">{{ item.nombre }} <span class="text-gray-500">x{{ item.quantity }}</span></span>
+                <span class="font-semibold text-dark-primary-blue">${{ (item.precio * item.quantity).toLocaleString('es-CL') }}</span>
+              </li>
+            </ul>
+            
+            <div class="space-y-3 text-lg">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span class="font-semibold text-dark-primary-blue">${{ cartTotal.toLocaleString('es-CL') }}</span>
+                </div>
+                 <div class="flex justify-between">
+                    <span class="text-gray-600">IVA (19%):</span>
+                    <span class="font-semibold text-dark-primary-blue">${{ iva.toLocaleString('es-CL') }}</span>
+                </div>
+                <hr class="border-gray-300">
+                <div class="flex justify-between text-2xl font-bold text-purple-dark">
+                    <span>Total:</span>
+                    <span>${{ totalGeneral.toLocaleString('es-CL') }}</span>
+                </div>
+            </div>
 
-          <p class="text-lg font-medium mb-3">Selecciona tu Opción de Pago:</p>
-          <div class="space-y-3">
-            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <input type="radio" v-model="pago.opcion" value="total" class="form-radio h-5 w-5 text-accent">
-              <span class="ml-3 text-gray-800 font-medium">Pago Total (100%)</span>
-            </label>
-            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <input type="radio" v-model="pago.opcion" value="abono" class="form-radio h-5 w-5 text-accent">
-              <span class="ml-3 text-gray-800 font-medium">Abono (50%): ${{ (producto.precio * 0.5).toLocaleString('es-CL') }} CLP</span>
-            </label>
-          </div>
+            <!-- Info de Pago -->
+            <div class="mt-6 bg-purple-50 p-4 rounded-lg border border-purple-200 text-center">
+              <p class="text-sm text-purple-dark font-semibold">
+                El pago se gestiona vía Transferencia Bancaria.
+              </p>
+              <p class="text-xs text-gray-600 mt-1">
+                Al confirmar, su reserva quedará "Pendiente" y recibirá un correo con los datos para la transferencia.
+              </p>
+            </div>
 
-          <div class="mt-8">
-            <button @click="finalizarReserva" class="w-full bg-success text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition duration-150">
-              Finalizar Reserva y Pagar
+            <button type="submit"
+                    :disabled="isLoading || cart.length === 0"
+                    class="w-full mt-6 py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
+                           bg-purple-deep text-white hover:bg-purple-light hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-deep/50
+                           disabled:opacity-50 disabled:cursor-not-allowed">
+                <font-awesome-icon icon="fas fa-check-circle" class="mr-2" />
+                Confirmar Reserva
             </button>
           </div>
         </div>
+        
+      </form>
 
-        <div v-if="step === 3" class="text-center p-8 bg-blue-50 border-2 border-blue-300 rounded-xl">
-          <h2 class="text-3xl font-bold mb-4 text-blue-700">Reserva Confirmada ✅</h2>
-          <p class="text-xl mb-6 text-gray-700">¡Gracias por tu reserva! El servicio ha sido registrado.</p>
-          
-          <p class="text-lg font-medium">Tu código de trazabilidad único es:</p>
-          <div class="my-4 p-4 bg-white inline-block rounded-lg border-2 border-blue-500 shadow-md">
-            <span class="text-4xl font-extrabold tracking-wider text-blue-800" id="codigo-trazabilidad">{{ codigoTrazabilidad }}</span>
-          </div>
-
-          <p class="text-sm text-gray-500 mt-2">Guarda este código para hacer seguimiento del estado de tu servicio.</p>
-          <NuxtLink to="/" class="mt-6 inline-block bg-primary-dark text-white py-2 px-6 rounded-lg font-medium hover:bg-opacity-90">
-            Volver al Catálogo
-          </NuxtLink>
-        </div>
-
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faCheckCircle);
+
+// 1. Proteger esta página (solo usuarios logueados)
+
 
 const router = useRouter();
+const user = useUser(); // Estado global del usuario
+const { cart, cartTotal, loadCart, clearCart } = useCart(); // Estado global del carrito
 
-// --- ESTADO DEL FLUJO ---
-const step = ref(1);
-const producto = ref({ id: '', nombre: 'Cargando...', precio: 0 });
-const mascota = ref({ nombre: '', peso: 0 });
-const pago = ref({ opcion: 'abono' });
-const codigoTrazabilidad = ref('');
+// --- Estado de UI ---
+const isLoading = ref(false);
+const errorMessage = ref('');
 
-// --- Carga Inicial de Datos ---
+// --- Formularios Reactivos ---
+// (Separados para que coincida con la lógica de la API de checkout)
+const formMascota = ref({
+  petName: '',
+  petWeight: null as number | null,
+  petAge: null as number | null,
+});
+
+const formDireccion = ref({
+  region: '',
+  comuna: '',
+  direccion: '',
+});
+
+// 2. Rellenar el formulario de dirección con los datos del usuario
 onMounted(() => {
-  const dataString = sessionStorage.getItem('producto_reserva');
+  loadCart(); // Cargar el carrito desde sessionStorage
   
-  if (dataString) {
-    try {
-      producto.value = JSON.parse(dataString);
-      if (producto.value.precio === 0 || !producto.value.id) {
-         throw new Error("Datos de producto inválidos.");
-      }
-    } catch (e) {
-      alert("Error al cargar los datos del producto. Volviendo al catálogo.");
-      router.push('/');
-    }
-  } else {
-    // Si no hay datos, redirige al catálogo
-    router.push('/'); 
+  if (user.value) {
+    formDireccion.value = {
+      region: user.value.region || '',
+      comuna: user.value.comuna || '',
+      direccion: user.value.direccion || '',
+    };
   }
 });
 
-// --- Lógica del Botón Siguiente (Paso 1 -> Paso 2) ---
-const nextStep = () => {
-  if (mascota.value.nombre.trim() === '' || mascota.value.peso <= 0) {
-    alert("Por favor, completa el nombre y el peso estimado de la mascota.");
+// --- Totales ---
+// (La API de checkout calcula el IVA, pero lo mostramos aquí también)
+const iva = computed(() => Math.round(cartTotal.value * 0.19));
+const totalGeneral = computed(() => cartTotal.value + iva.value);
+
+
+// --- (ACTUALIZADO) Función de Envío (Checkout) ---
+const handleSubmit = async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  // 1. Validaciones
+  if (!user.value || !user.value.id_usuario) {
+    errorMessage.value = "Error de sesión. Por favor, inicie sesión de nuevo.";
+    isLoading.value = false;
     return;
   }
-  // Transición a Pago
-  step.value = 2; 
+  if (cart.value.length === 0) {
+    errorMessage.value = "Tu carrito está vacío.";
+    isLoading.value = false;
+    router.push('/'); // Si está vacío, lo mandamos al inicio
+    return;
+  }
+  if (!formMascota.value.petName || !formMascota.value.petWeight) {
+    errorMessage.value = "Por favor, complete el nombre y peso de la mascota.";
+    isLoading.value = false;
+    return;
+  }
+  if (!formDireccion.value.region || !formDireccion.value.comuna || !formDireccion.value.direccion) {
+    errorMessage.value = "Por favor, complete los datos de dirección de retiro.";
+    isLoading.value = false;
+    return;
+  }
+
+  // 2. (CORREGIDO) Construir el body que la API (checkout.post.ts) espera
+  const bodyPayload = {
+    formData: {
+      petName: formMascota.value.petName,
+      petWeight: formMascota.value.petWeight || 0,
+      petAge: formMascota.value.petAge || 0,
+      region: formDireccion.value.region,
+      comuna: formDireccion.value.comuna,
+      direccion: formDireccion.value.direccion,
+      metodoPago: 'Transferencia Bancaria' // Hardcodeado, como espera la API
+    },
+    cartItems: cart.value,
+    cartTotal: cartTotal.value, // Subtotal (la API calculará el IVA)
+    userId: user.value.id_usuario
+  };
+
+  try {
+    // 3. Llamar a la API de Checkout
+    const response = await $fetch('/api/checkout', {
+      method: 'POST',
+      body: bodyPayload
+    });
+
+    // 4. Éxito
+    isLoading.value = false;
+    clearCart(); // Limpiar el carrito
+
+    // 5. Redirigir a la página de tracking con el nuevo código
+    alert('¡Reserva creada con éxito! Serás redirigido a la página de seguimiento.');
+    // (Usamos 'response.trackingCode' que es lo que devuelve la API)
+    router.push(`/tracking?codigo=${response.trackingCode}`);
+
+  } catch (error: any) {
+    // 6. Error
+    isLoading.value = false;
+    console.error('Error en el checkout:', error);
+    errorMessage.value = error.data?.statusMessage || 'Error desconocido. No se pudo crear la reserva.';
+  }
 };
 
-// --- Lógica de Finalizar Reserva (Paso 2 -> Paso 3) ---
-const finalizarReserva = () => {
-  // Generar Código de Trazabilidad (Simulado - RF01)
-  const codigo = generarCodigoTrazabilidad(10); 
-  codigoTrazabilidad.value = codigo;
-  
-  // Transición a Confirmación
-  step.value = 3;
-  
-  // Limpiar la sesión
-  sessionStorage.removeItem('producto_reserva'); 
-};
-
-/**
- * RF01: Función para generar el código de trazabilidad único.
- */
-function generarCodigoTrazabilidad(longitud: number): string {
-    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let codigo = '';
-    for (let i = 0; i < longitud; i++) {
-        codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
-    }
-    return codigo;
-}
-
-// Configuración de la página (metadatos)
-definePageMeta({
-  title: 'Flujo de Reserva'
-});
 </script>
 
 <style scoped>
-/* Colores simulados para el diseño profesional */
-.text-primary-dark {
-    color: #5d4037;
-}
-.bg-primary-dark {
-    background-color: #5d4037;
-}
-.text-accent, .focus\:ring-accent {
-    color: #17a2b8;
-    --tw-ring-color: #17a2b8;
-}
-.bg-accent {
-    background-color: #17a2b8;
-}
-.bg-success {
-    background-color: #28a745;
-}
-.progress-step {
-    flex-grow: 1;
-    text-align: center;
-    padding-bottom: 15px;
-    font-weight: 500;
-    color: #999;
-}
-.progress-step.active {
-    color: #5d4037; 
-    border-bottom: 3px solid #5d4037;
-    margin-bottom: -2px; 
-}
+/* Estilos (Copiados de carrito.vue) */
+.text-purple-dark { color: #4A235A; }
+.bg-purple-dark { background-color: #4A235A; } 
+.bg-purple-light { background-color: #6C3483; }
+.border-purple-light { border-color: #6C3483; }
+.bg-purple-deep { background-color: #5C2A72; } 
+.text-purple-deep { color: #5C2A72; } 
+.text-dark-primary-blue { color: #34495e; }
+.border-bd-gold-accent { border-color: #FFD700; }
+.focus\:ring-purple-deep\/50:focus { --tw-ring-color: rgba(92, 42, 114, 0.5); }
+.text-red-600 { color: #dc3545; }
+.hover\:text-red-800:hover { color: #a71d2a; }
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+.bg-red-100 { background-color: #fef2f2; }
+.border-red-400 { border-color: #fca5a5; }
+.text-red-700 { color: #b91c1c; }
+.bg-blue-100 { background-color: #eff6ff; }
+.border-blue-400 { border-color: #93c5fd; }
+.text-blue-700 { color: #1d4ed8; }
+.bg-purple-50 { background-color: #f3e5f5; }
+.border-purple-200 { border-color: #ce93d8; }
+.focus\:border-purple-deep:focus { border-color: #5C2A72; }
+.focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
 </style>

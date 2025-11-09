@@ -1,28 +1,34 @@
 /**
- * Este es un middleware de ruta NOMBRADO (auth.ts).
- * Lo aplicaremos a las páginas que queramos proteger.
+ * Guardián de rutas (Middleware) de Nuxt.
+ * Se aplica a CUALQUIER página que tenga `definePageMeta({ middleware: 'auth' })`
  */
 export default defineNuxtRouteMiddleware((to, from) => {
   
-  // 1. Obtener el estado global del usuario
+  // 1. Obtener el estado global del usuario (auto-importado)
   const user = useUser();
 
-  // 2. Revisar si el usuario NO ha iniciado sesión
+  // --- REGLA 1: No está logueado ---
+  // Si no hay usuario (user.value es null), lo expulsamos a /login.
   if (!user.value) {
-    // Si no hay usuario, lo enviamos al login.
-    // Incluimos la ruta a la que intentaba ir (to.fullPath)
-    // para que 'login.vue' pueda redirigirlo de vuelta después.
     return navigateTo(`/login?redirectTo=${to.fullPath}`);
   }
 
-  // 3. (OPCIONAL PERO RECOMENDADO) Revisar si el usuario es solo un "Cliente"
-  // Asumiendo que tu ROL de Cliente tiene id_rol = 1 (según tu SQL).
-  // Solo los roles 2 (Admin), 3 (Superadmin), etc., pueden entrar.
-  if (user.value.id_rol === 1) {
-    // Si es un cliente (rol 1), lo expulsamos a la página de inicio.
-    return navigateTo('/');
+  // --- REGLA 2: Es un Cliente intentando entrar a /admin ---
+  // Revisamos si la ruta a la que intenta ir (to.path) comienza con '/admin'
+  const isAdminRoute = to.path.startsWith('/admin');
+  
+  // Revisamos si el usuario es un Cliente (Rol 1)
+  const isClient = user.value.id_rol === 1;
+
+  if (isAdminRoute && isClient) {
+    // Si ES una ruta de admin Y ES un cliente...
+    // Lo expulsamos a la página de inicio.
+    return navigateTo('/'); 
   }
 
-  // 4. Si el usuario existe (logueado) Y es Admin (no es rol 1),
-  // no hacemos nada y dejamos que continúe.
+  // --- REGLA 3: Dejar pasar ---
+  // Si llegamos aquí, el usuario SÍ puede pasar:
+  // - Es un Admin (isClient = false) en una ruta de Admin (isAdminRoute = true).
+  // - Es un Cliente (isClient = true) en una ruta NO-Admin (ej: /reserva) (isAdminRoute = false).
+  // - Es un Admin (isClient = false) en una ruta NO-Admin (ej: /reserva).
 });

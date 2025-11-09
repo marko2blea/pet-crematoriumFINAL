@@ -126,9 +126,7 @@ import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 // 1. Proteger esta página
-definePageMeta({
-  middleware: 'auth'
-});
+
 
 const route = useRoute();
 const router = useRouter();
