@@ -126,7 +126,7 @@ const handleSubmit = () => {
 };
 
 definePageMeta({
-  title: 'Editar Memorial'
+  middleware: 'auth'
 });
 </script>
 

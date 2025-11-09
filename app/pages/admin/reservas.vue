@@ -77,6 +77,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -152,9 +157,6 @@ const editDetails = (reserva: Reserva) => {
     router.push(`/admin/editar-reserva?id=${reserva.id}`);
 };
 
-definePageMeta({
-    title: 'Gestión de Reservas'
-});
 </script>
 
 <style scoped>

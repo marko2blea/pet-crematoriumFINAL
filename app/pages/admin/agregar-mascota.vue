@@ -88,7 +88,7 @@ const handleSubmit = () => {
 };
 
 definePageMeta({
-  title: 'Añadir Mascota'
+  middleware: 'auth'
 });
 </script>
 

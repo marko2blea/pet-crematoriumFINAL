@@ -160,6 +160,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref } from 'vue';
 import { navigateTo } from '#app'; 
 import { onMounted } from 'vue'; // Importar onMounted para inicializar
@@ -204,9 +209,6 @@ const guardarCambios = () => {
 };
 
 
-definePageMeta({
-  title: 'Editar Reserva'
-});
 </script>
 
 <style scoped>

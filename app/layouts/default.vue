@@ -10,6 +10,7 @@
             </NuxtLink>
         </div>
 
+        <!-- Links de Navegación (sin cambios) -->
         <div class="hidden lg:flex items-center space-x-3 justify-center mx-4"> 
           
           <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-36 flex items-center space-x-2 justify-center">
@@ -39,35 +40,61 @@
           </NuxtLink>
         </div>
 
+        <!-- ===== SECCIÓN DE LOGIN/USUARIO ACTUALIZADA ===== -->
         <nav class="flex items-center space-x-4 flex-shrink-0">
           
+          <!-- Carrito de Compras (sin cambios) -->
           <NuxtLink to="/carrito" title="Carrito de Compras" class="text-white hover:text-gray-200 transition duration-150">
                 <font-awesome-icon icon="fas fa-shopping-cart" class="text-xl" />
-            </NuxtLink>
+          </NuxtLink>
           
-          <div class="relative">
-            <button @click="toggleMenu" class="text-white hover:text-gray-200 transition duration-150 p-2 rounded-full hover:bg-bd-purple-dark-hover" title="Opciones de Usuario">
-                <font-awesome-icon icon="fas fa-user" class="text-xl" />
-            </button>
-            <div v-if="isMenuOpen" 
-              class="absolute right-0 mt-3 w-48 bg-white text-gray-800 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-200">
-              
-              <NuxtLink to="/editar-cuenta" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm">
-                <font-awesome-icon icon="fas fa-user-edit" class="mr-2 text-bd-gold-accent" />Editar Cuenta</NuxtLink>
-              
-              <NuxtLink to="/admin/gestionar-usuario" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm"
-              >
-                <font-awesome-icon icon="fas fa-users-cog" class="mr-2 text-bd-purple-dark" />Gestionar de Usuarios
-              </NuxtLink>
-              
-              <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm text-red-600 border-t border-gray-200">
-                <font-awesome-icon icon="fas fa-sign-out-alt" class="mr-2" />Cerrar Sesión</button>
-            </div>
-          </div>
-          
-          <NuxtLink to="/login" class="bg-white text-bd-purple-dark py-2 px-4 rounded-lg font-bold hover:bg-gray-100 transition duration-150 flex-shrink-0 shadow-md">
+          <!-- (ACTUALIZADO) Muestra 'Iniciar Sesión' SI el usuario NO existe -->
+          <NuxtLink 
+            v-if="!user"
+            to="/login" 
+            class="bg-white text-bd-purple-dark py-2 px-4 rounded-lg font-bold hover:bg-gray-100 transition duration-150 flex-shrink-0 shadow-md"
+          >
             Iniciar sesión 
           </NuxtLink>
+
+          <!-- (ACTUALIZADO) Muestra el menú de usuario SI el usuario SÍ existe -->
+          <div v-else class="flex items-center space-x-3">
+            
+            <!-- Indicador "Conectado" -->
+            <div class="flex items-center space-x-2">
+              <span class="text-sm font-medium hidden sm:block">Hola, {{ user.nombre }}</span>
+              <div class="w-2.5 h-2.5 bg-green-500 rounded-full shadow-md" title="Conectado"></div>
+            </div>
+
+            <!-- Menú Desplegable (existente) -->
+            <div class="relative">
+              <button @click="toggleMenu" class="text-white hover:text-gray-200 transition duration-150 p-2 rounded-full hover:bg-bd-purple-dark-hover" title="Opciones de Usuario">
+                  <font-awesome-icon icon="fas fa-user" class="text-xl" />
+              </button>
+              
+              <!-- Contenido del Menú -->
+              <div v-if="isMenuOpen" 
+                class="absolute right-0 mt-3 w-52 bg-white text-gray-800 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-200">
+                
+                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <p class="text-sm font-semibold text-purple-dark truncate">{{ user.nombre }} {{ user.apellido_paterno }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ user.correo }}</p>
+                </div>
+                
+                <NuxtLink to="/editar-cuenta" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm">
+                  <font-awesome-icon icon="fas fa-user-edit" class="mr-2 text-bd-gold-accent" />Editar Cuenta
+                </NuxtLink>
+                
+                <NuxtLink to="/admin/gestionar-usuario" @click="closeMenu" class="block px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm">
+                  <font-awesome-icon icon="fas fa-users-cog" class="mr-2 text-bd-purple-dark" />Gestionar Usuarios
+                </NuxtLink>
+                
+                <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-100 text-sm text-red-600 border-t border-gray-200">
+                  <font-awesome-icon icon="fas fa-sign-out-alt" class="mr-2" />Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          </div>
           
         </nav>
       </div>
@@ -77,6 +104,7 @@
         <slot /> 
     </main>
     
+    <!-- Footer (sin cambios) -->
     <footer class="bg-purple-deep text-white p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-start space-y-8 md:space-y-0 md:space-x-8">
         
@@ -144,52 +172,60 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'; 
-import { useRoute } from 'vue-router';
-// Importamos la librería para añadir los iconos al componente
+import { useRoute, useRouter } from 'vue-router'; // (ACTUALIZADO) Importar useRouter
 import { library } from '@fortawesome/fontawesome-svg-core';
-// Importamos las constantes de TODOS los íconos solid (incluyendo carrito y usuario)
-import { faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, faHome, faInfoCircle, faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
-// Importamos las constantes de TODOS los íconos brands
+// (ACTUALIZADO) Añadir faUsersCog para el nuevo ítem de menú
+import { 
+  faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, 
+  faHome, faInfoCircle, faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, 
+  faMoneyCheckAlt, faUsersCog // <--- AÑADIDO AQUÍ
+} from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram } from '@fortawesome/free-brands-svg-icons'; 
 
-// 1. CORRECCIÓN CLAVE: Añadir TODOS los íconos usados en el Layout a la librería del componente
-library.add(faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram, faHome, faInfoCircle, faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt);
+// (ACTUALIZADO) Añadir ícono a la librería
+library.add(
+  faShoppingCart, faUser, faUserEdit, faSignOutAlt, faPhoneAlt, faEnvelope, faBars, 
+  faWhatsapp, faCcVisa, faCcMastercard, faFacebookF, faInstagram, faHome, faInfoCircle, 
+  faBuilding, faCross, faRoute, faChartLine, faBook, faFileAlt, faMoneyCheckAlt, 
+  faUsersCog // <--- AÑADIDO AQUÍ
+);
 
+// (ACTUALIZADO) Obtener el estado global del usuario y el router
+const user = useUser();
+const router = useRouter();
 
 const route = useRoute();
 const isMenuOpen = ref(false); 
 
 const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; }; 
 const closeMenu = () => { isMenuOpen.value = false; }; 
+
+// (ACTUALIZADO) Función de Logout
 const logout = () => { 
-    alert("Simulación: Cerrando sesión..."); 
+    user.value = null; // Limpia el estado global
     isMenuOpen.value = false; 
+    router.push('/'); // Redirige al inicio
 };
 
 // Lógica de clase activa (Se mantiene)
 const isActive = (path: string, isAdminLink: boolean = false): string => {
     const currentPath = route.path;
+// ... (resto de la función isActive sin cambios)
     const isRootHome = path === '/' && currentPath === '/';
     const isSubRouteActive = path !== '/' && currentPath.startsWith(path);
     const isActiveLink = isRootHome || isSubRouteActive;
     
-    // Clase para alinear el icono y el texto (Ya está incluida en el retorno)
     const alignmentClasses = 'flex items-center space-x-2 justify-center w-36';
     
     if (isActiveLink) {
         if (isAdminLink) {
-            // Enlaces de administración activos (fondo blanco, texto MORADO)
             return `bg-gray-200 border-b-4 border-bd-purple-dark text-bd-purple-dark ${alignmentClasses}`;
         }
-        // Enlaces de navegación principal activos (fondo morado-hover, texto BLANCO)
         return `bg-bd-purple-dark-hover border-b-4 border-bd-gold-accent text-white ${alignmentClasses}`; 
     }
-    // Si no está activo
     if (isAdminLink) {
-        // Enlaces de administración inactivos (fondo blanco, texto MORADO)
         return `bg-white text-bd-purple-dark ${alignmentClasses}`;
     }
-    // Enlaces de navegación principal inactivos (fondo morado, texto BLANCO)
     return `text-white ${alignmentClasses}`; 
 };
 </script>
@@ -217,7 +253,7 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
     background-color: #6C3483; 
 }
 .text-bd-gold-accent { 
-    color: #FFD700,
+    color: #FFD700;
 }
 
 /* MORADO OSCURO DE HOVER (bd-purple-dark-hover) - Efecto hover de la navegación */
@@ -233,6 +269,7 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
 /* OTROS COLORES */
 .bg-dark-gray { background-color: #34495e; } /* Fondo del footer (Oscuro) */
 .bg-whatsapp { background-color: #25d366; } /* Color de WhatsApp (Verde) */
+.bg-green-500 { background-color: #22c55e; } /* (NUEVO) Para el punto de "conectado" */
 
 /* Estilo para el Logo (Borde blanco en fondo púrpura) */
 .logo-border {

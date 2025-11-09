@@ -208,7 +208,7 @@ onMounted(() => {
 
 
 definePageMeta({
-  title: 'Detalle de Reserva'
+  middleware: 'auth'
 });
 </script>
 

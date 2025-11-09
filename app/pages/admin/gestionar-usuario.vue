@@ -103,6 +103,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed } from 'vue'; 
 // Importamos la librería para añadir los iconos al componente
 import { library } from '@fortawesome/fontawesome-svg-core';

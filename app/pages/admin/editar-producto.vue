@@ -317,7 +317,7 @@ const iniciarReserva = (producto: any) => {
 
 
 definePageMeta({
-    title: 'Detalle del Producto'
+  middleware: 'auth'
 });
 </script>
 

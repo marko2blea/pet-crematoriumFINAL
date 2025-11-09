@@ -82,6 +82,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -153,12 +158,8 @@ onMounted(() => {
     // Si necesitas que cargue datos iniciales al arrancar
     // generateReport(); 
 });
-
-
-definePageMeta({
-    title: 'Reportes y Análisis'
-});
 </script>
+
 
 <style scoped>
 /* CLASES DE COLOR: Consistencia con la paleta Púrpura */

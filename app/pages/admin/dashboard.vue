@@ -81,6 +81,13 @@
 </template>
 
 <script setup lang="ts">
+// ¡¡AQUÍ ESTÁ EL CAMBIO IMPORTANTE!!
+// Esto le dice a Nuxt que use el guardián 'auth' (de app/middleware/auth.ts)
+// antes de mostrar esta página.
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faFileInvoiceDollar, faBoxes } from '@fortawesome/free-solid-svg-icons';
@@ -102,9 +109,7 @@ const recentOrders = ref([
     { id: 3, client: 'Ana P.', pet: 'Toby (Poodle)', service: 'Económico', status: 'Pendiente' },
 ]);
 
-definePageMeta({
-    title: 'Dashboard'
-});
+// (El definePageMeta de title se mueve arriba)
 </script>
 
 <style scoped>

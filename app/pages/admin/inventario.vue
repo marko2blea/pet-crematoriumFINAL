@@ -108,6 +108,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed, type Ref } from 'vue'; 
 import { useRouter } from 'vue-router'; // Importamos useRouter
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -207,9 +212,6 @@ const eliminarItem = (item: InventarioItem) => {
     }
 };
 
-definePageMeta({
-    title: 'Gestión de Inventario'
-});
 </script>
 
 <style scoped>
