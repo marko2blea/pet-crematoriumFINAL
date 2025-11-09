@@ -83,7 +83,7 @@
                 </div>
             </div>
 
-            <button @click="router.push('admin/reservas')" 
+            <button @click="router.push('reserva')" 
                     class="w-full mt-6 py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
                            bg-purple-deep text-white hover:bg-purple-light hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-deep/50">
                 <font-awesome-icon icon="fas fa-arrow-right" class="mr-2" />
