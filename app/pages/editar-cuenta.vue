@@ -1,134 +1,192 @@
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-4xl pt-20">
-    
-    <h1 class="text-4xl font-bold mb-8 text-purple-dark">Configuración de la Cuenta</h1>
-    <p class="text-gray-600 mb-6">Actualice su información personal y credenciales de acceso.</p>
+  <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
 
-    <button @click="router.push('/admin')" class="text-purple-light hover:text-purple-dark transition duration-150 mb-6 flex items-center">
-      <font-awesome-icon icon="fas fa-arrow-left" class="mr-2" /> Volver al Panel
-    </button>
-
-
-    <div class="bg-white-subtle p-8 rounded-xl shadow-2xl max-w-xl mx-auto border-t-4 border-purple-deep">
-      <h2 class="text-2xl font-semibold mb-6 text-purple-dark border-b pb-2">Datos de Usuario</h2>
-
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        
-        <div>
-          <label for="nombre" class="block text-sm font-medium text-purple-dark mb-1">Nombre Completo:</label>
-          <input type="text" v-model="form.nombre" id="nombre" required
-                 class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep">
-        </div>
-
-        <div>
-          <label for="email" class="block text-sm font-medium text-purple-dark mb-1">Correo Electrónico (Usuario):</label>
-          <input type="email" v-model="form.email" id="email" required
-                 class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep">
-        </div>
-
-        <div>
-          <label for="telefono" class="block text-sm font-medium text-purple-dark mb-1">Teléfono:</label>
-          <input type="tel" v-model="form.telefono" id="telefono"
-                 class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep">
-        </div>
-        
-        <div class="pt-4 border-t border-gray-200">
-            <h3 class="text-lg font-semibold text-purple-dark mb-3">Cambiar Contraseña</h3>
-            <div>
-                <label for="password" class="block text-sm font-medium text-purple-dark mb-1">Nueva Contraseña (Dejar vacío para no cambiar):</label>
-                <input type="password" v-model="form.password" id="password"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep">
-            </div>
-        </div>
-        
-        <button type="submit" 
-                class="w-full bg-purple-deep text-white py-3 rounded-lg font-semibold hover:bg-purple-light transition duration-150 shadow-md mt-6">
-          <font-awesome-icon icon="fas fa-save" class="mr-2" /> Guardar Cambios
-        </button>
-      </form>
-
-      <p v-if="message" :class="messageClass" class="mt-4 p-3 rounded-lg text-sm text-center">{{ message }}</p>
-
+    <!-- Carga/Error (Si no hay usuario, el middleware ya lo redirigió) -->
+    <div v-if="!form" class="text-center p-10 bg-white rounded-xl shadow-lg">
+      <h1 class="text-3xl font-bold text-dark-primary-blue">
+        Cargando perfil...
+      </h1>
     </div>
+    
+    <!-- Formulario Principal -->
+    <form v-else @submit.prevent="guardarPerfil" class="max-w-3xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-purple-dark">
+        <!-- Encabezado -->
+        <div class="p-6 bg-gray-50 border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-purple-dark">Editar Mi Cuenta</h1>
+            <p class="text-lg text-gray-600 mt-1">Actualiza tu información personal y de contacto.</p>
+            <p class="text-sm font-mono text-purple-deep">{{ form.correo }} (No editable)</p>
+        </div>
+
+        <!-- Mensaje de Éxito/Error al Guardar -->
+        <div v-if="saveMessage" 
+             :class="saveError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
+             class="m-6 p-4 rounded-lg border text-sm font-medium text-center">
+            {{ saveMessage }}
+        </div>
+
+        <!-- Cuerpo del Formulario -->
+        <div class="p-6 md:p-8 space-y-6">
+
+            <h3 class="text-xl font-semibold text-purple-deep border-b pb-2">Información Personal</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Nombre -->
+                <div>
+                    <label for="nombre" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre</label>
+                    <input v-model="form.nombre" type="text" id="nombre"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                           required />
+                </div>
+                <!-- Apellido Paterno -->
+                <div>
+                    <label for="apellido_paterno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Paterno</label>
+                    <input v-model="form.apellido_paterno" type="text" id="apellido_paterno"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                           required />
+                </div>
+                <!-- Apellido Materno -->
+                <div>
+                    <label for="apellido_materno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Materno</label>
+                    <input v-model="form.apellido_materno" type="text" id="apellido_materno"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Información de Contacto</h3>
+             <!-- Teléfono -->
+            <div>
+                <label for="telefono" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono</label>
+                <input v-model="form.telefono" type="tel" id="telefono"
+                       placeholder="912345678"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Región -->
+                <div>
+                    <label for="region" class="block text-sm font-semibold text-dark-primary-blue mb-2">Región</label>
+                    <input v-model="form.region" type="text" id="region"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                </div>
+                <!-- Comuna -->
+                <div>
+                    <label for="comuna" class="block text-sm font-semibold text-dark-primary-blue mb-2">Comuna</label>
+                    <input v-model="form.comuna" type="text" id="comuna"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                </div>
+            </div>
+             <!-- Dirección -->
+            <div>
+                <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección</label>
+                <input v-model="form.direccion" type="text" id="direccion"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+            </div>
+            
+        </div>
+
+        <!-- Acciones -->
+        <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+            <button type="button" @click="router.back()" 
+                    class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
+                Cancelar
+            </button>
+            <button type="submit" 
+                    :disabled="isSaving"
+                    class="px-5 py-2 bg-purple-deep text-white rounded-lg hover:bg-purple-light transition duration-150 shadow-md
+                           disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ isSaving ? 'Guardando...' : 'Guardar Perfil' }}
+            </button>
+        </div>
+    </form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSave, faArrowLeft } from '@fortawesome/free-solid-svg-icons'; 
+import type { User } from '../../app/types'; // Importamos el tipo 'User' que ya definimos
 
-library.add(faSave, faArrowLeft);
+// 1. Proteger esta página
+definePageMeta({
+  middleware: 'auth'
+});
 
 const router = useRouter();
+const user = useUser(); // <-- 1. Cargar el estado global del usuario
 
-interface UserAccount {
-    nombre: string;
-    email: string;
-    telefono: string;
-    password: '';
-}
+// --- Estado del Formulario ---
+const form = ref<Partial<User> | null>(null); // Usamos Partial<User> para el formulario
+const isSaving = ref(false);
+const saveMessage = ref('');
+const saveError = ref(false);
 
-// Estado del formulario
-const form = ref<UserAccount>({
-  nombre: '',
-  email: '',
-  telefono: '',
-  password: ''
-});
-
-const message = ref('');
-const messageClass = ref('');
-
-// --- Lógica de Carga Inicial ---
+// 2. Rellenar el formulario con los datos del estado global
 onMounted(() => {
-    // Simular la carga de datos del usuario actual (API call GET /api/admin/cuenta)
-    const dummyUserData: Omit<UserAccount, 'password'> = {
-        nombre: 'Administrador Principal',
-        email: 'admin@sanantonio.cl',
-        telefono: '987654321',
-    };
-    
-    form.value.nombre = dummyUserData.nombre;
-    form.value.email = dummyUserData.email;
-    form.value.telefono = dummyUserData.telefono;
-    // La contraseña nunca se carga, solo se usa el campo para establecer una nueva.
+  if (user.value) {
+    // Copiamos los datos del estado global al formulario local
+    // (Usamos structuredClone para evitar editar el estado global directamente)
+    form.value = structuredClone(user.value);
+  } else {
+    // Esto no debería pasar gracias al middleware, pero es una salvaguarda
+    saveError.value = true;
+    saveMessage.value = "Error: No se pudo cargar la información del usuario.";
+  }
 });
 
 
-// Simulación de envío del formulario (PUT/PATCH)
-const handleSubmit = () => {
-  // 🛑 Lógica real: PATCH /server/api/admin/cuenta (Actualizar datos)
-  
-  message.value = `✅ ¡Datos de cuenta de ${form.value.nombre} actualizados con éxito!`;
-  messageClass.value = 'bg-green-100 text-green-800'; 
+// --- Guardar Cambios ---
+const guardarPerfil = async () => {
+  if (!form.value) return;
 
-  // Opcional: Redirigir al dashboard después de 2 segundos
-  setTimeout(() => {
-      router.push('/admin');
-  }, 2000);
+  isSaving.value = true;
+  saveMessage.value = '';
+  saveError.value = false;
+
+  try {
+    // 3. Llamar a la nueva API (PUT)
+    const response = await $fetch('/api/usuario/editar-perfil', {
+      method: 'PUT',
+      body: {
+        id_usuario: form.value.id_usuario, // Enviar el ID para la cláusula WHERE
+        nombre: form.value.nombre,
+        apellido_paterno: form.value.apellido_paterno,
+        apellido_materno: form.value.apellido_materno,
+        telefono: form.value.telefono,
+        region: form.value.region,
+        comuna: form.value.comuna,
+        direccion: form.value.direccion,
+      }
+    });
+
+    // 4. (ÉXITO) Actualizar el estado global 'user'
+    // Esto hará que el nombre en el layout (default.vue) se actualice al instante.
+    user.value = response.user;
+
+    saveMessage.value = '¡Perfil actualizado con éxito!';
+    saveError.value = false;
+
+  } catch (err: any) {
+    saveError.value = true;
+    saveMessage.value = err.data?.statusMessage || 'Error al guardar el perfil.';
+  } finally {
+    isSaving.value = false;
+  }
 };
-
-definePageMeta({
-  title: 'Editar Cuenta'
-});
 </script>
 
 <style scoped>
-/* CLASES DE COLOR (Para consistencia visual) */
+/* Estilos (Copiados de editar-producto.vue) */
 .text-purple-dark { color: #4A235A; }
-.bg-purple-dark { background-color: #4A235A; }
-.bg-purple-light { background-color: #6C3483; }
-.hover\:bg-purple-light:hover { background-color: #6C3483; }
-
+.bg-purple-dark { background-color: #4A235A; } 
+.text-purple-deep { color: #5C2A72; } 
 .bg-purple-deep { background-color: #5C2A72; }
-.border-purple-deep { border-color: #5C2A72; }
-
-.focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
-.focus\:border-purple-deep:focus { border-color: #5C2A72; }
-
-.bg-white-subtle { background-color: #F8F4FA; }
-.bg-green-100 { background-color: #D1FAE5; }
-.text-green-800 { color: #065F46; }
+.bg-purple-light { background-color: #6C3483; }
+.text-dark-primary-blue { color: #34495e; }
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+.bg-green-100 { background-color: #d4edda; } 
+.text-green-700 { color: #155724; } 
+.border-green-300 { border-color: #c3e6cb; }
+.bg-red-100 { background-color: #f8d7da; }
+.text-red-700 { color: #721c24; }
+.border-red-300 { border-color: #f5c6cb; }
 </style>

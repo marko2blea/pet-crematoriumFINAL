@@ -2,186 +2,236 @@
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
     
     <div class="flex justify-between items-center mb-8 border-b-2 border-gray-300 pb-3">
-        <h1 class="text-3xl font-bold text-purple-dark">Reportes y Análisis</h1>
+        <h1 class="text-3xl font-bold text-purple-dark">Reporte de Ventas</h1>
         
         <div class="flex space-x-3 items-center">
-            <label for="statusFilter" class="text-sm font-medium text-purple-dark">Periodo:</label>
-            <select v-model="dateRange" id="statusFilter" 
-                    class="p-2 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-sm">
-                <option value="mes">Último Mes</option>
-                <option value="trimestre">Último Trimestre</option>
-                <option value="anual">Último Año</option>
-            </select>
-            <button @click="generateReport" class="bg-purple-deep text-white p-2 rounded-lg hover:bg-purple-light transition duration-150 text-sm font-semibold">
-                Generar
+             <button class="bg-green-600 text-white py-2 px-4 rounded-lg font-bold hover:bg-green-700 transition duration-150 shadow-md">
+                <font-awesome-icon icon="fas fa-file-excel" class="mr-2" />
+                Exportar a Excel
             </button>
         </div>
     </div>
 
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <!-- (ACTUALIZADO) Tarjeta de Total de Ventas -->
+    <div class="mb-8 bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500 max-w-sm">
+        <p class="text-sm font-medium text-gray-500">Total Ventas (Finalizadas)</p>
+        <div v-if="pending" class="h-10"></div>
+        <div v-else-if="reporte" class="text-4xl font-extrabold text-green-700 mt-2">
+            ${{ reporte.totalVentas.toLocaleString('es-CL') }}
+        </div>
+    </div>
+
+    <!-- (NUEVO) Gráfico de Barras -->
+    <div class="mb-8 bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-deep">
+        <h2 class="text-xl font-bold text-purple-dark mb-4">Ventas Mensuales ({{ new Date().getFullYear() }})</h2>
+        <div v-if="pending" class="text-center py-10 text-gray-500">Cargando gráfico...</div>
+        <div v-else-if="error" class="text-center py-10 text-red-600">Error al cargar el gráfico.</div>
+        <!-- Contenedor del gráfico con altura fija -->
+        <div v-else-if="chartData" style="height: 300px;">
+            <Bar :data="chartData" :options="chartOptions" />
+        </div>
+    </div>
+
+
+    <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
         
-        <div class="bg-purple-card p-5 rounded-xl shadow-lg border-t-4 border-green-500">
-            <p class="text-sm font-medium text-gray-500">Ingresos Totales ({{ dateRangeText }})</p>
-            <p class="text-3xl font-extrabold text-green-600 mt-1">${{ kpis.totalRevenue.toLocaleString('es-CL') }}</p>
-            <p class="text-xs text-gray-500">vs. Periodo anterior: +{{ kpis.revenueGrowth }}%</p>
+        <!-- (NUEVO) Indicador de carga -->
+        <div v-if="pending" class="text-center py-10 text-gray-500">
+            Generando reporte...
         </div>
 
-        <div class="bg-purple-card p-5 rounded-xl shadow-lg border-t-4 border-purple-deep">
-            <p class="text-sm font-medium text-gray-500">Servicios Vendidos</p>
-            <p class="text-3xl font-extrabold text-purple-deep mt-1">{{ kpis.servicesCount }}</p>
-            <p class="text-xs text-gray-500">Total de órdenes completadas.</p>
+        <!-- (NUEVO) Indicador de error -->
+        <div v-else-if="error" class="text-center py-10 text-red-600 bg-red-50">
+            Error al cargar el reporte: {{ error.message }}
         </div>
         
-        <div class="bg-purple-card p-5 rounded-xl shadow-lg border-t-4 border-yellow-500">
-            <p class="text-sm font-medium text-gray-500">Urnas Bajo Stock</p>
-            <p class="text-3xl font-extrabold text-yellow-600 mt-1">{{ kpis.lowStockItems }}</p>
-            <p class="text-xs text-gray-500">Requiere acción inmediata.</p>
+        <table v-else class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-purple-dark text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">ID Pago</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Fecha</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Cliente</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Servicio</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Método de Pago</th>
+                    <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Monto</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                
+                <!-- (ACTUALIZADO) El v-for ahora usa 'reporte.transacciones' -->
+                <tr v-for="tx in reporte?.transacciones" :key="tx.id_pago" class="hover:bg-purple-card transition duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-primary-blue">#{{ tx.id_pago }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {{ tx.fecha }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <p class="text-sm font-semibold text-purple-dark">{{ tx.cliente }}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {{ tx.servicio }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ tx.metodo }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-dark-primary-blue">
+                        ${{ tx.monto.toLocaleString('es-CL') }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- (ACTUALIZADO) Mensaje si no hay resultados -->
+        <div v-if="!pending && reporte && reporte.transacciones.length === 0" class="text-center py-10 text-gray-500">
+            No se encontraron transacciones finalizadas.
         </div>
-
-        <div class="bg-purple-card p-5 rounded-xl shadow-lg border-t-4 border-dark-primary-blue">
-            <p class="text-sm font-medium text-gray-500">Ticket Promedio</p>
-            <p class="text-3xl font-extrabold text-dark-primary-blue mt-1">${{ kpis.averageTicket.toLocaleString('es-CL') }}</p>
-            <p class="text-xs text-gray-500">Gasto promedio por reserva.</p>
-        </div>
-    </section>
-
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-xl border border-gray-200">
-            <h2 class="text-xl font-bold text-purple-dark mb-4 border-b pb-2">Tendencia de Ingresos vs. Metas</h2>
-            
-            <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500 font-medium">
-                [GRÁFICO DE BARRAS/LÍNEAS SIMULADO]
-            </div>
-
-            <p class="mt-4 text-sm text-gray-600">
-                Tendencia actual: {{ reportData.trendStatus }}. El Servicio Premium sigue siendo la principal fuente de ingresos.
-            </p>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200">
-            <h2 class="text-xl font-bold text-purple-dark mb-4 border-b pb-2">Servicios Más Populares</h2>
-
-            <ul class="space-y-3">
-                <li v-for="(service, index) in reportData.topServices" :key="index" class="flex justify-between items-center text-sm">
-                    <p class="font-medium text-dark-primary-blue">{{ service.name }}</p>
-                    <span class="font-bold text-purple-deep">{{ service.percentage }}%</span>
-                </li>
-            </ul>
-
-            <div class="mt-6 border-t pt-4">
-                 <h3 class="text-lg font-bold text-dark-primary-blue mb-2">Acción Rápida</h3>
-                 <NuxtLink to="/admin/reportes/export" class="w-full bg-purple-deep text-white py-2 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md flex items-center justify-center">
-                     <font-awesome-icon icon="fas fa-download" class="mr-2" /> Exportar Datos Completos
-                 </NuxtLink>
-            </div>
-        </div>
-    </section>
-
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-
-definePageMeta({
-  middleware: 'auth'
-});
-
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faFileAlt, faBoxes, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faFileExcel } from '@fortawesome/free-solid-svg-icons'; 
+// --- (NUEVO) Imports para Chart.js ---
+import { Bar } from 'vue-chartjs';
+import { 
+  Chart as ChartJS, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  BarElement, 
+  CategoryScale, 
+  LinearScale 
+} from 'chart.js';
 
-library.add(faFileAlt, faBoxes, faDownload);
+// 1. Proteger esta página
 
-const router = useRouter();
 
-// Interfaz para tipado de KPIs 
-interface KpiStats {
-    totalRevenue: number;
-    revenueGrowth: number;
-    servicesCount: number;
-    lowStockItems: number; // Nombre de propiedad CORRECTO
-    averageTicket: number;
+library.add(faFileExcel);
+
+// --- (NUEVO) Registrar Chart.js ---
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+
+
+// --- (ACTUALIZADO) Carga de Datos ---
+
+// Tipado para la data (coincide con el formato de la API)
+interface Transaccion {
+    id_pago: number;
+    fecha: string;
+    cliente: string;
+    servicio: string;
+    metodo: string;
+    monto: number;
 }
 
-// Datos de Simulación para el Dashboard
-const dateRange = ref('mes');
-const lastUpdate = new Date().toLocaleTimeString();
+// (ACTUALIZADO) La interfaz de Reporte ahora incluye 'chartData'
+interface Reporte {
+    transacciones: Transaccion[];
+    totalVentas: number;
+    chartData: number[]; // Array de 12 números
+}
 
-const dateRangeText = computed(() => {
-    switch(dateRange.value) {
-        case 'trimestre': return 'Último Trimestre';
-        case 'anual': return 'Último Año';
-        default: return 'Último Mes';
+// 2. Llamada a la API de Reportes
+const { 
+  data: reporte, 
+  pending, 
+  error, 
+} = await useAsyncData<Reporte>(
+  'reporte-ventas',
+  () => $fetch('/api/admin/reporte-ventas'),
+  {
+    default: () => ({
+        transacciones: [],
+        totalVentas: 0,
+        chartData: new Array(12).fill(0) // Default para el gráfico
+    }) // Valor por defecto mientras carga
+  }
+);
+
+
+// --- (NUEVO) Lógica del Gráfico ---
+const chartData = computed(() => ({
+  labels: [
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+  ],
+  datasets: [
+    {
+      label: 'Ventas Mensuales',
+      backgroundColor: '#6C3483', // Púrpura claro
+      borderColor: '#4A235A',     // Púrpura oscuro
+      borderWidth: 1,
+      borderRadius: 4,
+      data: reporte.value?.chartData || [], // Los datos de la API
+    },
+  ],
+}));
+
+const chartOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false, // Permite que el gráfico llene el 'div'
+  plugins: {
+    legend: {
+      display: false, // Ocultar leyenda, es obvio
+    },
+    tooltip: {
+      // Tooltips en CLP
+      callbacks: {
+        label: (context: any) => {
+          let label = context.dataset.label || '';
+          if (label) {
+            label += ': ';
+          }
+          if (context.parsed.y !== null) {
+            label += new Intl.NumberFormat('es-CL', { 
+              style: 'currency', 
+              currency: 'CLP',
+              maximumFractionDigits: 0 
+            }).format(context.parsed.y);
+          }
+          return label;
+        }
+      }
     }
+  },
+  scales: {
+    y: {
+      ticks: {
+        // (CORREGIDO) Se eliminó el guion bajo '_' extra
+        callback: (value: any) => new Intl.NumberFormat('es-CL', {
+          style: 'currency',
+          currency: 'CLP',
+          maximumFractionDigits: 0,
+        }).format(value),
+      },
+    },
+  },
 });
 
-// Tipado explícito de ref para manejar la estructura KpiStats
-const kpis = ref<KpiStats>({
-    totalRevenue: 3250000,
-    revenueGrowth: 18.5,
-    servicesCount: 45,
-    lowStockItems: 7, // Dato Inicializado
-    averageTicket: 110000,
-});
-
-const reportData = ref({
-    trendStatus: 'Crecimiento estable (promedio 15% mensual)',
-    topServices: [
-        { name: 'Servicio Premium', percentage: 45 },
-        { name: 'Urna de Mármol', percentage: 25 },
-        { name: 'Servicio Estándar', percentage: 15 },
-        { name: 'Grabado Láser', percentage: 10 },
-    ],
-});
-
-// --- FUNCIONES ---
-const generateReport = () => {
-    console.log(`Generando reporte para el periodo: ${dateRange.value}`);
-    
-    // Simulación de nuevos datos
-    kpis.value.totalRevenue = Math.floor(Math.random() * 500000) + 3000000;
-    
-    // CORRECCIÓN DE TIPADO: Usamos parseFloat()
-    kpis.value.revenueGrowth = parseFloat((Math.random() * 5 + 15).toFixed(1)); 
-    
-    kpis.value.servicesCount = Math.floor(Math.random() * 15) + 40;
-    kpis.value.lowStockItems = Math.floor(Math.random() * 5) + 5; // Actualización
-    kpis.value.averageTicket = Math.floor(Math.random() * 20000) + 100000;
-
-    // router.push(`/admin/reportes?period=${dateRange.value}`);
-};
-
-// Se asegura que la función se ejecute al cargar si es necesario
-onMounted(() => {
-    // Si necesitas que cargue datos iniciales al arrancar
-    // generateReport(); 
-});
 </script>
-
 
 <style scoped>
 /* CLASES DE COLOR: Consistencia con la paleta Púrpura */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; } 
-.text-purple-deep { color: #5C2A72; } 
-.bg-purple-deep { background-color: #5C2A72; }
-.bg-purple-light { background-color: #6C3483; }
+.text-purple-deep { color: #5C2A72; }
+.border-purple-deep { border-color: #5C2A72; }
+.text-dark-primary-blue { color: #34495e; } /* Texto principal */
 
-/* Fondos Neutros y de Tarjeta */
-.bg-white { background-color: #FFFFFF; }
-.bg-purple-card { background-color: #F8F4FA; } /* Tinte púrpura sutil */
+/* Estilos específico de tabla */
+th {
+    background-color: #4A235A;
+}
+.hover\:bg-purple-card:hover {
+    background-color: #fcfaff; /* Tinte muy sutil al pasar el ratón */
+}
 
-/* Texto principal del dashboard */
-.text-dark-primary-blue { color: #34495e; } 
-.border-dark-primary-blue { border-color: #34495e; }
-
-/* Colores de Alerta (Mantenemos los tonos clásicos para claridad) */
-.border-green-500 { border-color: #10B981; }
-.text-green-600 { color: #059669; }
-.border-yellow-500 { border-color: #F59E0B; }
-.text-yellow-600 { color: #D97706; }
-.border-red-500 { border-color: #EF4444; }
-.text-red-600 { color: #DC2626; }
+/* Colores de Reporte */
+.bg-green-600 { background-color: #16a34a; }
+.hover\:bg-green-700:hover { background-color: #15803d; }
+.border-green-500 { border-color: #22c55e; }
+.text-green-700 { color: #15803d; }
+.bg-red-50 { background-color: #fef2f2; }
+.text-red-600 { color: #dc2626; }
 </style>

@@ -14,7 +14,6 @@
     <!-- Indicador de Error -->
     <div v-else-if="statsError || ordersError" class="text-center p-8 bg-red-50 rounded-lg shadow-md border border-red-300">
       <p class="text-lg font-bold text-red-700">Error al cargar el Dashboard</p>
-      <!-- (CORREGIDO) Mostramos el mensaje de error de 'statusMessage' (sin .data) -->
       <p class="text-gray-600 mt-2">{{ statsError?.statusMessage || ordersError?.statusMessage || 'No se pudieron cargar los datos.' }}</p>
     </div>
 
@@ -58,7 +57,6 @@
               
               <!-- Lista de Reservas Recientes -->
               <ul v-if="recentOrders && recentOrders.length > 0" class="space-y-3">
-                  <!-- (CORREGIDO) 'order.pet' ahora es reconocido por TypeScript -->
                   <li v-for="order in recentOrders" :key="order.id" class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border-l-4" :class="order.status === 'Finalizado' ? 'border-green-500' : 'border-purple-light'">
                       <div class="text-sm">
                           <p class="font-semibold text-dark-primary-blue">{{ order.client }} - <span class="font-normal text-gray-600">{{ order.pet }}</span></p>
@@ -113,16 +111,13 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faFileInvoiceDollar, faBoxes } from '@fortawesome/free-solid-svg-icons';
 
 // 1. Proteger esta página
-definePageMeta({
-  middleware: 'auth'
-});
+
 
 library.add(faFileInvoiceDollar, faBoxes);
 
 const lastUpdate = new Date().toLocaleTimeString();
 
-// --- (NUEVO) Definir tipos explícitos para forzar a TypeScript ---
-// Esto soluciona los errores de 'pet' y 'statusMessage'
+// --- (CORREGIDO) Definir tipos explícitos ---
 interface DashboardStats {
   pendingServices: number;
   pendingPayments: number;
@@ -139,13 +134,17 @@ interface RecentOrder {
 
 // --- Carga de Datos de las APIs ---
 
+// (CORRECCIÓN) Definir URLs como variables para EVITAR el error TS(2321)
+// Al usar una variable, TypeScript no intenta "adivinar" el tipo de la API
+// y se ve forzado a usar las interfaces que definimos arriba.
+const statsUrl = '/api/admin/dashboard-stats';
+const ordersUrl = '/api/admin/reservas-recientes';
+
 // 2. Llamada a la API de Estadísticas (KPIs)
-//    (ACTUALIZADO) Usamos el tipo explícito <DashboardStats>
 const { data: stats, pending: pendingStats, error: statsError } = await useAsyncData<DashboardStats>(
   'dashboard-stats',
-  () => $fetch('/api/admin/dashboard-stats'),
+  () => $fetch(statsUrl), // <-- Usar la variable
   { 
-    // Proporciona una estructura por defecto para evitar errores de 'undefined'
     default: () => ({
       pendingServices: 0,
       pendingPayments: 0,
@@ -155,11 +154,10 @@ const { data: stats, pending: pendingStats, error: statsError } = await useAsync
 );
 
 // 3. Llamada a la API de Reservas Recientes
-//    (ACTUALIZADO) Usamos el tipo explícito <RecentOrder[]>
 const { data: recentOrders, pending: pendingOrders, error: ordersError } = await useAsyncData<RecentOrder[]>(
   'dashboard-recent-orders',
-  () => $fetch('/api/admin/reservas-recientes'),
-  { default: () => [] } // Por defecto es un array vacío
+  () => $fetch(ordersUrl), // <-- Usar la variable
+  { default: () => [] }
 );
 
 </script>
