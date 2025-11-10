@@ -3,7 +3,7 @@
         
         <div class="relative w-full h-80 overflow-hidden shadow-xl">
             <div 
-                class="absolute inset-0 bg-cover bg-center opacity-30" 
+                class="absolute inset-0 bg-cover bg-center opacity-50" 
                 style="background-image: url('/banner2.avif');" 
                 alt="Fondo de huella de mascota"
             ></div>
@@ -12,7 +12,7 @@
                 <h1 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight drop-shadow-lg text-bd-gold-accent">
                     Muro de la Memoria
                 </h1>
-                <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto drop-shadow-md text-gray-200">
+                <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto drop-shadow-md text-purple-dark text-bold">
                     Un espacio para honrar la vida de los compañeros que tocaron nuestros corazones.
                 </p>
             </div>

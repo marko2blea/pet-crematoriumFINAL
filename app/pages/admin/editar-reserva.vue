@@ -61,17 +61,32 @@
             
         </div>
 
-        <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-            <button type="button" @click="router.push('/admin/reservas')" 
-                    class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
-                Cancelar
+        <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+            <button 
+                type="button" 
+                @click="handleDelete" 
+                :disabled="isDeleting || isSaving"
+                class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-800 transition duration-150 shadow-md
+                       disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+                <font-awesome-icon icon="fas fa-trash-alt" class="mr-2" />
+                {{ isDeleting ? 'Eliminando...' : 'Eliminar Reserva' }}
             </button>
-            <button type="submit" 
-                    :disabled="isSaving"
-                    class="px-5 py-2 bg-purple-deep text-white rounded-lg hover:bg-purple-light transition duration-150 shadow-md
-                           disabled:opacity-50 disabled:cursor-not-allowed">
-                {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
-            </button>
+            
+            <div class="space-x-3">
+                <button type="button" @click="router.push('/admin/reservas')" 
+                        :disabled="isDeleting || isSaving"
+                        class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150
+                               disabled:opacity-50 disabled:cursor-not-allowed">
+                    Cancelar
+                </button>
+                <button type="submit" 
+                        :disabled="isSaving || isDeleting"
+                        class="px-5 py-2 bg-purple-deep text-white rounded-lg hover:bg-purple-light transition duration-150 shadow-md
+                               disabled:opacity-50 disabled:cursor-not-allowed">
+                    {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+            </div>
         </div>
     </form>
   </div>
@@ -80,11 +95,15 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+// (NUEVO) Importar el ícono de basura
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons'; 
 
 // 1. Proteger esta página
 definePageMeta({
   middleware: 'auth'
 });
+library.add(faTrashAlt); // (NUEVO) Añadir ícono
 
 
 const route = useRoute();
@@ -111,26 +130,22 @@ interface FormState {
 // --- Estado del Formulario ---
 const form = ref<FormState | null>(null);
 const isSaving = ref(false);
+const isDeleting = ref(false); // (NUEVO) Estado de borrado
 const saveMessage = ref('');
 const saveError = ref(false);
 
 // --- Carga de Datos ---
-
-// 2. Cargar la reserva a editar (usando la API GET que creamos)
 const { data: loadedData, pending, error } = await useAsyncData<ReservaData>(
   'reserva-detalle-editable',
   () => {
     if (!reservaId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de reserva' });
-    // Usamos la nueva API
     return $fetch('/api/admin/reserva-detalle-editable', { query: { id: reservaId.value } })
   },
   { watch: [reservaId] }
 );
 
-// 3. Rellenar el formulario reactivo cuando los datos carguen
 watchEffect(() => {
   if (loadedData.value) {
-    // Mapeamos los datos cargados al 'form'
     form.value = {
       id: loadedData.value.id,
       codTrazabilidad: loadedData.value.codTrazabilidad,
@@ -141,8 +156,6 @@ watchEffect(() => {
 });
 
 // --- Guardar Cambios ---
-
-// 4. Función para guardar (usando la API PUT que ya tenías)
 const guardarCambios = async () => {
   if (!form.value) return;
 
@@ -151,10 +164,9 @@ const guardarCambios = async () => {
   saveError.value = false;
 
   try {
-    // Usamos la API PUT existente
     await $fetch('/api/admin/editar-reserva', {
       method: 'PUT',
-      body: form.value // Enviamos el objeto 'form' completo
+      body: form.value 
     });
 
     saveMessage.value = '¡Reserva actualizada con éxito! Redirigiendo...';
@@ -166,6 +178,43 @@ const guardarCambios = async () => {
     isSaving.value = false;
     saveError.value = true;
     saveMessage.value = err.data?.statusMessage || 'Error al guardar la reserva.';
+  }
+};
+
+// --- (NUEVA) Función de Eliminación ---
+const handleDelete = async () => {
+  if (!form.value) return;
+
+  saveMessage.value = '';
+  saveError.value = false;
+  
+  if (!confirm(`¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la reserva ID ${form.value.id}? Esta acción también borrará el pago y el detalle de la reserva.`)) {
+    return;
+  }
+
+  isDeleting.value = true;
+
+  try {
+    // 1. Llamar a la nueva API DELETE
+    const response = await $fetch('/api/admin/eliminar-reserva', {
+      method: 'DELETE',
+      body: { id: form.value.id }
+    });
+    
+    // 2. Éxito
+    saveError.value = false;
+    saveMessage.value = response.message + ' Redirigiendo...';
+    
+    // 3. Redirigir
+    setTimeout(() => {
+      router.push('/admin/reservas');
+    }, 2000);
+
+  } catch (err: any) {
+    // 4. Error
+    isDeleting.value = false;
+    saveError.value = true;
+    saveMessage.value = err.data?.statusMessage || 'Error al eliminar la reserva.';
   }
 };
 </script>
@@ -193,4 +242,8 @@ const guardarCambios = async () => {
 .text-red-700 { color: #721c24; }
 .border-red-300 { border-color: #f5c6cb; }
 .bg-red-50 { background-color: #fef2f2; }
+
+/* (NUEVO) Colores de botón Eliminar */
+.bg-red-600 { background-color: #dc3545; }
+.hover\:bg-red-800:hover { background-color: #a71d2a; }
 </style>
