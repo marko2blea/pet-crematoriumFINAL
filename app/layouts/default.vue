@@ -1,19 +1,16 @@
 <template>
   <div class="min-h-screen flex flex-col font-sans main-background">
     
-    <!-- ===== HEADER ===== -->
     <header class="bg-bd-purple-dark shadow-lg py-2 fixed top-0 left-0 right-0 z-50">
-      <div class="container mx-auto px-4 flex justify-between items-center text-white h-14">
+      <div class="container mx-auto px-4 flex items-center text-white h-14">
         
-        <!-- Logo (sin cambios) -->
         <div class="flex-shrink-0">
             <NuxtLink to="/" class="flex items-center p-2 bg-white rounded-lg shadow-md">
                 <img src="/logo2.png" alt="Crematorio San Antonio Logo" class="h-10">
             </NuxtLink>
         </div>
 
-        <!-- Navegación Principal (Desktop) (w-40) -->
-        <div class="hidden lg:flex items-center space-x-2 justify-center mx-auto px-4"> 
+        <div class="hidden lg:flex flex-grow items-center space-x-2 justify-center px-4"> 
           
           <NuxtLink to="/" :class="isActive('/')" class="text-white py-2 px-3 rounded-lg font-medium hover:bg-bd-purple-dark-hover transition duration-150 flex-shrink-0 text-center whitespace-nowrap w-40 flex items-center space-x-2 justify-center">
             <font-awesome-icon icon="fas fa-home" /><span>Inicio</span>
@@ -44,7 +41,6 @@
           </template>
         </div>
 
-        <!-- Acciones Derecha (sin cambios) -->
         <nav class="flex items-center space-x-3 sm:space-x-4 flex-shrink-0">
           
           <NuxtLink to="/carrito" title="Carrito de Compras" class="text-white hover:text-gray-200 transition duration-150 relative p-2">
@@ -96,7 +92,6 @@
       </div>
     </header>
 
-    <!-- ===== MENÚ LATERAL MÓVIL ===== -->
     <div 
       v-if="isMobileMenuOpen" 
       @click="closeMobileMenu" 
@@ -115,9 +110,7 @@
                 <p v-else class="font-bold text-purple-dark">Menú Principal</p>
             </div>
 
-            <!-- (ACTUALIZADO) Enlaces Móviles - Clases de Tailwind en línea -->
             <nav class="flex-grow p-4 space-y-2 text-lg text-dark-primary-blue font-semibold overflow-y-auto">
-                <!-- (ARREGLADO) Se quita @apply y se usa sintaxis de Tailwind para 'router-link-active' -->
                 <NuxtLink to="/" @click="closeMobileMenu" 
                           class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
                     <font-awesome-icon icon="fas fa-home" class="mr-3 w-6" />Inicio
@@ -139,7 +132,6 @@
                     <font-awesome-icon icon="fas fa-route" class="mr-3 w-6" />Seguimiento
                 </NuxtLink>
 
-                <!-- Enlaces de Admin (Móvil) -->
                 <template v-if="user && user.id_rol !== 1">
                     <hr class="my-3 border-gray-300" />
                     <NuxtLink to="/admin/dashboard" @click="closeMobileMenu" 
@@ -161,7 +153,6 @@
                 </template>
             </nav>
 
-            <!-- Footer Menú Móvil (Login/Logout) (sin cambios) -->
             <div class="p-4 border-t border-gray-200">
                 <NuxtLink v-if="!user" to="/login" @click="closeMobileMenu" class="w-full text-center bg-purple-deep text-white py-2 px-4 rounded-lg font-bold hover:bg-purple-light transition">
                     Iniciar sesión 
@@ -183,7 +174,6 @@
         <slot /> 
     </main>
     
-    <!-- ... (todo el <footer> sin cambios) ... -->
     <footer class="bg-purple-deep text-white p-10 mt-auto shadow-2xl border-t-4 border-bd-gold-accent">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-start space-y-8 md:space-y-0 md:space-x-8">
         
@@ -303,7 +293,8 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
     
     if (isActiveLink) {
         if (isAdminLink) {
-            return `bg-white border-b-4 border-bd-purple-dark text-bd-purple-dark ${alignmentClasses}`;
+            // (CAMBIO 3) Se cambió 'border-bd-purple-dark' por 'border-bd-gold-accent'
+            return `bg-white border-b-4 border-bd-gold-accent text-bd-purple-dark ${alignmentClasses}`;
         }
         return `bg-bd-purple-dark-hover border-b-4 border-bd-gold-accent text-white ${alignmentClasses}`; 
     }

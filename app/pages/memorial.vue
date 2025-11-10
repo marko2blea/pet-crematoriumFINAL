@@ -13,14 +13,14 @@
                     Muro de la Memoria
                 </h1>
                 <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto drop-shadow-md text-gray-200">
-                    Un espacio para honrar la vida de los compañeros de cuatro patas que tocaron nuestros corazones.
+                    Un espacio para honrar la vida de los compañeros que tocaron nuestros corazones.
                 </p>
             </div>
         </div>
 
         <div class="container mx-auto px-4 py-12 -mt-10 relative z-20">
             
-            <div class="max-w-3xl mx-auto p-4 md:p-6 rounded-xl border border-dashed border-purple-deep mb-12 flex justify-center bg-white shadow-lg">
+            <div v_if="user && user.id_rol !== 1" class="max-w-3xl mx-auto p-4 md:p-6 rounded-xl border border-dashed border-purple-deep mb-12 flex justify-center bg-white shadow-lg">
                 <router-link to="/admin/agregar-mascota">
                     <button 
                         class="bg-purple-deep text-white py-3 px-8 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-200 shadow-xl flex items-center justify-center space-x-2"
@@ -35,89 +35,140 @@
                 <font-awesome-icon icon="fas fa-cloud-sun" class="mr-2 text-purple-deep" /> Mensajes en el Cielo
             </h2>
 
-            <div v-if="tributes.length === 0" class="text-center py-10 bg-white-subtle rounded-xl shadow-md">
+            <div v-if="feedbackMessage" 
+                 :class="isError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
+                 class="mb-6 p-4 rounded-lg border text-sm font-medium text-center">
+                {{ feedbackMessage }}
+            </div>
+
+            <div v-if="pending" class="text-center py-10 bg-white-subtle rounded-xl shadow-md">
+                <p class="text-xl text-gray-600 font-semibold">Cargando tributos...</p>
+            </div>
+            
+            <div v-else-if="error" class="text-center py-10 bg-red-100 rounded-xl shadow-md">
+                <p class="text-xl text-red-700 font-semibold">Error al cargar tributos: {{ error.statusMessage }}</p>
+            </div>
+            
+            <div v-else-if="memoriales && memoriales.length === 0" class="text-center py-10 bg-white-subtle rounded-xl shadow-md">
                 <font-awesome-icon icon="fas fa-hand-holding-heart" class="text-6xl text-gray-400 mb-4" />
-                <p class="text-xl text-gray-600 font-semibold">Aún no hay mensajes. El administrador debe cargar el primer tributo.</p>
+                <p class="text-xl text-gray-600 font-semibold">Aún no hay mensajes. Un administrador puede añadir el primer tributo.</p>
             </div>
 
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div 
-                    v-for="(t, index) in tributes" 
-                    :key="index" 
-                    class="bg-white p-6 rounded-xl shadow-xl border-l-4 hover:shadow-2xl transition duration-300"
+                    v-for="(tributo, index) in memoriales" 
+                    :key="tributo.id_memorial" 
+                    class="bg-white p-6 rounded-xl shadow-xl border-l-4 hover:shadow-2xl transition duration-300 relative"
                     :class="index % 3 === 0 ? 'border-purple-deep' : (index % 3 === 1 ? 'border-dark-primary-blue' : 'border-gray-400')"
                 >
+                    <div v-if="user && user.id_rol !== 1" class="absolute top-2 right-2 flex space-x-1">
+                        <button @click="editMemorial(tributo.id_memorial)" title="Editar"
+                                class="h-8 w-8 rounded-full bg-purple-deep text-white hover:bg-purple-light flex items-center justify-center transition shadow">
+                            <font-awesome-icon icon="fas fa-pencil-alt" class="text-xs" />
+                        </button>
+                        <button @click="deleteMemorial(tributo.id_memorial, tributo.nombre)" title="Eliminar"
+                                class="h-8 w-8 rounded-full bg-red-600 text-white hover:bg-red-800 flex items-center justify-center transition shadow">
+                            <font-awesome-icon icon="fas fa-trash-alt" class="text-xs" />
+                        </button>
+                    </div>
+
                     <div class="flex items-center mb-3">
                         <font-awesome-icon icon="fas fa-paw" class="text-xl mr-3" :class="index % 2 === 0 ? 'text-purple-deep' : 'text-dark-primary-blue'" />
-                        <span class="text-lg font-bold text-dark-primary-blue">{{ t.author }}</span>
+                        <span class="text-lg font-bold text-dark-primary-blue">{{ tributo.nombre }} <span v-if="tributo.raza" class="text-sm font-normal text-gray-500">({{ tributo.raza }})</span></span>
                     </div>
                     
                     <p class="text-gray-700 italic mb-4 h-20 overflow-hidden text-sm leading-relaxed">
-                        "{{ t.message }}"
+                        "{{ tributo.dedicatoria || 'Un compañero leal, siempre recordado.' }}"
                     </p>
                     
                     <div class="text-right text-xs text-gray-500 border-t pt-2 mt-auto">
-                        <font-awesome-icon icon="fas fa-clock" class="mr-1" /> {{ formatTime(t.timestamp) }}
+                        <font-awesome-icon icon="fas fa-clock" class="mr-1" /> {{ formatTime(tributo.fecha) }}
                     </div>
                 </div>
-                </div>
-            
-            <div class="text-center mt-12">
-                 <button 
-                    @click="loadMore"
-                    v-if="hasMoreTributes"
-                    class="bg-gray-200 text-dark-primary-blue py-2 px-6 rounded-lg font-semibold hover:bg-gray-300 transition duration-150 shadow-md"
-                >
-                    <font-awesome-icon icon="fas fa-chevron-down" class="mr-2" /> Cargar más tributos
-                </button>
             </div>
-
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue'; 
+import { ref } from 'vue'; 
+import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-// Se ha cambiado faFeatherAlt por faPlusCircle y se añadió faPaw
-import { faPlusCircle, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, faChevronDown, faPaw } from '@fortawesome/free-solid-svg-icons';
+// (NUEVO) Iconos de admin añadidos
+import { 
+    faPlusCircle, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, 
+    faChevronDown, faPaw, faPencilAlt, faTrashAlt 
+} from '@fortawesome/free-solid-svg-icons';
 
-library.add(faPlusCircle, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, faChevronDown, faPaw); 
+library.add(
+    faPlusCircle, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, 
+    faChevronDown, faPaw, faPencilAlt, faTrashAlt
+); 
 
-// --- Tipado ---
-interface Tribute {
-    author: string;
-    message: string;
-    timestamp: number;
+// --- (NUEVO) Tipado y Carga de Datos ---
+interface Memorial {
+    id_memorial: number;
+    nombre: string;
+    raza: string | null;
+    fecha: string; // La API la enviará como string ISO
+    dedicatoria: string | null;
 }
 
-// --- Estado Reactivo (Eliminamos el estado del formulario) ---
-const hasMoreTributes = ref(true); // Simulación de paginación
+const user = useUser(); // Para mostrar/ocultar botones de admin
+const router = useRouter();
 
-// --- Datos Simulados (Tributos) ---
-const tributes: Ref<Tribute[]> = ref([
-    { author: 'Max - Familia López', message: 'Gracias por darnos tantos años de amor incondicional, siempre te recordaremos.', timestamp: Date.now() - 86400000 * 2 }, // hace 2 días
-    { author: 'Kimi - Catalina y Pancho', message: 'Mi dulce Kimi, te has ido, pero siempre vivirás en cada rincón de nuestra casa. Descansa en paz.', timestamp: Date.now() - 86400000 * 5 }, // hace 5 días
-    { author: 'Peluchín - Valentina P.', message: 'Fuiste el mejor perrito que una persona podría pedir. Vuela alto, amigo.', timestamp: Date.now() - 86400000 * 1 }, // hace 1 día
-    { author: 'Luna - Los Silva', message: 'Adiós a nuestra gatita. Tu ronroneo y tu calidez nunca serán olvidados. Te extrañaremos.', timestamp: Date.now() - 86400000 * 3 },
-    { author: 'Tobby - Benjamín L.', message: 'Mi fiel compañero. Nos diste más de lo que jamás pediste. Gracias por todo.', timestamp: Date.now() - 86400000 * 7 },
-]);
+// (NUEVO) Estados de Feedback
+const feedbackMessage = ref('');
+const isError = ref(false);
 
-// --- Funciones (Eliminamos submitTribute) ---
+const { 
+  data: memoriales, 
+  pending, 
+  error,
+  refresh // Función para recargar la lista
+} = await useAsyncData<Memorial[]>(
+  'lista-memoriales',
+  () => $fetch('/api/memoriales'), // Llama a la API pública
+  { default: () => [] }
+);
 
-const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('es-CL', {
+// --- Funciones ---
+
+const formatTime = (isoDate: string) => {
+    return new Date(isoDate).toLocaleDateString('es-CL', {
         year: 'numeric',
-        month: 'short',
+        month: 'long',
         day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        timeZone: 'UTC' // Importante para que no se desfase por un día
     });
 };
 
-const loadMore = () => {
-    console.log('Cargando más tributos (simulación)...');
-    hasMoreTributes.value = false;
+const editMemorial = (id: number) => {
+    router.push(`/admin/editar-memorial?id=${id}`);
+};
+
+const deleteMemorial = async (id: number, nombre: string) => {
+  feedbackMessage.value = '';
+  isError.value = false;
+
+  if (!confirm(`¿Estás seguro de eliminar el memorial de "${nombre}"?`)) {
+    return;
+  }
+
+  try {
+    const response = await $fetch('/api/admin/eliminar-memorial', {
+      method: 'DELETE',
+      body: { id: id }
+    });
+
+    isError.value = false;
+    feedbackMessage.value = response.message;
+    refresh(); // Vuelve a cargar la lista de memoriales
+
+  } catch (err: any) {
+    isError.value = true;
+    feedbackMessage.value = err.data?.statusMessage || 'Error al eliminar.';
+  }
 };
 
 definePageMeta({
@@ -126,10 +177,7 @@ definePageMeta({
 </script>
 
 <style scoped>
-/* --------------------------------- */
-/* PALETA DE COLORES */
-/* --------------------------------- */
-
+/* (Estilos sin cambios) */
 .bg-purple-dark {
     background-color: #4A235A; 
 }
@@ -153,16 +201,21 @@ definePageMeta({
 }
 .bg-dark-primary-blue { background-color: #34495e; }
 .text-dark-primary-blue { color: #34495e; }
+.border-dark-primary-blue { border-color: #34495e; }
 .bg-white-subtle { background-color: #F8F4FA; }
-
-/* Dorado de acento para títulos emocionales */
 .text-bd-gold-accent { 
     color: #FFD700; 
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
-
-/* Imagen de fondo del héroe */
 .hero-background {
     background-image: url('/paw-print.jpg');
 }
+.bg-red-600 { background-color: #dc3545; }
+.hover\:bg-red-800:hover { background-color: #a71d2a; }
+.bg-red-100 { background-color: #fef2f2; }
+.text-red-700 { color: #b91c1c; }
+.border-red-300 { border-color: #fca5a5; }
+.bg-green-100 { background-color: #dcfce7; }
+.text-green-700 { color: #15803d; }
+.border-green-300 { border-color: #86efac; }
 </style>

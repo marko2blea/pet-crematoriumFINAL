@@ -84,6 +84,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router'; // (CORRECCIÓN) Importar router
 import { library } from '@fortawesome/fontawesome-svg-core';

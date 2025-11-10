@@ -34,14 +34,17 @@
         </div>
 
         <div>
-          <label for="dedicatoria" class="block text-sm font-medium text-purple-dark mb-1">Dedicatoria (Máx. 100 caracteres):</label>
-          <textarea v-model="form.dedicatoria" id="dedicatoria" rows="3" maxlength="100"
+          <label for="dedicatoria" class="block text-sm font-medium text-purple-dark mb-1">Dedicatoria (Máx. 255 caracteres):</label>
+          <textarea v-model="form.dedicatoria" id="dedicatoria" rows="3" maxlength="255"
                     class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep"></textarea>
         </div>
         
         <button type="submit" 
-                class="w-full bg-purple-deep text-white py-3 rounded-lg font-semibold hover:bg-purple-light transition duration-150 shadow-md">
-          <font-awesome-icon icon="fas fa-plus" class="mr-2" /> Añadir al Memorial
+                :disabled="isLoading"
+                class="w-full bg-purple-deep text-white py-3 rounded-lg font-semibold hover:bg-purple-light transition duration-150 shadow-md
+                       disabled:opacity-50 disabled:cursor-not-allowed">
+          <font-awesome-icon icon="fas fa-plus" class="mr-2" /> 
+          {{ isLoading ? 'Añadiendo...' : 'Añadir al Memorial' }}
         </button>
       </form>
 
@@ -58,12 +61,14 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faPlus, faArrowLeft } from '@fortawesome/free-solid-svg-icons'; 
 
 library.add(faPlus, faArrowLeft);
+definePageMeta({
+  middleware: 'auth'
+});
 
 const router = useRouter();
 
 // Estado del formulario
 const form = ref({
-  id: Date.now(), // ID simulado (temporal)
   nombre: '',
   raza: '',
   fecha: new Date().toISOString().slice(0, 10), // Fecha actual por defecto
@@ -72,40 +77,50 @@ const form = ref({
 
 const message = ref('');
 const messageClass = ref('');
+const isLoading = ref(false);
 
-// Simulación de envío del formulario
-const handleSubmit = () => {
-  // 🛑 Lógica de Guardado: Guarda el nuevo memorial en sessionStorage (simulando una BD)
-  sessionStorage.setItem('nuevo_memorial_creado', JSON.stringify(form.value));
-  
-  message.value = `¡Mascota registrada! "${form.value.nombre}" ha sido añadido al Memorial.`;
-  messageClass.value = 'bg-green-100 text-green-800'; 
+// (MODIFICADO) Conexión a la API POST
+const handleSubmit = async () => {
+  isLoading.value = true;
+  message.value = '';
 
-  // Redirige al memorial después de 1 segundo
-  setTimeout(() => {
-      router.push('/memorial');
-  }, 1000); 
+  try {
+    await $fetch('/api/admin/agregar-memorial', {
+      method: 'POST',
+      body: form.value
+    });
+    
+    message.value = `¡Memorial de "${form.value.nombre}" añadido con éxito! Redirigiendo...`;
+    messageClass.value = 'bg-green-100 text-green-800'; 
+
+    setTimeout(() => {
+        router.push('/memorial');
+    }, 2000);
+
+  } catch (err: any) {
+    isLoading.value = false;
+    message.value = err.data?.statusMessage || 'Error al añadir el memorial.';
+    messageClass.value = 'bg-red-100 text-red-800';
+  }
 };
-
-definePageMeta({
-  middleware: 'auth'
-});
 </script>
 
 <style scoped>
-/* CLASES DE COLOR (Para consistencia visual) */
+/* (Estilos sin cambios) */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; }
 .bg-purple-light { background-color: #6C3483; }
 .hover\:bg-purple-light:hover { background-color: #6C3483; }
-
+.text-purple-light { color: #6C3483; }
 .bg-purple-deep { background-color: #5C2A72; }
 .border-purple-deep { border-color: #5C2A72; }
-
 .focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
 .focus\:border-purple-deep:focus { border-color: #5C2A72; }
-
 .bg-white-subtle { background-color: #F8F4FA; }
 .bg-green-100 { background-color: #D1FAE5; }
 .text-green-800 { color: #065F46; }
+.bg-red-100 { background-color: #fef2f2; } /* (NUEVO) */
+.text-red-800 { color: #991b1b; } /* (NUEVO) */
+.disabled\:opacity-50:disabled { opacity: 0.5; } /* (NUEVO) */
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; } /* (NUEVO) */
 </style>

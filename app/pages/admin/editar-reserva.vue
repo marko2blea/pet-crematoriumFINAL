@@ -1,112 +1,68 @@
 <template>
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
 
-    <!-- (NUEVO) Estado de Carga -->
     <div v-if="pending" class="text-center p-10 bg-white rounded-xl shadow-lg">
       <h1 class="text-3xl font-bold text-dark-primary-blue">
-        Cargando datos del producto...
+        Cargando datos de la reserva...
       </h1>
       <p class="text-gray-500 mt-2">Por favor, espere un momento.</p>
     </div>
 
-    <!-- (NUEVO) Estado de Error -->
     <div v-else-if="error || !form" class="text-center p-10 bg-red-50 rounded-xl shadow-lg border border-red-300">
-      <h1 class="text-3xl font-bold text-red-700">Error al Cargar el Producto</h1>
-      <p class="text-gray-600 mt-2">{{ error?.statusMessage || 'El producto no pudo ser encontrado.' }}</p>
-      <button @click="router.push('/admin/inventario')"
+      <h1 class="text-3xl font-bold text-red-700">Error al Cargar la Reserva</h1>
+      <p class="text-gray-600 mt-2">{{ error?.statusMessage || 'La reserva no pudo ser encontrada.' }}</p>
+      <button @click="router.push('/admin/reservas')"
         class="mt-6 px-5 py-2 bg-purple-dark text-white rounded-lg hover:bg-purple-deep transition shadow-lg">
-        Volver al Inventario
+        Volver a Reservas
       </button>
     </div>
     
-    <!-- (NUEVO) Formulario Principal -->
     <form v-else @submit.prevent="guardarCambios" class="max-w-3xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-purple-dark">
-        <!-- Encabezado -->
         <div class="p-6 bg-gray-50 border-b border-gray-200">
-            <h1 class="text-3xl font-bold text-purple-dark">Editar Producto</h1>
-            <p class="text-lg text-gray-600 mt-1">{{ form.nombre }} (ID: {{ form.id }})</p>
+            <h1 class="text-3xl font-bold text-purple-dark">Editar Reserva (ID: {{ form.id }})</h1>
+            <p class="text-lg text-gray-600 mt-1">{{ loadedData?.cliente }} - {{ loadedData?.servicio }}</p>
         </div>
 
-        <!-- Mensaje de Éxito/Error al Guardar -->
         <div v-if="saveMessage" 
              :class="saveError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
              class="m-6 p-4 rounded-lg border text-sm font-medium text-center">
             {{ saveMessage }}
         </div>
 
-        <!-- Cuerpo del Formulario -->
         <div class="p-6 md:p-8 space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Nombre del Producto -->
-                <div>
-                    <label for="nombre" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre del Producto</label>
-                    <input v-model="form.nombre" type="text" id="nombre"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
-                           required />
-                </div>
-                
-                <!-- Tipo de Producto -->
-                <div>
-                    <label for="tipo" class="block text-sm font-semibold text-dark-primary-blue mb-2">Tipo de Producto</label>
-                    <select v-model="form.tipo" id="tipo"
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
-                        <option value="Urna">Urna</option>
-                        <option value="Servicio">Servicio</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Stock -->
-                <div>
-                    <label for="stock" class="block text-sm font-semibold text-dark-primary-blue mb-2">Stock Actual</label>
-                    <input v-model.number="form.stock" type="number" id="stock"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
-                           required />
-                </div>
-                
-                <!-- Precio -->
-                <div>
-                    <label for="precio" class="block text-sm font-semibold text-dark-primary-blue mb-2">Precio Unitario (CLP)</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                        <input v-model.number="form.precio" type="number" id="precio"
-                               class="w-full p-3 pl-7 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
-                               required />
-                    </div>
-                </div>
-
-                <!-- Disponibilidad -->
-                <div>
-                    <label for="disponible" class="block text-sm font-semibold text-dark-primary-blue mb-2">Disponibilidad</label>
-                    <select v-model="form.disponible" id="disponible"
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
-                        <option :value="true">Disponible</option>
-                        <option :value="false">Agotado / No Disponible</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Proveedor (Opcional) -->
             <div>
-                <label for="proveedor" class="block text-sm font-semibold text-dark-primary-blue mb-2">Proveedor</label>
-                <select v-model="form.id_proveedor" id="proveedor"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
-                    <option :value="null">-- Sin Proveedor --</option>
-                    <!-- (NUEVO) Cargar lista de proveedores -->
-                    <option v-for="proveedor in proveedores" :key="proveedor.id_proveedor" :value="proveedor.id_proveedor">
-                        {{ proveedor.proveedor }}
-                    </option>
-                </select>
+                <label for="trazabilidad" class="block text-sm font-semibold text-dark-primary-blue mb-2">Código de Trazabilidad (RF01)</label>
+                <input v-model="form.codTrazabilidad" type="text" id="trazabilidad"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep font-mono"
+                       placeholder="Ej: ABC-12345" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="estadoPago" class="block text-sm font-semibold text-dark-primary-blue mb-2">Estado del Pago</label>
+                    <select v-model="form.estadoPago" id="estadoPago"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
+                        <option value="Pendiente">Pendiente (Pago no recibido)</option>
+                        <option value="Pagado">Pagado (Pago confirmado)</option>
+                        <option value="Cancelado">Cancelado (Reserva anulada)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="estadoReserva" class="block text-sm font-semibold text-dark-primary-blue mb-2">Estado de la Reserva (Logística)</label>
+                    <select v-model="form.estadoReserva" id="estadoReserva"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
+                        <option value="En Proceso">En Proceso (Mascota recibida/cremando)</option>
+                        <option value="Finalizado">Finalizado (Urna entregada al cliente)</option>
+                    </select>
+                </div>
             </div>
             
         </div>
 
-        <!-- Acciones -->
         <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-            <button type="button" @click="router.push('/admin/inventario')" 
+            <button type="button" @click="router.push('/admin/reservas')" 
                     class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
                 Cancelar
             </button>
@@ -126,67 +82,67 @@ import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 // 1. Proteger esta página
+definePageMeta({
+  middleware: 'auth'
+});
 
 
 const route = useRoute();
 const router = useRouter();
-const productoId = ref(route.query.id as string);
+const reservaId = ref(route.query.id as string);
 
-// --- (NUEVO) Definir Tipos ---
-interface ProductoForm {
+// --- Definir Tipos ---
+interface ReservaData {
   id: number;
-  nombre: string;
-  stock: number;
-  precio: number;
-  disponible: boolean;
-  tipo: string;
-  id_proveedor: number | null;
+  cliente: string;
+  servicio: string;
+  codTrazabilidad: string | null;
+  estadoReserva: 'En Proceso' | 'Finalizado';
+  estadoPago: 'Pendiente' | 'Pagado' | 'Cancelado';
 }
-interface Proveedor {
-    id_proveedor: number;
-    proveedor: string;
+
+interface FormState {
+  id: number;
+  codTrazabilidad: string | null;
+  estadoReserva: 'En Proceso' | 'Finalizado';
+  estadoPago: 'Pendiente' | 'Pagado' | 'Cancelado';
 }
 
 // --- Estado del Formulario ---
-const form = ref<ProductoForm | null>(null);
+const form = ref<FormState | null>(null);
 const isSaving = ref(false);
 const saveMessage = ref('');
 const saveError = ref(false);
 
 // --- Carga de Datos ---
 
-// 2. Cargar el producto a editar (usando la API GET)
-const { data: loadedData, pending, error } = await useAsyncData<ProductoForm>(
-  'producto-detalle',
+// 2. Cargar la reserva a editar (usando la API GET que creamos)
+const { data: loadedData, pending, error } = await useAsyncData<ReservaData>(
+  'reserva-detalle-editable',
   () => {
-    if (!productoId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de producto' });
-    return $fetch('/api/admin/producto-detalle', { query: { id: productoId.value } })
+    if (!reservaId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de reserva' });
+    // Usamos la nueva API
+    return $fetch('/api/admin/reserva-detalle-editable', { query: { id: reservaId.value } })
   },
-  { watch: [productoId] }
-);
-
-// (NUEVO) Cargar la lista de proveedores para el menú desplegable
-// (Esta es una API simple que no hemos creado, pero podemos hacerla ahora o en el futuro)
-// Por ahora, usaremos datos de prueba para los proveedores
-const { data: proveedores } = await useAsyncData('lista-proveedores', 
-  () => Promise.resolve([
-      { id_proveedor: 1, proveedor: 'Insumos Patitas' },
-      { id_proveedor: 2, proveedor: 'Urnas del Sur' }
-  ])
-  // Reemplazar con: () => $fetch('/api/admin/lista-proveedores')
+  { watch: [reservaId] }
 );
 
 // 3. Rellenar el formulario reactivo cuando los datos carguen
 watchEffect(() => {
   if (loadedData.value) {
-    // Usamos 'structuredClone' para evitar editar los datos cargados directamente
-    form.value = structuredClone(loadedData.value);
+    // Mapeamos los datos cargados al 'form'
+    form.value = {
+      id: loadedData.value.id,
+      codTrazabilidad: loadedData.value.codTrazabilidad,
+      estadoReserva: loadedData.value.estadoReserva,
+      estadoPago: loadedData.value.estadoPago,
+    };
   }
 });
 
 // --- Guardar Cambios ---
 
-// 4. Función para guardar (usando la API PUT)
+// 4. Función para guardar (usando la API PUT que ya tenías)
 const guardarCambios = async () => {
   if (!form.value) return;
 
@@ -195,20 +151,21 @@ const guardarCambios = async () => {
   saveError.value = false;
 
   try {
-    await $fetch('/api/admin/editar-producto', {
+    // Usamos la API PUT existente
+    await $fetch('/api/admin/editar-reserva', {
       method: 'PUT',
-      body: form.value
+      body: form.value // Enviamos el objeto 'form' completo
     });
 
-    saveMessage.value = '¡Producto actualizado con éxito! Redirigiendo...';
+    saveMessage.value = '¡Reserva actualizada con éxito! Redirigiendo...';
     setTimeout(() => {
-      router.push('/admin/inventario');
+      router.push('/admin/reservas');
     }, 2000);
 
   } catch (err: any) {
     isSaving.value = false;
     saveError.value = true;
-    saveMessage.value = err.data?.statusMessage || 'Error al guardar el producto.';
+    saveMessage.value = err.data?.statusMessage || 'Error al guardar la reserva.';
   }
 };
 </script>
@@ -221,6 +178,8 @@ const guardarCambios = async () => {
 .bg-purple-deep { background-color: #5C2A72; }
 .bg-purple-light { background-color: #6C3483; }
 .text-dark-primary-blue { color: #34495e; } /* Texto principal */
+.focus\:border-purple-deep:focus { border-color: #5C2A72; }
+.focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
 
 /* Estado deshabilitado */
 .disabled\:opacity-50:disabled { opacity: 0.5; }

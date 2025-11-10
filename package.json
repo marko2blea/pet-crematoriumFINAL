@@ -9,6 +9,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
+  "prisma": {
+  "seed": "tsx prisma/seed.ts"
+},
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
@@ -32,6 +35,7 @@
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "prisma": "^6.19.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "version": "1.0.0",
@@ -48,4 +52,5 @@
     "url": "https://github.com/marko2blea/pet-crematoriumFINAL/issues"
   },
   "homepage": "https://github.com/marko2blea/pet-crematoriumFINAL#readme"
+  
 }

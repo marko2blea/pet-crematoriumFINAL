@@ -89,6 +89,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faFileExcel } from '@fortawesome/free-solid-svg-icons'; 

@@ -77,7 +77,7 @@ model pago {
 
 model producto {
   cod_producto    Int               @id @default(autoincrement())
-  nombre_producto String?           @db.VarChar(255)
+  nombre_producto String?           @unique @db.VarChar(255) // <-- ESTO ES OBLIGATORIO
   stock_actual    Int?
   precio_unitario Decimal?          @db.Decimal(10, 2)
   disponible      Boolean?
@@ -155,4 +155,13 @@ model usuario_permisos {
   usuario    usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_rol, id_usuario])
+}
+
+model memorial {
+  id_memorial Int       @id @default(autoincrement())
+  nombre      String    @db.VarChar(100)
+  raza        String?   @db.VarChar(100)
+  fecha       DateTime  @db.Date
+  dedicatoria String?   @db.VarChar(255)
+  creado_en   DateTime  @default(now())
 }

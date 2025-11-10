@@ -122,6 +122,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, computed, defineComponent, onMounted } from 'vue';
 import { navigateTo } from '#app'; 
 

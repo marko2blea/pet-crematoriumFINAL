@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
         stock: p.stock_actual || 0,
         precio: Number(p.precio_unitario) || 0,
         disponible: p.disponible || false, // true/false
+        tipo: p.tipo_producto || 'Otro', // <-- (CAMBIO) Añadir esta línea
       };
     });
 

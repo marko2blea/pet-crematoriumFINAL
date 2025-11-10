@@ -70,6 +70,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 

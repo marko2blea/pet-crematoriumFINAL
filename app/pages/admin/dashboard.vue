@@ -106,6 +106,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import { ref } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faFileInvoiceDollar, faBoxes } from '@fortawesome/free-solid-svg-icons';
