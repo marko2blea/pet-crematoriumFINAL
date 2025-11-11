@@ -1,20 +1,22 @@
 <template>
   <div class="pt-14 bg-white-subtle">
+    
     <div class="relative w-full h-80 overflow-hidden shadow-xl">
-        <div 
-            class="absolute inset-0 bg-cover bg-center opacity-30" 
-            style="background-image: url('/banner2.avif');" 
-            alt="Fondo de huella de mascota"
-        ></div>
-        <div class="relative z-10 text-white text-center flex flex-col justify-center h-full container mx-auto px-4">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight drop-shadow-lg text-bd-gold-accent">
-                Sobre Nosotros
-            </h1>
-            <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto drop-shadow-md text-purple-dark text-bold">
-                Conoce nuestra historia, valores y el compromiso que tenemos con tu familia.
-            </p>
+            <div 
+                class="absolute inset-0 bg-cover bg-center opacity-50" 
+                style="background-image: url('/fondo nosotros.jpg');" 
+                alt="Fondo de huella de mascota"
+            ></div>
+            
+            <div class="relative z-10 text-white text-center flex flex-col justify-center h-full container mx-auto px-4">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight drop-shadow-lg text-bd-gold-accent">
+                    Sobre Nosotros
+                </h1>
+                <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto drop-shadow-md text-purple-dark text-bold">
+                    Conoce nuestra historia, valores y el compromiso que tenemos con tu familia.
+                </p>
+            </div>
         </div>
-    </div>
     
     <div class="container mx-auto px-4 py-16 -mt-10 relative z-20">
       

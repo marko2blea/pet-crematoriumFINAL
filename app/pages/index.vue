@@ -12,10 +12,11 @@
         
         <div class="relative z-10 text-white text-center flex flex-col justify-center h-full container mx-auto px-4">
           <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight drop-shadow-lg">
-            Dignidad y Respeto para su Compañero de Vida
+            APOYO EN LOS MOMENTOS
+            MÁS DIFÍCILES
           </h1>
           <p class="text-xl font-light max-w-2xl mx-auto drop-shadow-md">
-            Sabemos que su mascota es familia. Elija el servicio y productos que mejor honren su amor y su memoria.
+            ENTREGANDO UN SERVICIO PROFESIONAL, RESPETUOSO Y EMPÁTICO PARA QUIENES PIERDEN A UN SER QUERIDO.
           </p>
         </div>
       </div>
