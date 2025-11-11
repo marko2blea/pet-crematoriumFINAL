@@ -165,3 +165,21 @@ model memorial {
   dedicatoria String?   @db.VarChar(255)
   creado_en   DateTime  @default(now())
 }
+
+model instalacion {
+  id_instalacion Int      @id @default(autoincrement())
+  title          String   @db.VarChar(255)
+  body           String   @db.Text
+  features       String[]
+  orden          Int      @default(autoincrement())
+  creado_en      DateTime @default(now())
+}
+
+model about_block {
+  id_block  Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  body      String   @db.Text
+  items     String[] // Para la lista de Valores
+  orden     Int      @default(autoincrement())
+  creado_en DateTime @default(now())
+}

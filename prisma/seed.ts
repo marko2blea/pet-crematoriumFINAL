@@ -117,14 +117,11 @@ async function main() {
   });
   console.log('Productos y servicios de ejemplo creados.');
 
-
   // ================================================================
-  // 7. (NUEVO) Crear una Reserva de Ejemplo Completa
+  // 7. Crear una Reserva de Ejemplo Completa
   // ================================================================
   console.log('Creando reserva de ejemplo...');
-
   try {
-    // 7.1. Crear un cliente de ejemplo
     const clienteEmail = 'juan.cliente@email.com';
     const clientePass = await bcrypt.hash('cliente123', 10);
     const clienteUser = await db.usuario.upsert({
@@ -142,31 +139,24 @@ async function main() {
             direccion: 'Calle Falsa 123'
         }
     });
-
-    // 7.2. Crear una mascota para el cliente
     const mascotaFido = await db.mascota.create({
         data: {
             nombre_mascota: 'Fido',
             peso: 12.5,
             edad: 8,
-            id_especie: especiePerro.id_especie, // ID 1 (Perro)
+            id_especie: especiePerro.id_especie,
         }
     });
-    
-    // 7.3. Vincular mascota al cliente
     await db.usuario.update({
         where: { id_usuario: clienteUser.id_usuario },
         data: { id_mascota: mascotaFido.id_mascota }
     });
     console.log(`Cliente '${clienteUser.correo}' y mascota '${mascotaFido.nombre_mascota}' creados.`);
 
-    // 7.4. Crear la transacción (simulando checkout.post.ts)
-    // Usamos $transaction para asegurar que todo se cree o nada se cree
     const precioBase = Number(servicioTradicional.precio_unitario);
     const precioTotalConIVA = roundCLP(precioBase * 1.19);
 
     await db.$transaction(async (tx) => {
-        // A. Crear el Detalle
         const detalle = await tx.detalle_reserva.create({
             data: {
                 nombre_servicio: servicioTradicional.nombre_producto,
@@ -177,19 +167,15 @@ async function main() {
                 cod_producto: servicioTradicional.cod_producto
             }
         });
-
-        // B. Crear el Pago (¡Marcado como 'Pagado' para que aparezca en reportes!)
         const pago = await tx.pago.create({
             data: {
                 nombre_metodo: metodoTransf.nombre_metodo,
                 fecha_pago: new Date(),
                 monto: precioTotalConIVA,
-                estado: 'Pagado', // <-- CLAVE PARA REPORTES
-                id_metodo: metodoTransf.id_metodo // ID 1
+                estado: 'Pagado',
+                id_metodo: metodoTransf.id_metodo
             }
         });
-        
-        // C. Crear la Reserva (¡Marcada como 'estado: true' (Finalizado)!)
         await tx.reserva.create({
             data: {
                 cod_trazabilidad: 'ABC-12345',
@@ -199,7 +185,7 @@ async function main() {
                 comuna: clienteUser.comuna,
                 direccion: clienteUser.direccion,
                 precio_total: precioTotalConIVA,
-                estado: true, // <-- CLAVE PARA ESTADO 'FINALIZADO'
+                estado: true,
                 id_usuario: clienteUser.id_usuario,
                 id_pago: pago.id_pago,
                 id_detalle_reserva: detalle.id_detalle_reserva,
@@ -207,7 +193,6 @@ async function main() {
         });
     });
     console.log('Reserva de ejemplo (Pagada y Finalizada) creada con éxito.');
-
   } catch (e: any) {
     if (e.code === 'P2002' && e.meta?.target?.includes('correo')) {
       console.log('El usuario de ejemplo (juan.cliente@email.com) ya existe, omitiendo creación de reserva.');
@@ -215,6 +200,93 @@ async function main() {
       console.error('Error al crear la reserva de ejemplo:', e);
     }
   }
+
+  // ================================================================
+  // 8. Crear Secciones de Instalaciones de ejemplo
+  // ================================================================
+  console.log('Creando secciones de instalaciones de ejemplo...');
+  await db.instalacion.upsert({
+    where: { id_instalacion: 1 },
+    update: { title: "Recepción y Sala de Estar", body: "Un espacio acogedor y tranquilo...", features: ["Ambiente climatizado", "Asientos cómodos", "Dispensador de agua y café", "Atención personalizada"]}, 
+    create: { id_instalacion: 1, title: "Recepción y Sala de Estar", body: "Un espacio acogedor y tranquilo donde las familias pueden esperar en privacidad. Ofrecemos un ambiente sereno para procesar su duelo y realizar los trámites necesarios con la dignidad que merecen.", features: ["Ambiente climatizado", "Asientos cómodos", "Dispensador de agua y café", "Atención personalizada"], orden: 1 },
+  });
+  await db.instalacion.upsert({
+    where: { id_instalacion: 2 },
+    update: { title: "Sala de Despedida Privada", body: "Nuestra sala de despedida permite...", features: ["Totalmente privada y aislada", "Ambiente tranquilo y respetuoso", "Opción de visualizar el inicio del servicio (si se solicita)"]},
+    create: { id_instalacion: 2, title: "Sala de Despedida Privada", body: "Nuestra sala de despedida permite a las familias un último adiós íntimo. Es un espacio diseñado para el respeto y el recogimiento, donde pueden pasar un momento a solas con su compañero antes del servicio.", features: ["Totalmente privada y aislada", "Ambiente tranquilo y respetuoso", "Opción de visualizar el inicio del servicio (si se solicita)"], orden: 2 },
+  });
+  await db.instalacion.upsert({
+    where: { id_instalacion: 3 },
+    update: { title: "Horno Crematorio de Última Generación", body: "Contamos con tecnología de punta...", features: ["Horno importado de alta eficiencia", "Proceso 100% individual (sin cruces)", "Cumple con todas las normativas medioambientales"]},
+    create: { id_instalacion: 3, title: "Horno Crematorio de Última Generación", body: "Contamos con tecnología de punta que asegura un proceso individual, ético y ecológicamente responsable. El sistema garantiza la total integridad del servicio y la recuperación completa de las cenizas.", features: ["Horno importado de alta eficiencia", "Proceso 100% individual (sin cruces)", "Cumple con todas las normativas medioambientales"], orden: 3 },
+  });
+  console.log('Secciones de instalaciones creadas.');
+
+
+  // ================================================================
+  // 9. (NUEVO) Crear Bloques de "Nosotros" (Misión, Visión, Valores)
+  // ================================================================
+  console.log('Creando bloques de "Nosotros" de ejemplo...');
+  
+  await db.about_block.upsert({
+    where: { id_block: 1 }, // Usa la ID, no el 'title'
+    update: {
+      title: "Nuestra Misión",
+      body: "Nuestra misión es proporcionar un servicio de cremación digno y respetuoso para las mascotas, ofreciendo a las familias un apoyo compasivo y profesional en su momento de duelo. Nos comprometemos a honrar la vida de cada compañero con la máxima integridad.",
+      items: [], // Sin items para Misión
+    },
+    create: {
+      id_block: 1,
+      title: "Nuestra Misión",
+      body: "Nuestra misión es proporcionar un servicio de cremación digno y respetuoso para las mascotas, ofreciendo a las familias un apoyo compasivo y profesional en su momento de duelo. Nos comprometemos a honrar la vida de cada compañero con la máxima integridad.",
+      items: [],
+      orden: 1,
+    }
+  });
+
+  await db.about_block.upsert({
+    where: { id_block: 2 },
+    update: {
+      title: "Nuestra Visión",
+      body: "Ser la principal referencia en servicios funerarios para mascotas en la región, reconocidos por nuestra excelencia operativa, nuestra calidad humana y nuestro profundo respeto por el vínculo entre las personas y sus animales de compañía.",
+      items: [], // Sin items para Visión
+    },
+    create: {
+      id_block: 2,
+      title: "Nuestra Visión",
+      body: "Ser la principal referencia en servicios funerarios para mascotas en la región, reconocidos por nuestra excelencia operativa, nuestra calidad humana y nuestro profundo respeto por el vínculo entre las personas y sus animales de compañía.",
+      items: [],
+      orden: 2,
+    }
+  });
+
+  await db.about_block.upsert({
+    where: { id_block: 3 },
+    update: {
+      title: "Nuestros Valores",
+      body: "Nuestra labor se fundamenta en principios sólidos que guían cada una de nuestras acciones:", // Cuerpo de texto corto
+      items: [ // Lista de items para los Valores
+        "Compromiso: Con la calidad del servicio y el bienestar de las familias.",
+        "Respeto: Por la vida de la mascota y el dolor de sus dueños.",
+        "Integridad: Actuando con honestidad y transparencia en todo momento.",
+        "Empatía: Comprendiendo y acompañando a cada familia desde el corazón."
+      ],
+    },
+    create: {
+      id_block: 3,
+      title: "Nuestros Valores",
+      body: "Nuestra labor se fundamenta en principios sólidos que guían cada una de nuestras acciones:",
+      items: [
+        "Compromiso: Con la calidad del servicio y el bienestar de las familias.",
+        "Respeto: Por la vida de la mascota y el dolor de sus dueños.",
+        "Integridad: Actuando con honestidad y transparencia en todo momento.",
+        "Empatía: Comprendiendo y acompañando a cada familia desde el corazón."
+      ],
+      orden: 3,
+    }
+  });
+  console.log('Bloques de "Nosotros" creados.');
+
 }
 
 // Ejecutar la función main y manejar la desconexión

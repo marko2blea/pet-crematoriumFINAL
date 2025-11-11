@@ -1,58 +1,98 @@
 <template>
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
 
-    <!-- Estado de Carga -->
-    <div v-if="pending" class="text-center p-10 bg-white rounded-xl shadow-lg">
+    <div v-if="pending || pendingRoles" class="text-center p-10 bg-white rounded-xl shadow-lg">
       <h1 class="text-3xl font-bold text-dark-primary-blue">
         Cargando datos del usuario...
       </h1>
+      <p class="text-gray-500 mt-2">Por favor, espere un momento.</p>
     </div>
 
-    <!-- Estado de Error -->
-    <div v-else-if="error || !loadedData" class="text-center p-10 bg-red-50 rounded-xl shadow-lg border border-red-300">
+    <div v-else-if="error || !form" class="text-center p-10 bg-red-50 rounded-xl shadow-lg border border-red-300">
       <h1 class="text-3xl font-bold text-red-700">Error al Cargar el Usuario</h1>
       <p class="text-gray-600 mt-2">{{ error?.statusMessage || 'El usuario no pudo ser encontrado.' }}</p>
       <button @click="router.push('/admin/gestionar-usuario')"
         class="mt-6 px-5 py-2 bg-purple-dark text-white rounded-lg hover:bg-purple-deep transition shadow-lg">
-        Volver al Listado
+        Volver a Gestión
       </button>
     </div>
     
-    <!-- Formulario Principal -->
-    <form v-else @submit.prevent="guardarCambios" class="max-w-xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-purple-dark">
-        <!-- Encabezado -->
+    <form v-else-if="form" @submit.prevent="guardarCambios" class="max-w-3xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-purple-dark">
         <div class="p-6 bg-gray-50 border-b border-gray-200">
-            <h1 class="text-3xl font-bold text-purple-dark">Editar Rol de Usuario</h1>
-            <p v-if="loadedData.usuario" class="text-lg text-gray-600 mt-1">{{ loadedData.usuario.nombre }} {{ loadedData.usuario.apellido_paterno }}</p>
-            <p v-if="loadedData.usuario" class="text-sm font-mono text-purple-deep">{{ loadedData.usuario.correo }}</P>
+            <h1 class="text-3xl font-bold text-purple-dark">Editar Usuario</h1>
+            <p class="text-lg text-gray-600 mt-1">Usuario ID: {{ form.id_usuario }}</p>
+            <p class="text-sm font-mono text-purple-deep">{{ form.correo }} (No editable)</p>
         </div>
 
-        <!-- Mensaje de Éxito/Error al Guardar -->
         <div v-if="saveMessage" 
              :class="saveError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
              class="m-6 p-4 rounded-lg border text-sm font-medium text-center">
             {{ saveMessage }}
         </div>
 
-        <!-- Cuerpo del Formulario -->
         <div class="p-6 md:p-8 space-y-6">
 
-            <!-- Selector de Rol -->
+            <h3 class="text-xl font-semibold text-purple-deep border-b pb-2">Información Personal</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="nombre" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre</label>
+                    <input v-model="form.nombre" type="text" id="nombre"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                           required />
+                </div>
+                <div>
+                    <label for="apellido_paterno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Paterno</label>
+                    <input v-model="form.apellido_paterno" type="text" id="apellido_paterno"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                           required />
+                </div>
+                <div>
+                    <label for="apellido_materno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Materno</label>
+                    <input v-model="form.apellido_materno" type="text" id="apellido_materno"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Información de Contacto</h3>
+             <div>
+                <label for="telefono" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono</label>
+                <input v-model="form.telefono" type="tel" id="telefono"
+                       placeholder="912345678"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="region" class="block text-sm font-semibold text-dark-primary-blue mb-2">Región</label>
+                    <input v-model="form.region" type="text" id="region"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                </div>
+                <div>
+                    <label for="comuna" class="block text-sm font-semibold text-dark-primary-blue mb-2">Comuna</label>
+                    <input v-model="form.comuna" type="text" id="comuna"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                </div>
+            </div>
+             <div>
+                <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección</label>
+                <input v-model="form.direccion" type="text" id="direccion"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+            </div>
+            
+            <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Permisos</h3>
             <div>
-                <label for="rol" class="block text-sm font-semibold text-dark-primary-blue mb-2">Asignar Rol</label>
-                <!-- Este 'select' se rellena con los datos de la API -->
-                <select v-if="form" v-model="form.id_rol" id="rol"
+                <label for="rol" class="block text-sm font-semibold text-dark-primary-blue mb-2">Rol del Usuario</label>
+                <select v-model.number="form.id_rol" id="rol"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
-                    <option :value="null">-- Seleccione un Rol --</option>
-                    <option v-for="rol in loadedData.rolesDisponibles" :key="rol.id_rol" :value="rol.id_rol">
-                        {{ rol.nombre_rol }}
+                    <option v-if="!roles || roles.length === 0" disabled value="">Cargando roles...</option>
+                    <option v-for="rol in roles" :key="rol.id_rol" :value="rol.id_rol">
+                        {{ rol.nombre_rol }} (ID: {{ rol.id_rol }})
                     </option>
                 </select>
             </div>
-            
+
         </div>
 
-        <!-- Acciones -->
         <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
             <button type="button" @click="router.push('/admin/gestionar-usuario')" 
                     class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
@@ -62,7 +102,7 @@
                     :disabled="isSaving"
                     class="px-5 py-2 bg-purple-deep text-white rounded-lg hover:bg-purple-light transition duration-150 shadow-md
                            disabled:opacity-50 disabled:cursor-not-allowed">
-                {{ isSaving ? 'Guardando...' : 'Asignar Rol' }}
+                {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
             </button>
         </div>
     </form>
@@ -70,89 +110,93 @@
 </template>
 
 <script setup lang="ts">
-
+import { ref, watchEffect } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+// (REVERTIDO) Importamos 'User' y 'Rol'
+import type { User, Rol } from '../../../app/types';
+// 1. Proteger esta página
 definePageMeta({
   middleware: 'auth'
 });
-
-import { ref, watchEffect } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-// 1. Proteger esta página
-
 
 const route = useRoute();
 const router = useRouter();
 const usuarioId = ref(route.query.id as string);
 
-// --- Definir Tipos ---
-interface Usuario {
-  id_usuario: number;
-  nombre: string | null;
-  apellido_paterno: string | null;
-  correo: string | null;
-  id_rol: number | null;
-}
-interface Rol {
-  id_rol: number;
-  nombre_rol: string | null;
-}
-interface LoadedData {
-  usuario: Usuario;
-  rolesDisponibles: Rol[];
-}
-interface FormState {
-    id: number;
-    id_rol: number | null;
+// (REVERTIDO) Esta es la interfaz completa que incluye el 'id_rol'
+interface UserForm {
+    id_usuario: number;
+    nombre: string;
+    apellido_paterno: string;
+    apellido_materno: string | null;
+    correo: string;
+    telefono: number | null;
+    region: string | null;
+    comuna: string | null;
+    direccion: string | null;
+    id_rol: number; // <-- Campo de Rol
 }
 
 // --- Estado del Formulario ---
-const form = ref<FormState | null>(null);
+const form = ref<UserForm | null>(null);
 const isSaving = ref(false);
 const saveMessage = ref('');
 const saveError = ref(false);
 
+// (REVERTIDO) Cargar la lista de roles
+const { data: roles, pending: pendingRoles } = await useAsyncData<Rol[]>(
+  'lista-roles',
+  () => $fetch('/api/roles') // Llama a la API que ya tenías
+);
+
 // --- Carga de Datos ---
-const { data: loadedData, pending, error } = await useAsyncData<LoadedData>(
-  'usuario-detalle-roles',
+const { data: loadedData, pending, error } = await useAsyncData<User>(
+  'usuario-detalle',
   () => {
     if (!usuarioId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de usuario' });
-    // 2. Llamar a la API GET
-    return $fetch('/api/admin/usuario-detalle', { query: { id: usuarioId.value } })
+    return $fetch('/api/admin/usuario-detalle', { query: { id: usuarioId.value } }) //
   },
   { watch: [usuarioId] }
 );
 
-// 3. Rellenar el formulario reactivo cuando los datos carguen
+// Rellenar el formulario
 watchEffect(() => {
-  if (loadedData.value && loadedData.value.usuario) {
+  if (loadedData.value) {
+    // (REVERTIDO) Copiamos todos los campos, incluyendo 'id_rol'
     form.value = {
-      id: loadedData.value.usuario.id_usuario,
-      id_rol: loadedData.value.usuario.id_rol,
+      id_usuario: loadedData.value.id_usuario,
+      nombre: loadedData.value.nombre || '',
+      apellido_paterno: loadedData.value.apellido_paterno || '',
+      apellido_materno: loadedData.value.apellido_materno,
+      correo: loadedData.value.correo || '',
+      telefono: loadedData.value.telefono,
+      region: loadedData.value.region,
+      comuna: loadedData.value.comuna,
+      direccion: loadedData.value.direccion,
+      id_rol: loadedData.value.id_rol || 1, // Asigna 1 (Cliente) si es nulo
     };
   }
 });
 
 // --- Guardar Cambios ---
 const guardarCambios = async () => {
-  if (!form.value || !form.value.id_rol) {
-    saveError.value = true;
-    saveMessage.value = 'Debe seleccionar un rol.';
-    return;
-  }
+  if (!form.value) return;
 
   isSaving.value = true;
   saveMessage.value = '';
   saveError.value = false;
 
   try {
-    // 4. Llamar a la API PUT
+    // (REVERTIDO) El 'body' ahora vuelve a enviar el objeto completo
+    // incluyendo 'id_rol'
     await $fetch('/api/admin/editar-usuario', {
       method: 'PUT',
-      body: form.value
+      body: form.value 
     });
 
-    saveMessage.value = '¡Rol actualizado con éxito! Redirigiendo...';
+    saveMessage.value = '¡Usuario actualizado con éxito! Redirigiendo...';
+    saveError.value = false;
+    
     setTimeout(() => {
       router.push('/admin/gestionar-usuario');
     }, 2000);
@@ -160,19 +204,21 @@ const guardarCambios = async () => {
   } catch (err: any) {
     isSaving.value = false;
     saveError.value = true;
-    saveMessage.value = err.data?.statusMessage || 'Error al guardar el rol.';
+    saveMessage.value = err.data?.statusMessage || 'Error al guardar el usuario.';
   }
 };
 </script>
 
 <style scoped>
-/* Estilos (Copiados de editar-producto.vue) */
+/* (Estilos sin cambios) */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; } 
 .text-purple-deep { color: #5C2A72; } 
 .bg-purple-deep { background-color: #5C2A72; }
 .bg-purple-light { background-color: #6C3483; }
 .text-dark-primary-blue { color: #34495e; }
+.focus\:border-purple-deep:focus { border-color: #5C2A72; }
+.focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
 .disabled\:opacity-50:disabled { opacity: 0.5; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 .bg-green-100 { background-color: #d4edda; } 

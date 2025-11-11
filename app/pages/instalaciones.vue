@@ -12,7 +12,23 @@
       {{ initialIntroText }}
     </p>
 
-    <div v-for="(section, index) in sections" :key="section.id" class="relative">
+    <div v-if="feedbackMessage" 
+         :class="isError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
+         class="mb-6 p-4 rounded-lg border text-sm font-medium text-center max-w-4xl mx-auto">
+        {{ feedbackMessage }}
+    </div>
+
+    <div v-if="pending" class="text-center py-10 bg-white-subtle rounded-xl shadow-md">
+        <p class="text-xl text-gray-600 font-semibold">Cargando secciones...</p>
+    </div>
+    <div v-else-if="error" class="text-center py-10 bg-red-100 rounded-xl shadow-md">
+        <p class="text-xl text-red-700 font-semibold">Error al cargar: {{ error.statusMessage }}</p>
+    </div>
+    <div v-else-if="sections.length === 0" class="text-center py-10 bg-white-subtle rounded-xl shadow-md">
+        <p class="text-xl text-gray-600 font-semibold">No hay secciones de instalaciones creadas. Un administrador puede añadir la primera.</p>
+    </div>
+
+    <div v-for="(section, index) in sections" :key="section.id_instalacion" class="relative">
       <div class="bg-white shadow-xl rounded-lg overflow-hidden mb-8 border border-gray-200"
            :class="{'border-2 border-dashed border-purple-deep': section.isEditing}">
         <div class="p-8 md:p-12">
@@ -22,14 +38,13 @@
               class="text-3xl font-bold text-purple-dark flex-grow"
               :contenteditable="section.isEditing"
               @blur="handleContentUpdate($event, index, 'title')"
-              @keydown.enter.prevent="saveCard(index)" 
               :class="{'border-b-2 border-purple-light': section.isEditing}"
               title="Título de la sección"
             >
               {{ section.title }}
             </h2>
             
-            <div class="flex items-center space-x-2 ml-4">
+            <div v-if="user && user.id_rol !== 1" class="flex items-center space-x-2 ml-4">
                 <button 
                     @click="section.isEditing ? saveCard(index) : editCard(index)"
                     class="text-white transition duration-150 p-2 rounded-full shadow-md"
@@ -52,7 +67,6 @@
                 class="text-gray-700 mb-4"
                 :contenteditable="section.isEditing"
                 @blur="handleContentUpdate($event, index, 'body')"
-                @keydown.enter.prevent="saveCard(index)"
                 :class="{'border-2 border-dashed border-purple-deep p-2 bg-white': section.isEditing}"
                 title="Párrafo"
               >
@@ -66,7 +80,6 @@
                   <span 
                     :contenteditable="section.isEditing" 
                     @blur="handleFeatureUpdate($event, index, i)"
-                    @keydown.enter.prevent="saveCard(index)"
                     :class="{'border-b border-purple-light': section.isEditing}"
                     class="flex-grow"
                   >
@@ -89,10 +102,10 @@
             <div class="h-64 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 font-medium border border-gray-400">
                 <div v-if="section.isEditing" class="h-full w-full flex flex-col justify-center items-center cursor-pointer hover:bg-gray-300 transition duration-150" title="Haga clic para subir imagen">
                     <font-awesome-icon icon="fas fa-plus-circle" class="text-5xl text-purple-dark mb-2" />
-                    <h2 class="text-lg font-semibold text-gray-600 mt-2 text-center">Agregar Ítem</h2>
+                    <h2 class="text-lg font-semibold text-gray-600 mt-2 text-center">Subir Imagen (Próximamente)</h2>
                 </div>
                 <span v-else>
-                    
+                    [Imagen de Instalación]
                 </span>
             </div>
           </div>
@@ -100,11 +113,13 @@
       </div>
     </div>
     
-    <div class="text-center mt-8 mb-8">
+    <div v-if="user && user.id_rol !== 1" class="text-center mt-8 mb-8">
         <button
             @click="addSection"
             title="Añadir nueva sección de instalaciones"
-            class="bg-purple-dark text-white p-4 rounded-full shadow-xl hover:bg-purple-light transition duration-300 transform hover:scale-105 inline-flex items-center justify-center">
+            :disabled="isLoading"
+            class="bg-purple-dark text-white p-4 rounded-full shadow-xl hover:bg-purple-light transition duration-300 transform hover:scale-105 inline-flex items-center justify-center
+                   disabled:opacity-50 disabled:cursor-not-allowed">
             
             <font-awesome-icon icon="fas fa-plus" class="text-3xl" />
         </button>
@@ -114,132 +129,172 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue';
+import { ref, type Ref, watchEffect } from 'vue'; 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faPencilAlt, faSave, faPlus } from '@fortawesome/free-solid-svg-icons'; 
+import { faPencilAlt, faSave, faPlus, faTrash, faTimes, faPlusCircle } from '@fortawesome/free-solid-svg-icons'; 
 
-library.add(faPencilAlt, faSave, faPlus);
+library.add(faPencilAlt, faSave, faPlus, faTrash, faTimes, faPlusCircle);
 
 definePageMeta({
   title: 'Instalaciones'
 });
 
-interface InstallationSection {
-    id: number;
+// --- (NUEVO) Tipado de la API ---
+interface InstalacionSection {
+    id_instalacion: number;
     title: string;
     body: string;
     features: string[];
-    isEditing: boolean; // Estado de edición individual
+    isEditing: boolean; // Estado de edición (solo en UI)
 }
 
+// --- (NUEVO) Carga de Datos y Estado ---
+const user = useUser();
 const initialIntroText = ref('Diseñadas para ofrecer un ambiente de paz y respeto, nuestras instalaciones proporcionan la comodidad y privacidad necesarias para despedir a su compañero de vida.');
 
-const initialSections: Ref<InstallationSection[]> = ref([
-    { 
-        id: 1, title: 'Salas de Despedida', 
-        body: 'Contamos con salas privadas y confortables para que las familias puedan realizar ceremonias de despedida íntimas. Cada sala está equipada con asientos cómodos y una atmósfera tranquila. Ofrecemos la posibilidad de personalizar el espacio con fotografías y recuerdos de su mascota.',
-        features: ['Espacios privados y climatizados.', 'Capacidad para familiares cercanos.', 'Área de descanso y refrigerios.'],
-        isEditing: false,
-    },
-    { 
-        id: 2, title: 'Unidad de Cremación', 
-        body: 'Nuestro crematorio utiliza equipos modernos que garantizan la trazabilidad y el respeto en todo el proceso. Si elige la cremación individual, puede estar seguro de que recibirá únicamente las cenizas de su mascota, con total transparencia y dignidad.',
-        features: ['Tecnología certificada y ecológica.', 'Máximo estándar de higiene y seguridad.', 'Zona de espera para el inicio del servicio.'],
-        isEditing: false,
-    },
-]);
+const sections: Ref<InstalacionSection[]> = ref([]);
+const isLoading = ref(false); // Para deshabilitar botones al crear/borrar
+const feedbackMessage = ref('');
+const isError = ref(false);
 
-const sections = ref(initialSections.value);
+const { data, pending, error, refresh } = await useAsyncData<InstalacionSection[]>(
+  'lista-instalaciones',
+  () => $fetch('/api/instalaciones')
+);
 
-// --- Funciones de Edición de Tarjetas ---
+// (NUEVO) Poblar el ref local cuando 'useAsyncData' termina
+watchEffect(() => {
+  if (data.value) {
+    // Usamos map para añadir la propiedad 'isEditing' a cada objeto
+    sections.value = data.value.map(section => ({
+      ...section,
+      isEditing: false 
+    }));
+  }
+});
+
+// --- (MODIFICADO) Funciones de Edición (conectadas a API) ---
 
 const editCard = (index: number) => {
     if (!sections.value?.[index]) return; 
-
-    sections.value.forEach((s, i) => {
-        if (i !== index && s.isEditing) {
-            saveCard(i); 
-        }
-    });
     sections.value[index].isEditing = true;
 };
 
-const saveCard = (index: number) => {
-    if (!sections.value?.[index] || !sections.value[index].isEditing) return;
-
-    console.log(`Simulación: Cambios en la Tarjeta ${sections.value[index].title} guardados localmente.`);
-    
-    sections.value[index].isEditing = false;
-};
-
-// --- Lógica para Añadir/Eliminar Secciones Completas ---
-const addSection = () => {
-    sections.value.forEach((s, i) => {
-        if (s.isEditing) saveCard(i);
-    });
-
-    const newId = sections.value.length > 0 ? Math.max(...sections.value.map(s => s.id)) + 1 : 1;
-    sections.value.push({
-        id: newId,
-        title: 'Nueva Sección de Instalación',
-        body: 'Describe aquí esta nueva área o servicio. Haz clic en el lápiz para editar.',
-        features: ['Nueva Característica'],
-        isEditing: true, 
-    });
-};
-
-const removeSection = (index: number) => {
-    if (!sections.value?.[index]) return; 
-    if (confirm('ADVERTENCIA: ¿Estás seguro de eliminar permanentemente esta sección?')) {
-        sections.value.splice(index, 1);
-        console.log('Simulación: Sección eliminada.');
-    }
-};
-
-// --- Lógica para Añadir/Eliminar Características (Features) ---
-const addFeature = (sectionIndex: number) => {
-    if (!sections.value?.[sectionIndex]) return; 
-    sections.value[sectionIndex].features.push('Nueva Característica Editable');
-};
-
-const removeFeature = (sectionIndex: number, featureIndex: number) => {
-    if (!sections.value?.[sectionIndex] || sections.value[sectionIndex]?.features[featureIndex] === undefined) return; 
-    sections.value[sectionIndex].features.splice(featureIndex, 1);
-};
-
-// --- Manejo de Actualizaciones de Contenido (en el evento blur) ---
-
+// Guarda los cambios locales en el 'ref'
 const handleContentUpdate = (event: Event, index: number, field: 'title' | 'body') => {
     const target = event.target as HTMLElement;
     const newContent = target.innerText.trim();
-    
-    if (!sections.value?.[index]) return; 
-
-    if (!newContent) {
-        console.error(`El campo ${field} no puede estar vacío. Revirtiendo cambio.`);
-        target.innerText = sections.value[index][field]; 
-        return;
+    if (sections.value[index]) {
+      sections.value[index][field] = newContent;
     }
-
-    sections.value[index][field] = newContent;
-    console.log(`Guardado en línea (Local): Sección ${index} - ${field} actualizado.`);
 };
 
 const handleFeatureUpdate = (event: Event, sectionIndex: number, featureIndex: number) => {
     const target = event.target as HTMLElement;
     const newContent = target.innerText.trim();
+    if (sections.value[sectionIndex]?.features[featureIndex] !== undefined) {
+      if (!newContent) {
+        removeFeature(sectionIndex, featureIndex); // Borra si está vacío
+      } else {
+        sections.value[sectionIndex].features[featureIndex] = newContent;
+      }
+    }
+};
+
+const addFeature = (sectionIndex: number) => {
+    if (sections.value[sectionIndex]) {
+      sections.value[sectionIndex].features.push('Nueva Característica');
+    }
+};
+
+const removeFeature = (sectionIndex: number, featureIndex: number) => {
+    if (sections.value[sectionIndex]?.features[featureIndex] !== undefined) {
+      sections.value[sectionIndex].features.splice(featureIndex, 1);
+    }
+};
+
+// (MODIFICADO) Función 'Save' llama a la API PUT
+const saveCard = async (index: number) => {
+    if (!sections.value[index]) return;
     
-    const section = sections.value?.[sectionIndex];
-    if (!section || section.features?.[featureIndex] === undefined) return;
+    isLoading.value = true;
+    feedbackMessage.value = '';
+    isError.value = false;
     
-    if (!newContent) {
-        removeFeature(sectionIndex, featureIndex);
-        return;
+    try {
+      await $fetch('/api/admin/instalacion', {
+        method: 'PUT',
+        body: sections.value[index] // Envía el objeto completo actualizado
+      });
+      
+      sections.value[index].isEditing = false;
+      feedbackMessage.value = '¡Sección guardada con éxito!';
+      
+    } catch (err: any) {
+      isError.value = true;
+      feedbackMessage.value = err.data?.statusMessage || 'Error al guardar.';
+    } finally {
+      isLoading.value = false;
+    }
+};
+
+// (MODIFICADO) Función 'addSection' llama a la API POST
+const addSection = async () => {
+    isLoading.value = true;
+    feedbackMessage.value = '';
+    isError.value = false;
+
+    try {
+      await $fetch('/api/admin/instalacion', {
+        method: 'POST',
+        body: { // Datos por defecto para la nueva sección
+          title: 'Título de la Nueva Sección',
+          body: 'Añade una descripción aquí.',
+          features: ['Característica 1']
+        }
+      });
+      
+      feedbackMessage.value = 'Sección añadida. Refrescando...';
+      refresh(); // Vuelve a cargar los datos
+      
+    } catch (err: any) {
+      isError.value = true;
+      feedbackMessage.value = err.data?.statusMessage || 'Error al crear la sección.';
+    } finally {
+      isLoading.value = false;
+    }
+};
+
+// (MODIFICADO) Función 'removeSection' llama a la API DELETE
+const removeSection = async (index: number) => {
+    if (!sections.value[index]) return; 
+    
+    const section = sections.value[index];
+    if (!confirm(`ADVERTENCIA: ¿Estás seguro de eliminar la sección "${section.title}"?`)) {
+      return;
     }
 
-    section.features[featureIndex] = newContent;
-    console.log(`Guardado en línea (Local): Feature ${sectionIndex}.${featureIndex} actualizado.`);
+    isLoading.value = true;
+    feedbackMessage.value = '';
+    isError.value = false;
+
+    try {
+      await $fetch('/api/admin/instalacion', {
+        method: 'DELETE',
+        body: { id_instalacion: section.id_instalacion } // Envía el ID
+      });
+      
+      feedbackMessage.value = 'Sección eliminada. Refrescando...';
+      refresh(); // Vuelve a cargar los datos
+      
+    } catch (err: any) {
+      isError.value = true;
+      feedbackMessage.value = err.data?.statusMessage || 'Error al eliminar.';
+    } finally {
+      isLoading.value = false;
+    }
 };
+
 </script>
 
 <style scoped>
@@ -250,7 +305,6 @@ const handleFeatureUpdate = (event: Event, sectionIndex: number, featureIndex: n
 .text-purple-light { color: #6C3483; }
 .hover\:bg-purple-light:hover { background-color: #6C3483; }
 
-/* Tono más profundo para acentos como el borde de la tarjeta */
 .bg-purple-deep {
     background-color: #5C2A72; 
 }
@@ -261,6 +315,19 @@ const handleFeatureUpdate = (event: Event, sectionIndex: number, featureIndex: n
 /* 2. ESTILOS DE TERCEROS (Para el botón de Guardar/Error) */
 .bg-green-600 { background-color: #059669; }
 .hover\:bg-green-700:hover { background-color: #047857; }
+.text-red-600 { color: #dc3545; }
+.hover\:text-red-800:hover { color: #a71d2a; }
+.bg-white-subtle { background-color: #F8F4FA; }
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+
+/* Mensajes de Feedback */
+.bg-red-100 { background-color: #fef2f2; }
+.text-red-700 { color: #b91c1c; }
+.border-red-300 { border-color: #fca5a5; }
+.bg-green-100 { background-color: #dcfce7; }
+.text-green-700 { color: #15803d; }
+.border-green-300 { border-color: #86efac; }
 
 
 /* Estilos de edición contenteditable */
