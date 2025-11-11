@@ -9,7 +9,7 @@
       class="text-xl text-gray-600 mb-12 text-center max-w-3xl mx-auto"
       title="Texto introductorio"
     >
-      {{ initialIntroText }}
+      Diseñadas para ofrecer un ambiente de paz y respeto, nuestras instalaciones proporcionan la comodidad y privacidad necesarias para despedir a su compañero de vida.
     </p>
 
     <div v-if="feedbackMessage" 
@@ -150,8 +150,6 @@ interface InstalacionSection {
 
 // --- (NUEVO) Carga de Datos y Estado ---
 const user = useUser();
-const initialIntroText = ref('Diseñadas para ofrecer un ambiente de paz y respeto, nuestras instalaciones proporcionan la comodidad y privacidad necesarias para despedir a su compañero de vida.');
-
 const sections: Ref<InstalacionSection[]> = ref([]);
 const isLoading = ref(false); // Para deshabilitar botones al crear/borrar
 const feedbackMessage = ref('');
@@ -159,13 +157,13 @@ const isError = ref(false);
 
 const { data, pending, error, refresh } = await useAsyncData<InstalacionSection[]>(
   'lista-instalaciones',
-  () => $fetch('/api/instalaciones')
+  // (IMPORTANTE) Esta API también falta en tus archivos
+  () => $fetch('/api/instalaciones') 
 );
 
 // (NUEVO) Poblar el ref local cuando 'useAsyncData' termina
 watchEffect(() => {
   if (data.value) {
-    // Usamos map para añadir la propiedad 'isEditing' a cada objeto
     sections.value = data.value.map(section => ({
       ...section,
       isEditing: false 
@@ -222,6 +220,7 @@ const saveCard = async (index: number) => {
     isError.value = false;
     
     try {
+      // (IMPORTANTE) Esta API también falta en tus archivos
       await $fetch('/api/admin/instalacion', {
         method: 'PUT',
         body: sections.value[index] // Envía el objeto completo actualizado
@@ -245,6 +244,7 @@ const addSection = async () => {
     isError.value = false;
 
     try {
+      // (ESTA ES LA CONEXIÓN DEL BOTÓN +)
       await $fetch('/api/admin/instalacion', {
         method: 'POST',
         body: { // Datos por defecto para la nueva sección
@@ -279,6 +279,7 @@ const removeSection = async (index: number) => {
     isError.value = false;
 
     try {
+      // (IMPORTANTE) Esta API también falta en tus archivos
       await $fetch('/api/admin/instalacion', {
         method: 'DELETE',
         body: { id_instalacion: section.id_instalacion } // Envía el ID
@@ -298,21 +299,13 @@ const removeSection = async (index: number) => {
 </script>
 
 <style scoped>
-/* 1. PALETA DE MORADOS Y PÚRPURAS */
+/* (Estilos del archivo original) */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; }
 .bg-purple-light { background-color: #6C3483; }
 .text-purple-light { color: #6C3483; }
 .hover\:bg-purple-light:hover { background-color: #6C3483; }
-
-.bg-purple-deep {
-    background-color: #5C2A72; 
-}
-.border-purple-deep {
-    border-color: #5C2A72; /* Borde de acento de tarjeta */
-}
-
-/* 2. ESTILOS DE TERCEROS (Para el botón de Guardar/Error) */
+.border-purple-deep { border-color: #5C2A72; }
 .bg-green-600 { background-color: #059669; }
 .hover\:bg-green-700:hover { background-color: #047857; }
 .text-red-600 { color: #dc3545; }
@@ -320,21 +313,18 @@ const removeSection = async (index: number) => {
 .bg-white-subtle { background-color: #F8F4FA; }
 .disabled\:opacity-50:disabled { opacity: 0.5; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
-
-/* Mensajes de Feedback */
+.text-red-500 { color: #ef4444; }
+.hover\:text-red-700:hover { color: #b91c1c; }
 .bg-red-100 { background-color: #fef2f2; }
 .text-red-700 { color: #b91c1c; }
 .border-red-300 { border-color: #fca5a5; }
 .bg-green-100 { background-color: #dcfce7; }
 .text-green-700 { color: #15803d; }
 .border-green-300 { border-color: #86efac; }
-
-
-/* Estilos de edición contenteditable */
 [contenteditable="true"]:focus {
-  outline: 2px solid #5C2A72; /* Borde de foco púrpura profundo */
+  outline: 2px solid #5C2A72;
   cursor: text;
-  background-color: #f0faff; /* Fondo de edición muy claro */
+  background-color: #f0faff;
   padding: 4px;
   border-radius: 4px;
   display: block; 

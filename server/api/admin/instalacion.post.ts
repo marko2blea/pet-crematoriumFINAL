@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
     
+    // Crea la sección con los datos por defecto que envía el botón
     const nuevaSeccion = await db.instalacion.create({
       data: {
         title: body.title || 'Nueva Sección',
@@ -24,6 +25,7 @@ export default defineEventHandler(async (event) => {
       data: nuevaSeccion,
     };
   } catch (error: any) {
+    console.error("Error al crear la sección:", error);
     throw createError({
       statusCode: 500,
       statusMessage: 'Error interno del servidor al crear la sección.',

@@ -1,75 +1,136 @@
 <template>
-  <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
-    
-    <!-- (NUEVO) Estado de Carga -->
-    <div v-if="pending" class="text-center p-10 bg-white rounded-xl shadow-lg">
-      <h1 class="text-3xl font-bold text-dark-primary-blue">
-        Cargando producto...
-      </h1>
-    </div>
+  <div class="pt-14 py-12 bg-white-subtle">
+    <div class="container mx-auto px-4">
 
-    <!-- (NUEVO) Estado de Error -->
-    <div v-else-if="error || !producto" class="text-center p-10 bg-red-50 rounded-xl shadow-lg border border-red-300">
-      <h1 class="text-3xl font-bold text-red-700">Error al Cargar el Producto</h1>
-      <p class="text-gray-600 mt-2">{{ error?.statusMessage || 'El producto no pudo ser encontrado.' }}</p>
-      <button @click="router.push('/')"
-        class="mt-6 px-5 py-2 bg-purple-dark text-white rounded-lg hover:bg-purple-deep transition shadow-lg">
-        Volver al Catálogo
-      </button>
-    </div>
+      <div v-if="pendingProducto" class="text-center py-20">
+        <h1 class="text-3xl font-bold text-purple-dark">Cargando producto...</h1>
+      </div>
 
-    <!-- (ACTUALIZADO) Contenido Principal -->
-    <div v-else class="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
-      <div class="grid grid-cols-1 md:grid-cols-2">
-        
-        <!-- Columna de Imagen (Placeholder) -->
-        <div class="bg-gray-200 flex items-center justify-center p-8 min-h-[300px]">
-            <img src="/logo2.png" alt="Logo de producto" class="h-40 opacity-30"/>
+      <div v-else-if="errorProducto" class="text-center py-20 bg-red-50 rounded-xl shadow-lg border border-red-300">
+        <h1 class="text-3xl font-bold text-red-700">Error al Cargar</h1>
+        <p class="text-gray-600 mt-2">{{ errorProducto?.statusMessage || 'El producto no pudo ser encontrado.' }}</p>
+        <button @click="router.push('/')"
+          class="mt-6 px-5 py-2 bg-purple-dark text-white rounded-lg hover:bg-purple-deep transition shadow-lg">
+          Volver al Inicio
+        </button>
+      </div>
+
+      <div v-else-if="producto" class="max-w-4xl mx-auto">
+        <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl overflow-hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
+              <img src="/logo2.png" alt="Imagen del producto" class="h-40 opacity-30"/>
+            </div>
+
+            <div class="flex flex-col justify-center">
+              <span class="bg-purple-deep text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm inline-block self-start mb-3">
+                  {{ producto.tipo }}
+              </span>
+              <h1 class="text-4xl font-extrabold text-purple-dark mb-3">{{ producto.nombre }}</h1>
+              
+              <div class="flex items-center space-x-1 mb-4" v-if="valoraciones.length > 0">
+                <font-awesome-icon 
+                  v-for="star in 5" :key="star"
+                  icon="fas fa-star" 
+                  class="text-xl"
+                  :class="star <= averageRating ? 'text-bd-gold-accent' : 'text-gray-300'"
+                />
+                <span class="text-gray-600 ml-2 text-sm font-medium">({{ valoraciones.length }} valoraciones)</span>
+              </div>
+              <div v-else class="text-gray-500 text-sm mb-4">Aún no hay valoraciones</div>
+
+              <p class="text-4xl font-bold text-bd-gold-accent mb-6">
+                {{ producto.precio.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) }}
+              </p>
+              
+              <button 
+                @click="addToCart(producto)" 
+                class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-200 shadow-xl flex items-center justify-center space-x-2"
+              >
+                <font-awesome-icon icon="fas fa-shopping-cart" />
+                <span>Añadir al Carrito</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Columna de Información -->
-        <div class="p-8 flex flex-col">
-          <span class="bg-purple-deep text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm mb-3 inline-block self-start">
-              {{ producto.tipo }}
-          </span>
+        <div class="mt-12">
+          <h2 class="text-3xl font-bold text-purple-dark mb-6 border-b pb-3">
+            Valoraciones y Comentarios
+          </h2>
 
-          <h1 class="text-4xl font-extrabold text-purple-dark mb-4">
-            {{ producto.nombre }}
-          </h1>
-
-          <div class="text-5xl font-extrabold text-bd-gold-accent mb-6">
-              ${{ producto.precio.toLocaleString('es-CL') }}
+          <div v-if="user" class="bg-white p-6 rounded-xl shadow-xl mb-8 border-t-4 border-purple-deep">
+            <h3 class="text-xl font-semibold text-purple-dark mb-4">Deja tu valoración</h3>
+            <div v-if="userHasReviewed">
+              <p class="text-green-700 bg-green-100 p-3 rounded-lg">Gracias, ya has enviado tu valoración para este producto.</p>
+            </div>
+            <form v-else @submit.prevent="handleSubmitReview" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-dark-primary-blue mb-2">Tu puntuación:</label>
+                <div class="flex space-x-1 text-3xl">
+                  <font-awesome-icon 
+                    v-for="star in 5" :key="star"
+                    :icon="star <= newReview.rating ? 'fas fa-star' : 'far fa-star'"
+                    @click="newReview.rating = star"
+                    class="cursor-pointer transition-transform duration-150 transform hover:scale-110"
+                    :class="star <= newReview.rating ? 'text-bd-gold-accent' : 'text-gray-400'"
+                  />
+                </div>
+              </div>
+              <div>
+                <label for="comentario" class="block text-sm font-semibold text-dark-primary-blue mb-2">Tu comentario (opcional):</label>
+                <textarea 
+                  v-model="newReview.comentario"
+                  id="comentario" 
+                  rows="3" 
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep"
+                  placeholder="Describe tu experiencia con este producto..."
+                ></textarea>
+              </div>
+              <button 
+                type="submit" 
+                :disabled="newReview.rating === 0 || isLoading"
+                class="bg-purple-deep text-white py-2 px-5 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ isLoading ? 'Enviando...' : 'Enviar Valoración' }}
+              </button>
+              <p v-if="feedbackMessage" :class="isError ? 'text-red-600' : 'text-green-700'" class="text-sm mt-2">{{ feedbackMessage }}</p>
+            </form>
           </div>
-          
-          <!-- Descripción Estática (como en index.vue) -->
-          <h3 class="text-lg font-semibold text-dark-primary-blue mb-2">Este servicio incluye:</h3>
-          <ul class="text-sm text-gray-700 space-y-2 mb-8 flex-grow">
-              <li class="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Certificado de Cremación</li>
-              <li class="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Urna (Modelo Básico)</li>
-              <li class="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Placa Recordatoria</li>
-              <li class_s="flex items-center"><font-awesome-icon icon="fas fa-check" class="text-green-500 mr-2" /> Seguimiento del proceso</li>
-          </ul>
+          <div v-else class="bg-gray-100 p-6 rounded-xl shadow-md mb-8 text-center">
+            <p class="text-gray-700">
+              <NuxtLink to="/login" class="font-bold text-purple-deep hover:underline">Inicia sesión</NuxtLink> para dejar tu valoración.
+            </p>
+          </div>
 
-          <!-- Botones de Acción -->
-          <div class="space-y-3 mt-auto">
-            <!-- (ACTUALIZADO) Botón "Añadir al Carrito" -->
-            <button 
-              @click="handleAddToCart"
-              class="w-full py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
-                     bg-purple-deep text-white hover:bg-purple-light hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-deep/50">
-                <font-awesome-icon icon="fas fa-shopping-cart" class="mr-2" />
-                Añadir al Carrito
-            </button>
-            <button 
-              @click="router.push('/carrito')"
-              class="w-full py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
-                     bg-bd-gold-accent text-purple-dark hover:bg-yellow-500 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-bd-gold-accent/50">
-                <font-awesome-icon icon="fas fa-arrow-right" class="mr-2" />
-                Ir al Carrito
-            </button>
+          <div v-if="pendingValoraciones" class="text-center py-10">
+            <p class="text-gray-600">Cargando comentarios...</p>
+          </div>
+          <div v-else-if="valoraciones.length > 0" class="space-y-6">
+            <div v-for="v in valoraciones" :key="v.id_valoracion" class="bg-white p-5 rounded-lg shadow-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-purple-dark">{{ v.autor }}</span>
+                <span class="text-xs text-gray-500">{{ v.fecha }}</span>
+              </div>
+              <div class="flex items-center space-x-1 mb-3">
+                <font-awesome-icon 
+                  v-for="star in 5" :key="star"
+                  icon="fas fa-star" 
+                  class="text-lg"
+                  :class="star <= v.rating ? 'text-bd-gold-accent' : 'text-gray-300'"
+                />
+              </div>
+              <p class="text-gray-700 italic">"{{ v.comentario || 'Sin comentario.' }}"</p>
+            </div>
+          </div>
+          <div v-else class="text-center py-10 bg-white rounded-lg shadow-md">
+            <p class="text-gray-600">No hay comentarios para este producto todavía.</p>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -78,66 +139,146 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faCheck, faShoppingCart, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-// (NUEVO) Importamos el tipo 'Product' que ya definimos
-import type { Product } from '~/types';
+import { faShoppingCart, faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons';
+import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 
-library.add(faCheck, faShoppingCart, faArrowRight);
+library.add(faShoppingCart, faStarSolid, faStarRegular);
 
+// --- Tipado ---
+interface Producto {
+  id: number;
+  nombre: string;
+  precio: number;
+  tipo: string;
+}
+interface Valoracion {
+  id_valoracion: number;
+  rating: number;
+  comentario: string | null;
+  fecha: string;
+  autor: string;
+}
+
+// --- Setup ---
 const route = useRoute();
 const router = useRouter();
-// (NUEVO) Obtenemos el carrito
+const user = useUser();
 const { addToCart } = useCart();
+const productoId = ref(route.query.id as string);
 
-// --- (ACTUALIZADO) Carga de Datos ---
-const productoId = computed(() => route.query.id as string);
-
+// --- Carga de Datos del Producto ---
 const { 
   data: producto, 
-  pending, 
-  error 
-} = await useAsyncData<Product>(
-  'detalle-producto-publico',
+  pending: pendingProducto, 
+  error: errorProducto 
+} = await useAsyncData<Producto>(
+  'detalle-producto',
   () => {
-    if (!productoId.value) {
-      throw createError({ statusCode: 404, statusMessage: 'Producto no encontrado.' });
-    }
-    // 1. Llamar a la nueva API pública
-    return $fetch('/api/producto', {
-      query: { id: productoId.value }
-    });
+    if (!productoId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de producto' });
+    return $fetch('/api/detalle-producto', { query: { id: productoId.value } })
   },
   { watch: [productoId] }
 );
 
-// --- (NUEVO) Funciones de Acción ---
-const handleAddToCart = () => {
-  if (producto.value) {
-    addToCart(producto.value);
-    // (Opcional) Redirigir al carrito después de añadir
-    // router.push('/carrito');
+// --- (CORREGIDO) Carga de Datos de Valoraciones ---
+const { 
+  data: valoracionesData, // 1. Renombrado a 'valoracionesData'
+  pending: pendingValoraciones, 
+  refresh: refreshValoraciones 
+} = await useAsyncData<Valoracion[]>(
+  'lista-valoraciones',
+  () => {
+    if (!productoId.value) return [];
+    return $fetch('/api/valoraciones', { query: { id: productoId.value } })
+  },
+  { 
+    watch: [productoId]
+    // 2. Quitamos el 'default'
+  }
+);
+
+// 3. (NUEVO) Creamos un 'computed' que SIEMPRE es un array
+// Esto soluciona el error 'ts-plugin(2339)'
+const valoraciones = computed(() => valoracionesData.value || []);
+
+// --- Lógica de Formulario de Valoración ---
+const newReview = ref({
+  rating: 0,
+  comentario: ''
+});
+const isLoading = ref(false);
+const feedbackMessage = ref('');
+const isError = ref(false);
+
+const handleSubmitReview = async () => {
+  if (!user.value || !producto.value) return;
+  if (newReview.value.rating === 0) {
+    isError.value = true;
+    feedbackMessage.value = 'Por favor, selecciona al menos una estrella.';
+    return;
+  }
+
+  isLoading.value = true;
+  isError.value = false;
+  feedbackMessage.value = '';
+
+  try {
+    await $fetch('/api/valoraciones', {
+      method: 'POST',
+      body: {
+        id_producto: producto.value.id,
+        id_usuario: user.value.id_usuario,
+        rating: newReview.value.rating,
+        comentario: newReview.value.comentario
+      }
+    });
+
+    feedbackMessage.value = '¡Gracias por tu valoración!';
+    newReview.value = { rating: 0, comentario: '' }; 
+    refreshValoraciones(); 
+
+  } catch (err: any) {
+    isError.value = true;
+    feedbackMessage.value = err.data?.statusMessage || 'Error al enviar la valoración.';
+  } finally {
+    isLoading.value = false;
   }
 };
 
+// --- Valores Calculados (Ahora usan 'valoraciones.value') ---
+const averageRating = computed(() => {
+  // Ahora 'valoraciones.value' (que es un computed) siempre es un array
+  if (valoraciones.value.length === 0) return 0;
+  const sum = valoraciones.value.reduce((acc, v) => acc + v.rating, 0);
+  return Math.round(sum / valoraciones.value.length);
+});
+
+const userHasReviewed = computed(() => {
+  if (!user.value) return false;
+  // Ahora 'valoraciones.value' siempre es un array
+  return valoraciones.value.some(v => v.autor.includes(user.value?.nombre || '---'));
+});
 </script>
 
 <style scoped>
-/* Estilos (Copiados de index.vue) */
-.text-purple-dark { color: #4A235A; }
+/* (Estilos sin cambios) */
 .bg-purple-dark { background-color: #4A235A; } 
+.text-purple-dark { color: #4A235A; }
+.bg-purple-deep { background-color: #5C2A72; }
+.text-purple-deep { color: #5C2A72; }
+.border-purple-deep { border-color: #5C2A72; }
+.focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
+.focus\:border-purple-deep:focus { border-color: #5C2A72; }
 .bg-purple-light { background-color: #6C3483; }
-.bg-purple-deep { background-color: #5C2A72; } 
-.text-purple-deep { color: #5C2A72; } 
-.text-dark-primary-blue { color: #34495e; }
 .text-bd-gold-accent { color: #FFD700; }
-.bg-bd-gold-accent { background-color: #FFD700; }
-.hover\:bg-yellow-500:hover { background-color: #ECC94B; }
-.focus\:ring-purple-deep\/50:focus { --tw-ring-color: rgba(92, 42, 114, 0.5); }
-.focus\:ring-bd-gold-accent\/50:focus { --tw-ring-color: rgba(255, 215, 0, 0.5); }
-
-/* Errores */
+.bg-white-subtle { background-color: #F8F4FA; }
+.text-dark-primary-blue { color: #34495e; }
 .bg-red-50 { background-color: #fef2f2; }
-.border-red-300 { border-color: #fca5a5; }
 .text-red-700 { color: #b91c1c; }
-.text-green-500 { color: #22c55e; }
+.border-red-300 { border-color: #fca5a5; }
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+.text-red-600 { color: #dc3545; }
+.bg-green-100 { background-color: #d4edda; } 
+.text-green-700 { color: #155724; } 
 </style>

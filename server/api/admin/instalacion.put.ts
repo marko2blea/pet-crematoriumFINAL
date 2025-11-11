@@ -8,11 +8,9 @@ import { db } from '../../utils/prisma';
  */
 export default defineEventHandler(async (event) => {
   try {
-    // 'body' aquí es el payload completo de la solicitud
     const body = await readBody(event); 
     
-    // (CORRECCIÓN) Renombramos la variable 'body' interna a 'bodyContent'
-    // para evitar el conflicto con el 'body' de la línea anterior.
+    // (CORRECCIÓN) Renombramos 'body' a 'bodyContent' para evitar conflicto
     const { id_instalacion, title, body: bodyContent, features } = body;
 
     if (!id_instalacion) {
@@ -23,7 +21,7 @@ export default defineEventHandler(async (event) => {
       where: { id_instalacion: Number(id_instalacion) },
       data: {
         title: title,
-        body: bodyContent, // (CORRECIÓN) Usamos la variable renombrada
+        body: bodyContent, // Usamos la variable renombrada
         features: features,
       },
     });
