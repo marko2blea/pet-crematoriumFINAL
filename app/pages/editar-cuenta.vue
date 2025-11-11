@@ -90,32 +90,31 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import type { User } from '../../app/types'; // Importamos el tipo 'User' que ya definimos
+// (Ruta relativa para evitar errores de alias)
+import type { User } from '../../app/types';
 
-// 1. Proteger esta página (¡ESTA ES LA CORRECCIÓN!)
-// Descomenta este bloque:
+
 definePageMeta({
   middleware: 'auth'
 });
 
 
 const router = useRouter();
-const user = useUser(); // <-- 1. Cargar el estado global del usuario
+const user = useUser(); // <-- Cargar el estado global del usuario
 
 // --- Estado del Formulario ---
-const form = ref<Partial<User> | null>(null); // Usamos Partial<User> para el formulario
+const form = ref<Partial<User> | null>(null);
 const isSaving = ref(false);
 const saveMessage = ref('');
 const saveError = ref(false);
 
-// 2. Rellenar el formulario con los datos del estado global
+// 2. Rellenar el formulario
 onMounted(() => {
-  if (user.value) {
-    // Copiamos los datos del estado global al formulario local
-    // (Usamos structuredClone para evitar editar el estado global directamente)
+  // Gracias al middleware, 'user.value' ahora SÍ tendrá datos
+  if (user.value) { 
     form.value = structuredClone(user.value);
   } else {
-    // Esto no debería pasar gracias al middleware, pero es una salvaguarda
+    // Si el middleware falla, esto se muestra
     saveError.value = true;
     saveMessage.value = "Error: No se pudo cargar la información del usuario.";
   }
@@ -131,11 +130,11 @@ const guardarPerfil = async () => {
   saveError.value = false;
 
   try {
-    // 3. Llamar a la nueva API (PUT)
+    // 3. Llamar a la API
     const response = await $fetch('/api/usuario/editar-perfil', {
       method: 'PUT',
       body: {
-        id_usuario: form.value.id_usuario, // Enviar el ID para la cláusula WHERE
+        id_usuario: form.value.id_usuario,
         nombre: form.value.nombre,
         apellido_paterno: form.value.apellido_paterno,
         apellido_materno: form.value.apellido_materno,
@@ -147,7 +146,6 @@ const guardarPerfil = async () => {
     });
 
     // 4. (ÉXITO) Actualizar el estado global 'user'
-    // Esto hará que el nombre en el layout (default.vue) se actualice al instante.
     user.value = response.user;
 
     saveMessage.value = '¡Perfil actualizado con éxito!';
@@ -163,7 +161,7 @@ const guardarPerfil = async () => {
 </script>
 
 <style scoped>
-/* Estilos (Copiados de editar-producto.vue) */
+/* (Estilos sin cambios) */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; } 
 .text-purple-deep { color: #5C2A72; } 

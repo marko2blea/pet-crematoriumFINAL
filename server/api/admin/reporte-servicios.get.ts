@@ -3,7 +3,7 @@ import { db } from '../../utils/prisma';
 
 /**
  * API para obtener el reporte de SERVICIOS más vendidos (basado en pagos 'Pagados').
- * Acepta un query param '?period=' (month, quarter, year)
+ * (MODIFICADO) Usa una consulta más simple para evitar el error 500.
  * Ruta: /api/admin/reporte-servicios
  * Método: GET
  */
@@ -25,46 +25,54 @@ export default defineEventHandler(async (event) => {
       startDate = new Date(today.getFullYear(), today.getMonth(), 1);
     }
 
-    // 2. Encontrar todos los 'detalles' de reservas que sean 'Servicios' y estén 'Pagadas'
-    const detallesVendidos = await db.detalle_reserva.findMany({
+    // 2. (CORREGIDO) Consulta más simple: Empezar desde los Pagos
+    const pagos = await db.pago.findMany({
       where: {
-        // (MODIFICADO) El producto es de tipo 'Servicio'
-        producto: {
-          tipo_producto: 'Servicio'
+        estado: 'Pagado',
+        fecha_pago: {
+          gte: startDate,
+          lte: today,
         },
-        // B. La reserva asociada tiene un pago 'Pagado' Y está dentro del rango de fechas
+      },
+      include: {
+        // Un pago tiene múltiples reservas (aunque en tu caso es 1 a 1)
         reserva: {
-          some: { 
-            pago: {
-              estado: 'Pagado',
-              fecha_pago: {
-                gte: startDate,
-                lte: today,
-              },
+          include: {
+            // La reserva tiene un detalle
+            detalle_reserva: {
+              include: {
+                // El detalle tiene un producto
+                producto: {
+                  select: {
+                    nombre_producto: true,
+                    tipo_producto: true // Necesitamos el tipo para filtrar
+                  }
+                }
+              }
             }
           }
-        }
-      },
-      select: {
-        cantidad: true,
-        producto: { 
-          select: { nombre_producto: true }
         }
       }
     });
 
     // 3. Agregar los datos en TypeScript
     const stats = new Map<string, number>();
-    for (const detalle of detallesVendidos) {
-      const nombre = detalle.producto?.nombre_producto || 'Servicio Desconocido';
-      const cantidad = detalle.cantidad || 0;
-      stats.set(nombre, (stats.get(nombre) || 0) + cantidad);
+    for (const pago of pagos) {
+      for (const reserva of pago.reserva) {
+        const detalle = reserva.detalle_reserva;
+        // (CORREGIDO) Filtrar aquí por 'Servicio'
+        if (detalle && detalle.producto?.tipo_producto === 'Servicio') {
+          const nombre = detalle.producto.nombre_producto || 'Servicio Desconocido';
+          const cantidad = detalle.cantidad || 0;
+          stats.set(nombre, (stats.get(nombre) || 0) + cantidad);
+        }
+      }
     }
 
     // 4. Formatear para la UI
     const formattedData = Array.from(stats.entries())
       .map(([nombre, ventas]) => ({ nombre, ventas }))
-      .sort((a, b) => b.ventas - a.ventas); // Ordenar de más vendido a menos vendido
+      .sort((a, b) => b.ventas - a.ventas); 
 
     return formattedData;
 

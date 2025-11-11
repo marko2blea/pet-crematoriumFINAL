@@ -68,6 +68,9 @@
         <NuxtLink to="/registro" class="text-purple-light hover:text-purple-dark font-semibold transition duration-150">
           ¿No tienes cuenta? Regístrate
         </NuxtLink>
+        <NuxtLink to="/olvide-contrasena" class="text-sm text-purple-light hover:text-purple-dark text-center block pt-2">
+            ¿Olvidaste tu contraseña?
+        </NuxtLink>
         <!-- (Ocultamos "Olvidaste tu contraseña" por ahora)
         <span class="text-gray-500 mx-2">|</span>
         <NuxtLink to="/recuperar-contrasena" class="text-purple-light hover:text-purple-dark font-semibold transition duration-150">

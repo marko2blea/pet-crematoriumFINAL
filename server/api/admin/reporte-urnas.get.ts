@@ -3,7 +3,7 @@ import { db } from '../../utils/prisma';
 
 /**
  * API para obtener el reporte de urnas más vendidas (basado en pagos 'Pagados').
- * Acepta un query param '?period=' (month, quarter, year)
+ * (MODIFICADO) Usa una consulta más simple para evitar errores.
  * Ruta: /api/admin/reporte-urnas
  * Método: GET
  */
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const period = query.period as string || 'month'; // 'month', 'quarter', 'year'
 
-    // 1. (NUEVO) Calcular la fecha de inicio (lógica idéntica a reporte-ventas)
+    // 1. Calcular la fecha de inicio
     const today = new Date();
     let startDate: Date;
 
@@ -25,48 +25,51 @@ export default defineEventHandler(async (event) => {
       startDate = new Date(today.getFullYear(), today.getMonth(), 1);
     }
 
-    // 2. Encontrar todos los 'detalles' de reservas que sean 'Urnas' y estén 'Pagadas'
-    const detallesVendidos = await db.detalle_reserva.findMany({
+    // 2. (CORREGIDO) Consulta más simple: Empezar desde los Pagos
+    const pagos = await db.pago.findMany({
       where: {
-        // A. El producto es de tipo 'Urna'
-        producto: {
-          tipo_producto: 'Urna'
+        estado: 'Pagado',
+        fecha_pago: {
+          gte: startDate,
+          lte: today,
         },
-        // B. La reserva asociada tiene un pago 'Pagado' Y está dentro del rango de fechas
+      },
+      include: {
         reserva: {
-          some: { // 'some' porque 'reserva' es una lista en 'detalle_reserva' (aunque sea 1 a 1)
-            pago: {
-              estado: 'Pagado',
-              fecha_pago: {
-                gte: startDate,
-                lte: today,
-              },
+          include: {
+            detalle_reserva: {
+              include: {
+                producto: {
+                  select: {
+                    nombre_producto: true,
+                    tipo_producto: true // Necesitamos el tipo para filtrar
+                  }
+                }
+              }
             }
           }
-        }
-      },
-      select: {
-        cantidad: true,
-        producto: { // Incluir el producto para saber el nombre
-          select: { nombre_producto: true }
         }
       }
     });
 
     // 3. Agregar los datos en TypeScript
     const stats = new Map<string, number>();
-    for (const detalle of detallesVendidos) {
-      const nombre = detalle.producto?.nombre_producto || 'Urna Desconocida';
-      const cantidad = detalle.cantidad || 0; // 'cantidad' en tu schema es Int?
-      
-      // Sumar la cantidad (por si una reserva incluye 2 urnas iguales)
-      stats.set(nombre, (stats.get(nombre) || 0) + cantidad);
+    for (const pago of pagos) {
+      for (const reserva of pago.reserva) {
+        const detalle = reserva.detalle_reserva;
+        // (CORREGIDO) Filtrar aquí por 'Urna'
+        if (detalle && detalle.producto?.tipo_producto === 'Urna') {
+          const nombre = detalle.producto.nombre_producto || 'Urna Desconocida';
+          const cantidad = detalle.cantidad || 0;
+          stats.set(nombre, (stats.get(nombre) || 0) + cantidad);
+        }
+      }
     }
 
     // 4. Formatear para la UI
     const formattedData = Array.from(stats.entries())
       .map(([nombre, ventas]) => ({ nombre, ventas }))
-      .sort((a, b) => b.ventas - a.ventas); // Ordenar de más vendida a menos vendida
+      .sort((a, b) => b.ventas - a.ventas); 
 
     return formattedData;
 

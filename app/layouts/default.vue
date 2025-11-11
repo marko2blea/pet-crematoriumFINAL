@@ -32,11 +32,11 @@
             <NuxtLink to="/admin/dashboard" :class="isActive('/admin/dashboard', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
               <font-awesome-icon icon="fas fa-chart-line" /><span>Dashboard</span>
             </NuxtLink>
-            <NuxtLink to="/admin/reservas" :class="isActive('/admin/reservas', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
-              <font-awesome-icon icon="fas fa-book" /><span>Reservas</span>
-            </NuxtLink>
              <NuxtLink to="/admin/reportes" :class="isActive('/admin/reportes', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
               <font-awesome-icon icon="fas fa-file-alt" /><span>Reportes</span>
+            </NuxtLink>
+            <NuxtLink to="/admin/reservas" :class="isActive('/admin/reservas', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
+              <font-awesome-icon icon="fas fa-book" /><span>Reservas</span>
             </NuxtLink>
           </template>
         </div>

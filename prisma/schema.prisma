@@ -145,6 +145,8 @@ model usuario {
   mascota          mascota?           @relation(fields: [id_mascota], references: [id_mascota], onDelete: NoAction, onUpdate: NoAction)
   rol              rol?               @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
   usuario_permisos usuario_permisos[]
+  reset_token           String?   @unique @db.VarChar(255)
+  reset_token_expires DateTime?
 }
 
 model usuario_permisos {
