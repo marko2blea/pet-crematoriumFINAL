@@ -422,6 +422,12 @@ definePageMeta({
 </script>
 
 <style scoped>
+
+.bg-blue-100 {
+    background-color: #e0f2fe;
+} 
+.text-blue-800 {   color: #1e40af;
+}
 /* 1. PALETA DE MORADOS Y PÚRPURAS */
 .bg-purple-dark {
     background-color: #4A235A; 

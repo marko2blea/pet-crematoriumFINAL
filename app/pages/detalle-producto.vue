@@ -19,8 +19,19 @@
         <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl overflow-hidden">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
-            <div class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
-              <img src="/logo2.png" alt="Imagen del producto" class="h-40 opacity-30"/>
+            <div class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+              <img 
+                v-if="producto.imagen_url" 
+                :src="producto.imagen_url" 
+                :alt="producto.nombre" 
+                class="w-full h-full object-cover"
+              />
+              <img 
+                v-else 
+                src="/logo2.png" 
+                alt="Imagen de producto" 
+                class="h-40 opacity-30"
+              />
             </div>
 
             <div class="flex flex-col justify-center">
@@ -43,15 +54,45 @@
               <p class="text-4xl font-bold text-bd-gold-accent mb-6">
                 {{ producto.precio.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) }}
               </p>
+
+              <div class="space-y-3 mb-6 border-y py-4">
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-gray-500 font-medium">Disponibilidad:</span>
+                  <span 
+                    class="font-bold px-2 py-0.5 rounded-full"
+                    :class="producto.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  >
+                    {{ producto.disponible ? 'En Stock' : 'Agotado' }}
+                    <span v-if="producto.tipo !== 'Servicio'"> ({{ producto.stock }})</span>
+                  </span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-gray-500 font-medium">Categoría:</span>
+                  <span class="font-semibold text-purple-dark">{{ producto.tipo }}</span>
+                </div>
+                <div v-if="producto.tipo !== 'Servicio'" class="flex justify-between items-center text-sm">
+                  <span class="text-gray-500 font-medium">Proveedor:</span>
+                  <span class="font-semibold text-purple-dark">{{ producto.proveedor }}</span>
+                </div>
+              </div>
               
               <button 
                 @click="addToCart(producto)" 
-                class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-200 shadow-xl flex items-center justify-center space-x-2"
+                :disabled="!producto.disponible"
+                class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-200 shadow-xl flex items-center justify-center space-x-2
+                       disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <font-awesome-icon icon="fas fa-shopping-cart" />
-                <span>Añadir al Carrito</span>
+                <span>{{ producto.disponible ? 'Añadir al Carrito' : 'Agotado' }}</span>
               </button>
             </div>
+          </div>
+          
+          <div class="mt-10 pt-6 border-t">
+            <h3 class="text-2xl font-bold text-purple-dark mb-4">Descripción</h3>
+            <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {{ producto.descripcion }}
+            </p>
           </div>
         </div>
 
@@ -59,7 +100,6 @@
           <h2 class="text-3xl font-bold text-purple-dark mb-6 border-b pb-3">
             Valoraciones y Comentarios
           </h2>
-
           <div v-if="user" class="bg-white p-6 rounded-xl shadow-xl mb-8 border-t-4 border-purple-deep">
             <h3 class="text-xl font-semibold text-purple-dark mb-4">Deja tu valoración</h3>
             <div v-if="userHasReviewed">
@@ -144,12 +184,18 @@ import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 
 library.add(faShoppingCart, faStarSolid, faStarRegular);
 
-// --- Tipado ---
+// --- (MODIFICADO) Tipado ---
 interface Producto {
   id: number;
   nombre: string;
   precio: number;
   tipo: string;
+  // --- Nuevos campos ---
+  descripcion: string;
+  stock: number;
+  disponible: boolean;
+  proveedor: string;
+  imagen_url: string | null;
 }
 interface Valoracion {
   id_valoracion: number;
@@ -175,7 +221,8 @@ const {
   'detalle-producto',
   () => {
     if (!productoId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de producto' });
-    return $fetch('/api/detalle-producto', { query: { id: productoId.value } })
+    // (MODIFICADO) Llama a la API actualizada
+    return $fetch('/api/detalle-producto', { query: { id: productoId.value } }) 
   },
   { watch: [productoId] }
 );
@@ -187,10 +234,9 @@ const {
   refresh: refreshValoraciones 
 } = await useAsyncData<Valoracion[]>(
   'lista-valoraciones',
-  // (CORRECCIÓN) Añadido 'async' aquí
   async () => {
     if (!productoId.value) {
-        return []; // Esto ahora devuelve implícitamente Promise<[]>
+        return []; 
     }
     return $fetch('/api/valoraciones', { query: { id: productoId.value } })
   },
@@ -202,7 +248,7 @@ const {
 // (Soluciona el error 'length')
 const valoraciones = computed(() => valoracionesData.value || []);
 
-// --- Lógica de Formulario de Valoración ---
+// --- Lógica de Formulario de Valoración (sin cambios) ---
 const newReview = ref({
   rating: 0,
   comentario: ''
@@ -218,11 +264,9 @@ const handleSubmitReview = async () => {
     feedbackMessage.value = 'Por favor, selecciona al menos una estrella.';
     return;
   }
-
   isLoading.value = true;
   isError.value = false;
   feedbackMessage.value = '';
-
   try {
     await $fetch('/api/valoraciones', {
       method: 'POST',
@@ -233,11 +277,9 @@ const handleSubmitReview = async () => {
         comentario: newReview.value.comentario
       }
     });
-
     feedbackMessage.value = '¡Gracias por tu valoración!';
     newReview.value = { rating: 0, comentario: '' }; 
-    refreshValoraciones(); // <- Esta llamada ahora es segura
-
+    refreshValoraciones(); 
   } catch (err: any) {
     isError.value = true;
     feedbackMessage.value = err.data?.statusMessage || 'Error al enviar la valoración.';
@@ -252,7 +294,6 @@ const averageRating = computed(() => {
   const sum = valoraciones.value.reduce((acc, v) => acc + v.rating, 0);
   return Math.round(sum / valoraciones.value.length);
 });
-
 const userHasReviewed = computed(() => {
   if (!user.value) return false;
   return valoraciones.value.some(v => v.autor.includes(user.value?.nombre || '---'));
@@ -280,4 +321,8 @@ const userHasReviewed = computed(() => {
 .text-red-600 { color: #dc3545; }
 .bg-green-100 { background-color: #d4edda; } 
 .text-green-700 { color: #155724; } 
+.text-green-800 { color: #155724; }
+.bg-red-100 { background-color: #f8d7da; }
+.text-red-800 { color: #721c24; }
+.whitespace-pre-wrap { white-space: pre-wrap; }
 </style>

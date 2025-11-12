@@ -90,32 +90,114 @@ async function main() {
   console.log(`Proveedor '${prov2.proveedor}' creado.`);
 
   // ================================================================
-  // 6. Crear Productos y Servicios de ejemplo
+  // 6. (MODIFICADO) Crear Productos, Servicios y Accesorios
   // ================================================================
+  
+  // -- SERVICIO 1 (Para la reserva de ejemplo) --
   const servicioTradicional = await db.producto.upsert({
-    where: { nombre_producto: 'Servicio Tradicional' },
-    update: {},
-    create: {
-      nombre_producto: 'Servicio Tradicional',
+    where: { cod_producto: 1 }, 
+    update: {
+      nombre_producto: 'Cremación Tradicional',
+      precio_unitario: 150000,
+      tipo_producto: 'Servicio',
+      descripcion: 'Nuestro servicio de cremación individual tradicional asegura un proceso respetuoso y digno, garantizando que las cenizas devueltas son únicamente de su mascota.'
+    },
+    create: { 
+      cod_producto: 1, 
+      nombre_producto: 'Cremación Tradicional',
       precio_unitario: 150000,
       stock_actual: 9999,
       disponible: true,
-      tipo_producto: 'Servicio' 
+      tipo_producto: 'Servicio',
+      descripcion: 'Nuestro servicio de cremación individual tradicional asegura un proceso respetuoso y digno, garantizando que las cenizas devueltas son únicamente de su mascota.'
     },
   });
+
+  // -- URNA (Ejemplo) --
   await db.producto.upsert({
-    where: { nombre_producto: 'Urna de Mármol Clásica' },
-    update: {},
+    where: { cod_producto: 2 }, 
+    update: {
+      nombre_producto: 'Urna de Mármol Clásica',
+      precio_unitario: 45000,
+      tipo_producto: 'Urna',
+      id_proveedor: prov2.id_proveedor,
+      descripcion: 'Una urna elegante y atemporal, fabricada en mármol genuino para honrar la memoria de su compañero. Su peso y solidez proporcionan un lugar seguro y perpetuo para el descanso.'
+    },
     create: {
+      cod_producto: 2, 
       nombre_producto: 'Urna de Mármol Clásica',
       precio_unitario: 45000,
       stock_actual: 15,
       disponible: true,
       tipo_producto: 'Urna', 
-      id_proveedor: prov2.id_proveedor 
+      id_proveedor: prov2.id_proveedor,
+      descripcion: 'Una urna elegante y atemporal, fabricada en mármol genuino para honrar la memoria de su compañero. Su peso y solidez proporcionan un lugar seguro y perpetuo para el descanso.'
     },
   });
-  console.log('Productos y servicios de ejemplo creados.');
+
+  // -- ACCESORIO (Ejemplo) --
+  await db.producto.upsert({
+    where: { cod_producto: 3 }, 
+    update: {
+      nombre_producto: 'Placa Recordatoria Grabada',
+      precio_unitario: 15000,
+      tipo_producto: 'Accesorio', 
+      id_proveedor: prov2.id_proveedor,
+      descripcion: 'Una placa de bronce pulido con grabado láser del nombre y fechas de su mascota. Se adhiere a la urna.'
+    },
+    create: {
+      cod_producto: 3, 
+      nombre_producto: 'Placa Recordatoria Grabada',
+      precio_unitario: 15000,
+      stock_actual: 50,
+      disponible: true,
+      tipo_producto: 'Accesorio', 
+      id_proveedor: prov2.id_proveedor,
+      descripcion: 'Una placa de bronce pulido con grabado láser del nombre y fechas de su mascota. Se adhiere a la urna.'
+    },
+  });
+
+  // -- SERVICIO 2 --
+  await db.producto.upsert({
+    where: { cod_producto: 4 }, 
+    update: {
+      nombre_producto: 'Cremación Presencial',
+      precio_unitario: 200000,
+      tipo_producto: 'Servicio',
+      descripcion: 'Permite a la familia estar presente en una sala privada durante el inicio del proceso de cremación, ofreciendo una despedida final y personal.'
+    },
+    create: { 
+      cod_producto: 4, 
+      nombre_producto: 'Cremación Presencial',
+      precio_unitario: 200000,
+      stock_actual: 9999,
+      disponible: true,
+      tipo_producto: 'Servicio',
+      descripcion: 'Permite a la familia estar presente en una sala privada durante el inicio del proceso de cremación, ofreciendo una despedida final y personal.'
+    },
+  });
+
+  // -- SERVICIO 3 --
+  await db.producto.upsert({
+    where: { cod_producto: 5 }, 
+    update: {
+      nombre_producto: 'Servicio Eutanasia',
+      precio_unitario: 50000,
+      tipo_producto: 'Servicio',
+      descripcion: 'Servicio de eutanasia a domicilio, realizado por un veterinario profesional, asegurando un adiós tranquilo y sin dolor en la comodidad de su hogar.'
+    },
+    create: { 
+      cod_producto: 5, 
+      nombre_producto: 'Servicio Eutanasia',
+      precio_unitario: 50000,
+      stock_actual: 9999,
+      disponible: true,
+      tipo_producto: 'Servicio',
+      descripcion: 'Servicio de eutanasia a domicilio, realizado por un veterinario profesional, asegurando un adiós tranquilo y sin dolor en la comodidad de su hogar.'
+    },
+  });
+  console.log('Productos, servicios y accesorios de ejemplo creados.');
+
 
   // ================================================================
   // 7. Crear una Reserva de Ejemplo Completa
@@ -222,18 +304,16 @@ async function main() {
   });
   console.log('Secciones de instalaciones creadas.');
 
-
   // ================================================================
-  // 9. (NUEVO) Crear Bloques de "Nosotros" (Misión, Visión, Valores)
+  // 9. Crear Bloques de "Nosotros" (Misión, Visión, Valores)
   // ================================================================
   console.log('Creando bloques de "Nosotros" de ejemplo...');
-  
   await db.about_block.upsert({
-    where: { id_block: 1 }, // Usa la ID, no el 'title'
+    where: { id_block: 1 },
     update: {
       title: "Nuestra Misión",
       body: "Nuestra misión es proporcionar un servicio de cremación digno y respetuoso para las mascotas, ofreciendo a las familias un apoyo compasivo y profesional en su momento de duelo. Nos comprometemos a honrar la vida de cada compañero con la máxima integridad.",
-      items: [], // Sin items para Misión
+      items: [], 
     },
     create: {
       id_block: 1,
@@ -243,13 +323,12 @@ async function main() {
       orden: 1,
     }
   });
-
   await db.about_block.upsert({
     where: { id_block: 2 },
     update: {
       title: "Nuestra Visión",
       body: "Ser la principal referencia en servicios funerarios para mascotas en la región, reconocidos por nuestra excelencia operativa, nuestra calidad humana y nuestro profundo respeto por el vínculo entre las personas y sus animales de compañía.",
-      items: [], // Sin items para Visión
+      items: [],
     },
     create: {
       id_block: 2,
@@ -259,13 +338,12 @@ async function main() {
       orden: 2,
     }
   });
-
   await db.about_block.upsert({
     where: { id_block: 3 },
     update: {
       title: "Nuestros Valores",
-      body: "Nuestra labor se fundamenta en principios sólidos que guían cada una de nuestras acciones:", // Cuerpo de texto corto
-      items: [ // Lista de items para los Valores
+      body: "Nuestra labor se fundamenta en principios sólidos que guían cada una de nuestras acciones:",
+      items: [
         "Compromiso: Con la calidad del servicio y el bienestar de las familias.",
         "Respeto: Por la vida de la mascota y el dolor de sus dueños.",
         "Integridad: Actuando con honestidad y transparencia en todo momento.",

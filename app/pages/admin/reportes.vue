@@ -2,7 +2,7 @@
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
     
     <div class="flex justify-between items-center mb-8 border-b-2 border-gray-300 pb-3">
-        <h1 class="text-3xl font-bold text-purple-dark">Reportes y Dashboard</h1>
+        <h1 class="text-3xl font-bold text-purple-dark">Reportes</h1>
     </div>
 
     <div class="mb-6 p-4 bg-white rounded-lg shadow-md flex justify-center space-x-2">

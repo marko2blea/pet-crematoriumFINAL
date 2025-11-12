@@ -2,7 +2,7 @@
   <div class="pt-14 py-16 min-h-screen container mx-auto px-4 space-y-8">
     
     <div class="border-b-2 border-gray-300 pb-3">
-        <h1 class="text-3xl font-bold text-purple-dark">Dashboard del Administrador</h1>
+        <h1 class="text-3xl font-bold text-purple-dark">Dashboard</h1>
     </div>
 
     <div v-if="pendingStats" class="text-center p-10 bg-white rounded-xl shadow-lg">

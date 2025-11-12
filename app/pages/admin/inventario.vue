@@ -60,6 +60,7 @@
                                   :class="{
                                     'bg-purple-100 text-purple-800': producto.tipo === 'Servicio',
                                     'bg-yellow-100 text-yellow-800': producto.tipo === 'Urna',
+                                    'bg-blue-100 text-blue-800': producto.tipo === 'Accesorio',
                                     'bg-gray-100 text-gray-800': producto.tipo === 'Otro'
                                   }">
                                 {{ producto.tipo }}
@@ -201,6 +202,9 @@ const deleteProduct = async (producto: Producto) => {
 .bg-purple-deep { background-color: #5C2A72; }
 .bg-purple-light { background-color: #6C2A72; } /* Corregido a un tono más oscuro */
 .text-dark-primary-blue { color: #34495e; } /* Texto principal */
+
+.bg-blue-100 { background-color: #e0f2fe; } 
+.text-blue-800 { color: #1e40af; }
 
 /* Fondo de fila alterna */
 .even\:bg-purple-card:nth-child(even) {
