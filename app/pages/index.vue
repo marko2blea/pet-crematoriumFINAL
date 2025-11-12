@@ -120,7 +120,7 @@
             </div>
 
             <div v-if="urnasFiltradas.length > 0" class="mt-16">
-                <h2 class="text-3xl font-extrabold text-purple-dark mb-8 text-center">Urnas y Accesorios</h2>
+                <h2 class="text-3xl font-extrabold text-purple-dark mb-8 text-center">Productos especiales para recordar a tu mascota</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <div 
                         v-for="urna in urnasFiltradas" 
