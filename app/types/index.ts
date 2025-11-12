@@ -19,3 +19,10 @@ export type Rol = {
   id_rol: number;
   nombre_rol: string | null;
 }
+
+export type Product = {
+  id: number;
+  nombre: string;
+  precio: number;
+  tipo: string;
+}
