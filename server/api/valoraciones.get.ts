@@ -1,6 +1,6 @@
 // RUTA: Sube un nivel (desde /api/ a /server/)
 import { db } from '../utils/prisma';
-
+import type { Prisma } from '@prisma/client';
 /**
  * API PÚBLICA para obtener las valoraciones de UN producto.
  * Ruta: /api/valoraciones

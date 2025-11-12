@@ -180,25 +180,26 @@ const {
   { watch: [productoId] }
 );
 
-// --- (CORREGIDO) Carga de Datos de Valoraciones ---
+// --- Carga de Datos de Valoraciones ---
 const { 
-  data: valoracionesData, // 1. Renombrado a 'valoracionesData'
+  data: valoracionesData, 
   pending: pendingValoraciones, 
   refresh: refreshValoraciones 
 } = await useAsyncData<Valoracion[]>(
   'lista-valoraciones',
-  () => {
-    if (!productoId.value) return [];
+  // (CORRECCIÓN) Añadido 'async' aquí
+  async () => {
+    if (!productoId.value) {
+        return []; // Esto ahora devuelve implícitamente Promise<[]>
+    }
     return $fetch('/api/valoraciones', { query: { id: productoId.value } })
   },
   { 
     watch: [productoId]
-    // 2. Quitamos el 'default'
   }
 );
 
-// 3. (NUEVO) Creamos un 'computed' que SIEMPRE es un array
-// Esto soluciona el error 'ts-plugin(2339)'
+// (Soluciona el error 'length')
 const valoraciones = computed(() => valoracionesData.value || []);
 
 // --- Lógica de Formulario de Valoración ---
@@ -235,7 +236,7 @@ const handleSubmitReview = async () => {
 
     feedbackMessage.value = '¡Gracias por tu valoración!';
     newReview.value = { rating: 0, comentario: '' }; 
-    refreshValoraciones(); 
+    refreshValoraciones(); // <- Esta llamada ahora es segura
 
   } catch (err: any) {
     isError.value = true;
@@ -245,9 +246,8 @@ const handleSubmitReview = async () => {
   }
 };
 
-// --- Valores Calculados (Ahora usan 'valoraciones.value') ---
+// --- Valores Calculados (sin cambios) ---
 const averageRating = computed(() => {
-  // Ahora 'valoraciones.value' (que es un computed) siempre es un array
   if (valoraciones.value.length === 0) return 0;
   const sum = valoraciones.value.reduce((acc, v) => acc + v.rating, 0);
   return Math.round(sum / valoraciones.value.length);
@@ -255,7 +255,6 @@ const averageRating = computed(() => {
 
 const userHasReviewed = computed(() => {
   if (!user.value) return false;
-  // Ahora 'valoraciones.value' siempre es un array
   return valoraciones.value.some(v => v.autor.includes(user.value?.nombre || '---'));
 });
 </script>

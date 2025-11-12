@@ -52,24 +52,24 @@ model mascota {
 }
 
 model metodo_pago {
-  id_metodo                     Int     @id @default(autoincrement())
-  nombre_metodo                 String? @db.VarChar(100)
-  n_recibo_efectivo             Int?
-  url_comprobante_transferencia String? @db.VarChar(255)
-  rut_emisor                    String? @db.VarChar(20)
-  banco_emisor                  String? @db.VarChar(100)
-  tipo_cuenta                   String? @db.VarChar(50)
-  num_cuenta                    String? @db.VarChar(50)
-  num_transaccion_externa       String? @db.VarChar(100)
-  pago                          pago[]
+  id_metodo                   Int       @id @default(autoincrement())
+  nombre_metodo               String?   @db.VarChar(100)
+  n_recibo_efectivo           Int?
+  url_comprobante_transferencia String?   @db.VarChar(255)
+  rut_emisor                  String?   @db.VarChar(20)
+  banco_emisor                String?   @db.VarChar(100)
+  tipo_cuenta                 String?   @db.VarChar(50)
+  num_cuenta                  String?   @db.VarChar(50)
+  num_transaccion_externa     String?   @db.VarChar(100)
+  pago                        pago[]
 }
 
 model pago {
-  id_pago       Int          @id @default(autoincrement())
-  nombre_metodo String?      @db.VarChar(100)
-  fecha_pago    DateTime?    @db.Date
-  monto         Decimal?     @db.Decimal(10, 2)
-  estado        String?      @db.VarChar(50)
+  id_pago       Int         @id @default(autoincrement())
+  nombre_metodo String?     @db.VarChar(100)
+  fecha_pago    DateTime?   @db.Date
+  monto         Decimal?    @db.Decimal(10, 2)
+  estado        String?     @db.VarChar(50)
   id_metodo     Int?
   metodo_pago   metodo_pago? @relation(fields: [id_metodo], references: [id_metodo], onDelete: NoAction, onUpdate: NoAction)
   reserva       reserva[]
@@ -77,14 +77,19 @@ model pago {
 
 model producto {
   cod_producto    Int               @id @default(autoincrement())
-  nombre_producto String?           @unique @db.VarChar(255) // <-- ESTO ES OBLIGATORIO
+  nombre_producto String?           @unique @db.VarChar(255)
   stock_actual    Int?
   precio_unitario Decimal?          @db.Decimal(10, 2)
   disponible      Boolean?
   tipo_producto   String?           @db.VarChar(100)
   id_proveedor    Int?
+  
+  descripcion     String?           @db.Text // <-- AÑADE ESTA LÍNEA
+  imagen_url      String?           @db.VarChar(500)
+
   detalle_reserva detalle_reserva[]
   proveedor       proveedor?        @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction)
+  valoraciones    Valoracion[]
 }
 
 model proveedor {
@@ -127,26 +132,29 @@ model rol {
 }
 
 model usuario {
-  id_usuario       Int                @id @default(autoincrement())
-  nombre           String?            @db.VarChar(100)
-  apellido_paterno String?            @db.VarChar(100)
-  apellido_materno String?            @db.VarChar(100)
-  fecha_nacimiento DateTime?          @db.Date
-  correo           String?            @unique @db.VarChar(255)
-  contrase_a       String?            @map("contraseña") @db.VarChar(255)
+  id_usuario       Int       @id @default(autoincrement())
+  nombre           String?   @db.VarChar(100)
+  apellido_paterno String?   @db.VarChar(100)
+  apellido_materno String?   @db.VarChar(100)
+  fecha_nacimiento DateTime? @db.Date
+  correo           String?   @unique @db.VarChar(255)
+  contrase_a       String?   @map("contraseña") @db.VarChar(255)
   telefono         Int?
-  fecha_registro   DateTime?          @db.Date
-  region           String?            @db.VarChar(100)
-  comuna           String?            @db.VarChar(100)
-  direccion        String?            @db.VarChar(255)
+  fecha_registro   DateTime? @db.Date
+  region           String?   @db.VarChar(100)
+  comuna           String?   @db.VarChar(100)
+  direccion        String?   @db.VarChar(255)
   id_rol           Int?
   id_mascota       Int?
   reserva          reserva[]
-  mascota          mascota?           @relation(fields: [id_mascota], references: [id_mascota], onDelete: NoAction, onUpdate: NoAction)
-  rol              rol?               @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
+  mascota          mascota?  @relation(fields: [id_mascota], references: [id_mascota], onDelete: NoAction, onUpdate: NoAction)
+  rol              rol?      @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
   usuario_permisos usuario_permisos[]
-  reset_token           String?   @unique @db.VarChar(255)
+
+  // --- CORRECCIONES AÑADIDAS ---
+  reset_token           String?      @unique @db.VarChar(255)
   reset_token_expires DateTime?
+  valoraciones          Valoracion[]
 }
 
 model usuario_permisos {
@@ -159,6 +167,8 @@ model usuario_permisos {
   @@id([id_rol, id_usuario])
 }
 
+// --- MODELOS NUEVOS AÑADIDOS ---
+
 model memorial {
   id_memorial Int       @id @default(autoincrement())
   nombre      String    @db.VarChar(100)
@@ -170,7 +180,7 @@ model memorial {
 
 model instalacion {
   id_instalacion Int      @id @default(autoincrement())
-  title          String   @db.VarChar(255)
+  title          String   @unique @db.VarChar(255) // <-- CORREGIDO: Añadido @unique
   body           String   @db.Text
   features       String[]
   orden          Int      @default(autoincrement())
@@ -184,4 +194,22 @@ model about_block {
   items     String[] // Para la lista de Valores
   orden     Int      @default(autoincrement())
   creado_en DateTime @default(now())
+}
+
+model Valoracion {
+  id_valoracion  Int      @id @default(autoincrement())
+  rating         Int
+  comentario     String?  @db.Text
+  fecha_creacion DateTime @default(now())
+
+  // --- Relaciones ---
+  id_producto    Int
+  producto       producto @relation(fields: [id_producto], references: [cod_producto], onDelete: Cascade)
+
+  id_usuario     Int
+  usuario        usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
+  // Evita que un usuario valore el mismo producto dos veces
+  @@unique([id_producto, id_usuario])
+  @@map("valoracion")
 }

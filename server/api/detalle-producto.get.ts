@@ -1,8 +1,9 @@
-// RUTA CORREGIDA: Sube un nivel (desde /api/ a /server/)
+// RUTA: Sube un nivel (desde /api/ a /server/)
 import { db } from '../utils/prisma';
 
 /**
  * API PÚBLICA para obtener el detalle de UN producto por su ID.
+ * (MODIFICADO) Ahora incluye stock, proveedor, descripción e imagen.
  * Ruta: /api/producto
  * Método: GET
  * Query Params: ?id= (El ID del producto)
@@ -19,20 +20,33 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // 1. Buscar el producto único
+    // 1. (MODIFICADO) Buscar el producto e incluir el proveedor
     const producto = await db.producto.findUniqueOrThrow({
       where: {
         cod_producto: Number(id),
         disponible: true, // ¡Solo productos disponibles!
       },
+      include: {
+        proveedor: { // Incluir el nombre del proveedor
+          select: {
+            proveedor: true
+          }
+        }
+      }
     });
 
-    // 2. Formatear la respuesta (igual que la API de lista)
+    // 2. (MODIFICADO) Formatear la respuesta con todos los datos
     const formattedProducto = {
       id: producto.cod_producto,
       nombre: producto.nombre_producto || 'Sin Nombre',
       precio: Number(producto.precio_unitario) || 0,
       tipo: producto.tipo_producto || 'Otro',
+      // --- Nuevos campos ---
+      descripcion: producto.descripcion || 'Este producto no tiene una descripción disponible.',
+      stock: producto.stock_actual || 0,
+      disponible: producto.disponible || false,
+      proveedor: producto.proveedor?.proveedor || 'San Antonio', // Default si no hay proveedor
+      imagen_url: producto.imagen_url || null
     };
 
     return formattedProducto;
