@@ -7,10 +7,10 @@
       </div>
       <div class="relative z-20 max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight text-bd-gold-accent" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-              Dignidad y Respeto en el Último Adiós
+              APOYO EN LOS MOMENTOS MÁS DIFÍCILES
           </h1>
           <p class="text-xl md:text-2xl font-light mb-8" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-              Servicios de cremación individuales para tu querida mascota.
+              ENTREGANDO UN SERVICIO PROFESIONAL, RESPETUOSO Y EMPÁTICO PARA QUIENES PIERDEN A UN SER QUERIDO
           </p>
           <NuxtLink to="/#catalogo" class="bg-purple-deep text-white py-3 px-8 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-300 shadow-xl">
               Ver Catálogo
@@ -83,7 +83,7 @@
                     <div 
                         v-for="servicio in serviciosFiltrados" 
                         :key="servicio.id" 
-                        class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300 relative"
+                        class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300 relative flex flex-col"
                     >
                         <button 
                             @click.stop="toggleFavorite(servicio.id)"
@@ -92,7 +92,7 @@
                         >
                             <font-awesome-icon :icon="isFavorite(servicio.id) ? ['fas', 'heart'] : ['far', 'heart']" class="text-xl" />
                         </button>
-                        <NuxtLink :to="`/detalle-producto?id=${servicio.id}`" class="block">
+                        <NuxtLink :to="`/detalle-producto?id=${servicio.id}`" class="block flex flex-col flex-grow">
                             <div class="w-full h-40 object-cover bg-gray-200 flex items-center justify-center">
                                 <img src="/logo2.png" alt="Logo de servicio" class="h-20 opacity-30"/>
                             </div>
@@ -101,9 +101,18 @@
                                     {{ servicio.tipo }}
                                 </span>
                                 <h3 class="text-xl font-bold text-purple-dark my-3 h-12 overflow-hidden">{{ servicio.nombre }}</h3>
-                                <span class="text-2xl font-extrabold text-bd-gold-accent mt-auto">
-                                    ${{ servicio.precio.toLocaleString('es-CL') }}
-                                </span>
+                                <div class="mt-auto">
+                                    <span class="text-2xl font-extrabold text-bd-gold-accent block mb-3">
+                                        ${{ servicio.precio.toLocaleString('es-CL') }}
+                                    </span>
+                                    <button 
+                                      @click.stop="addToCart(servicio)"
+                                      class="w-full bg-purple-deep text-white py-2 px-3 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md text-sm"
+                                    >
+                                      <font-awesome-icon icon="fas fa-shopping-cart" class="mr-2" />
+                                      Añadir al Carrito
+                                    </button>
+                                </div>
                             </div>
                         </NuxtLink>
                     </div>
@@ -116,7 +125,7 @@
                     <div 
                         v-for="urna in urnasFiltradas" 
                         :key="urna.id" 
-                        class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300 relative"
+                        class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300 relative flex flex-col"
                     >
                         <button 
                             @click.stop="toggleFavorite(urna.id)"
@@ -125,18 +134,27 @@
                         >
                             <font-awesome-icon :icon="isFavorite(urna.id) ? ['fas', 'heart'] : ['far', 'heart']" class="text-xl" />
                         </button>
-                        <NuxtLink :to="`/detalle-producto?id=${urna.id}`" class="block">
+                        <NuxtLink :to="`/detalle-producto?id=${urna.id}`" class="block flex flex-col flex-grow">
                             <div class="w-full h-32 object-cover bg-gray-200 flex items-center justify-center">
                                 <img src="/logo2.png" alt="Logo de producto" class="h-16 opacity-30"/>
                             </div>
-                            <div class="p-5">
-                                <span :class="getBadgeClass(urna.tipo)" class="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                            <div class="p-5 flex flex-col flex-grow">
+                                <span :class="getBadgeClass(urna.tipo)" class="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm inline-block self-start">
                                     {{ urna.tipo }}
                                 </span>
                                 <h3 class="text-xl font-bold text-purple-dark my-3 h-10 overflow-hidden">{{ urna.nombre }}</h3>
-                                <span class="text-2xl font-extrabold text-bd-gold-accent">
-                                    ${{ urna.precio.toLocaleString('es-CL') }}
-                                </span>
+                                <div class="mt-auto">
+                                    <span class="text-2xl font-extrabold text-bd-gold-accent block mb-3">
+                                        ${{ urna.precio.toLocaleString('es-CL') }}
+                                    </span>
+                                    <button 
+                                      @click.stop="addToCart(urna)"
+                                      class="w-full bg-purple-deep text-white py-2 px-3 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md text-sm"
+                                    >
+                                      <font-awesome-icon icon="fas fa-shopping-cart" class="mr-2" />
+                                      Añadir al Carrito
+                                    </button>
+                                </div>
                             </div>
                         </NuxtLink>
                     </div>
@@ -157,7 +175,6 @@ import {
     faFilter, faSearch, faTimes, faTimesCircle
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
-// (IMPORTANTE) Asegúrate de que 'app/types/index.ts' exporta 'Product'
 import type { Product } from '../../app/types';
 
 library.add(
@@ -165,29 +182,29 @@ library.add(
     faFilter, faSearch, faTimes, faTimesCircle
 );
 
-// Usar el composable de Favoritos
+// (IMPORTANTE) Usar los composables
 const { favorites, toggleFavorite, isFavorite } = useFavorites();
+const { addToCart } = useCart();
 
-// --- Carga de Datos ---
+// --- (CORREGIDO) Carga de Datos ---
 const { 
   data: productosData, 
   pending, 
   error 
 } = await useAsyncData<Product[]>(
   'lista-productos-publica',
-  () => $fetch('/api/productos'), // Llama a 'server/api/productos.get.ts'
+  () => $fetch('/api/productos'), 
   { 
-    // Usamos 'computed' en lugar de 'default' para los filtros
   } 
 );
-
+// (ESTA ES LA CORRECCIÓN CLAVE PARA EL ERROR 'length')
 const productos = computed(() => productosData.value || []);
 
 // --- ESTADO DE FILTRO Y BÚSQUEDA ---
 const busquedaTexto = ref('');
 const filtroTipo = ref('todos'); 
 const filtroPrecio = ref('todos'); 
-const filtroFavoritos = ref(false); // Filtro de favoritos
+const filtroFavoritos = ref(false); 
 
 const limpiarFiltros = () => {
     busquedaTexto.value = '';
@@ -206,11 +223,12 @@ const aplicarFiltroPrecio = (precio: number, filtro: string) => {
 };
 
 // --- Filtros ---
-// Filtra la lista COMPLETA de productos según los filtros
 const productosFiltrados = computed(() => {
     const textoMinuscula = busquedaTexto.value.toLowerCase();
     
-    return productos.value.filter(item => {
+    // (AQUÍ ESTÁ LA VARIABLE)
+    // 'productos.value' (el computed) siempre es un array, por lo que '.filter' es seguro
+    return productos.value.filter(item => { 
         const tipoDeseado = filtroTipo.value.toLowerCase();
         const itemTipo = item.tipo.toLowerCase();
         
@@ -219,14 +237,12 @@ const productosFiltrados = computed(() => {
         const coincideTexto = !textoMinuscula || 
                               item.nombre.toLowerCase().includes(textoMinuscula);
         
-        // (AQUÍ ESTÁ LA LÓGICA DEL FILTRO)
         const coincideFavorito = !filtroFavoritos.value || isFavorite(item.id);
 
         return coincideTipo && coincidePrecio && coincideTexto && coincideFavorito;
     });
 });
 
-// 'serviciosFiltrados' y 'urnasFiltradas' ahora se basan en la lista ya filtrada
 const serviciosFiltrados = computed(() => {
   return productosFiltrados.value.filter(p => p.tipo === 'Servicio');
 });
@@ -235,10 +251,11 @@ const urnasFiltradas = computed(() => {
   return productosFiltrados.value.filter(p => p.tipo === 'Urna' || p.tipo === 'Accesorio');
 });
 
-// --- (ELIMINADO) 'favoriteProducts' ---
-// Ya no necesitamos esta variable, porque el filtro 'filtroFavoritos'
-// se encarga de mostrar solo favoritos en el catálogo principal.
-
+// (AQUÍ ESTÁ LA VARIABLE)
+// 'favoriteProducts' también se define aquí. El error de tu editor es un Falso Positivo.
+const favoriteProducts = computed(() => {
+    return productos.value.filter(p => isFavorite(p.id));
+});
 
 // --- Función para Clases de Etiqueta (Badge) ---
 const getBadgeClass = (tipo: string) => {
