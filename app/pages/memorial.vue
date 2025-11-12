@@ -20,7 +20,7 @@
 
         <div class="container mx-auto px-4 py-12 -mt-10 relative z-20">
             
-            <div v_if="user && user.id_rol !== 1" class="max-w-3xl mx-auto p-4 md:p-6 rounded-xl border border-dashed border-purple-deep mb-12 flex justify-center bg-white shadow-lg">
+            <div v-if="user && user.id_rol !== 1" class="max-w-3xl mx-auto p-4 md:p-6 rounded-xl border border-dashed border-purple-deep mb-12 flex justify-center bg-white shadow-lg">
                 <router-link to="/admin/agregar-mascota">
                     <button 
                         class="bg-purple-deep text-white py-3 px-8 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-200 shadow-xl flex items-center justify-center space-x-2"
@@ -31,7 +31,7 @@
                 </router-link>
             </div>
 
-            <h2 class="text-3xl font-extrabold mb-8 text-dark-primary-blue text-center">
+            <h2 class="text-3xl font-extrabold mb-8 text-dark-primary-blue text-center py-10">
                 <font-awesome-icon icon="fas fa-cloud-sun" class="mr-2 text-purple-deep" /> Mensajes en el Cielo
             </h2>
 
@@ -94,7 +94,6 @@
 import { ref } from 'vue'; 
 import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-// (NUEVO) Iconos de admin añadidos
 import { 
     faPlusCircle, faQuoteLeft, faClock, faCloudSun, faHandHoldingHeart, 
     faChevronDown, faPaw, faPencilAlt, faTrashAlt 
@@ -105,7 +104,7 @@ library.add(
     faChevronDown, faPaw, faPencilAlt, faTrashAlt
 ); 
 
-// --- (NUEVO) Tipado y Carga de Datos ---
+// --- Tipado y Carga de Datos ---
 interface Memorial {
     id_memorial: number;
     nombre: string;
@@ -114,10 +113,15 @@ interface Memorial {
     dedicatoria: string | null;
 }
 
+// (NUEVO) Tipo para la respuesta de la API de borrado
+interface DeleteApiResponse {
+  statusCode: number;
+  message: string;
+}
+
 const user = useUser(); // Para mostrar/ocultar botones de admin
 const router = useRouter();
 
-// (NUEVO) Estados de Feedback
 const feedbackMessage = ref('');
 const isError = ref(false);
 
@@ -156,13 +160,14 @@ const deleteMemorial = async (id: number, nombre: string) => {
   }
 
   try {
-    const response = await $fetch('/api/admin/eliminar-memorial', {
+    // (CORREGIDO) Añadido el tipo <DeleteApiResponse>
+    const response = await $fetch<DeleteApiResponse>('../api/admin/eliminar-memorial', {
       method: 'DELETE',
       body: { id: id }
     });
 
     isError.value = false;
-    feedbackMessage.value = response.message;
+    feedbackMessage.value = response.message; // <-- Esta línea ahora es segura
     refresh(); // Vuelve a cargar la lista de memoriales
 
   } catch (err: any) {

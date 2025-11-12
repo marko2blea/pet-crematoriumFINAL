@@ -9,10 +9,12 @@ import { db } from '../utils/prisma';
  * Query Params: ?id= (El ID del producto)
  */
 export default defineEventHandler(async (event) => {
-  try {
-    const query = getQuery(event);
-    const id = query.id as string | undefined;
+  
+  // (CORRECCIÓN 1) 'id' se define aquí, fuera del 'try'
+  const query = getQuery(event);
+  const id = query.id as string | undefined;
 
+  try {
     if (!id || isNaN(Number(id))) {
       throw createError({
         statusCode: 400,
@@ -53,9 +55,12 @@ export default defineEventHandler(async (event) => {
 
   } catch (error: any) {
     console.error("Error al obtener detalle de producto público:", error);
+    
+    // (CORRECCIÓN 2) 'id' ahora SÍ es accesible aquí
     if (error.code === 'P2025') { // "Registro no encontrado"
-       throw createError({ statusCode: 404, statusMessage: `Producto no disponible o no encontrado.` });
+       throw createError({ statusCode: 404, statusMessage: `Producto no disponible o no encontrado (ID: ${id}).` });
     }
+    
     throw createError({ statusCode: 500, statusMessage: 'Error al consultar el producto.' });
   }
 });

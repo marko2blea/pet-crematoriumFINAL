@@ -1,70 +1,82 @@
-// RUTA CORREGIDA: Sube dos niveles (desde /api/admin/ a /server/)
+// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
 import { db } from '../../utils/prisma';
 import bcrypt from 'bcryptjs';
 
 /**
- * API para CREAR (POST) un nuevo usuario manualmente (Admin).
+ * API de ADMIN para CREAR (POST) un nuevo usuario.
  * Ruta: /api/admin/agregar-usuario
  * Método: POST
  */
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Leer los datos que vienen del formulario
-    const body = await readBody(event);
-    const { nombre, apellido_paterno, correo, contraseña, id_rol } = body;
+    // (MODIFICADO) Leer todos los campos del body
+    const { 
+      nombre, 
+      apellido_paterno, 
+      apellido_materno, 
+      correo, 
+      password,
+      id_rol,
+      telefono,
+      region,
+      comuna,
+      direccion
+    } = await readBody(event);
 
-    // 2. Validar datos
-    if (!correo || !contraseña || !nombre || !id_rol) {
+    if (!nombre || !apellido_paterno || !correo || !password || !id_rol) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Faltan campos obligatorios (nombre, correo, contraseña, rol).',
+        statusMessage: 'Nombre, Apellido Paterno, Correo, Contraseña y Rol son obligatorios.',
       });
     }
 
-    // 3. Revisar si el usuario ya existe
+    // 1. Revisar si el correo ya existe
     const existingUser = await db.usuario.findUnique({
-      where: { correo: correo },
+      where: { correo },
     });
 
     if (existingUser) {
       throw createError({
-        statusCode: 409, // Conflicto
+        statusCode: 409, // 409 Conflict
         statusMessage: 'El correo electrónico ya está registrado.',
       });
     }
 
-    // 4. Encriptar la contraseña
-    const hashedPassword = await bcrypt.hash(contraseña, 10);
+    // 2. Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5. Crear el usuario en la base de datos
+    // 3. Crear el nuevo usuario
     const newUser = await db.usuario.create({
       data: {
         nombre,
         apellido_paterno,
+        apellido_materno,
         correo,
         contrase_a: hashedPassword,
-        id_rol: Number(id_rol), // Asignar el ROL seleccionado
+        id_rol: Number(id_rol),
+        // (MODIFICADO) Guardar los nuevos campos
+        telefono: telefono ? Number(telefono) : null,
+        region,
+        comuna,
+        direccion,
         fecha_registro: new Date(),
       },
     });
 
-    // 6. Quitar la contraseña del objeto antes de devolverlo
-    const { contrase_a, ...userWithoutPassword } = newUser;
-
-    return {
-      statusCode: 201, // 201 Created
-      message: 'Usuario creado exitosamente.',
-      user: userWithoutPassword,
+    // 4. Éxito
+    return { 
+      statusCode: 201, 
+      message: 'Usuario creado exitosamente.'
     };
 
   } catch (error: any) {
-    console.error("Error al crear usuario (admin):", error);
-    if (error.statusCode) {
+    if (error.statusCode === 409 || error.statusCode === 400) {
       throw error;
     }
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Error interno del servidor al crear el usuario.',
+    console.error("Error al crear usuario (admin):", error);
+    throw createError({ 
+      statusCode: 500, 
+      statusMessage: 'Error interno del servidor al crear el usuario.' 
     });
   }
 });

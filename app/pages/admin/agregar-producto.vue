@@ -35,6 +35,7 @@
                             class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
                         <option value="Urna">Urna</option>
                         <option value="Servicio">Servicio</option>
+                        <option value="Accesorio">Servicio</option>
                         <option value="Otro">Otro</option>
                     </select>
                 </div>

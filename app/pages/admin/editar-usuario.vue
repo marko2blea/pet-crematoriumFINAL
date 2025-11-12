@@ -1,7 +1,7 @@
 <template>
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
 
-    <div v-if="pending || pendingRoles" class="text-center p-10 bg-white rounded-xl shadow-lg">
+    <div v-if="pending" class="text-center p-10 bg-white rounded-xl shadow-lg">
       <h1 class="text-3xl font-bold text-dark-primary-blue">
         Cargando datos del usuario...
       </h1>
@@ -36,54 +36,43 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label for="nombre" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre</label>
-                    <input v-model="form.nombre" type="text" id="nombre"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
-                           required />
+                    <input v-model="form.nombre" type="text" id="nombre" class="form-input" required />
                 </div>
                 <div>
                     <label for="apellido_paterno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Paterno</label>
-                    <input v-model="form.apellido_paterno" type="text" id="apellido_paterno"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
-                           required />
+                    <input v-model="form.apellido_paterno" type="text" id="apellido_paterno" class="form-input" required />
                 </div>
                 <div>
                     <label for="apellido_materno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Materno</label>
-                    <input v-model="form.apellido_materno" type="text" id="apellido_materno"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                    <input v-model="form.apellido_materno" type="text" id="apellido_materno" class="form-input" />
                 </div>
             </div>
 
             <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Información de Contacto</h3>
              <div>
                 <label for="telefono" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono</label>
-                <input v-model="form.telefono" type="tel" id="telefono"
-                       placeholder="912345678"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                <input v-model.number="form.telefono" type="tel" id="telefono" class="form-input" placeholder="912345678" />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="region" class="block text-sm font-semibold text-dark-primary-blue mb-2">Región</label>
-                    <input v-model="form.region" type="text" id="region"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                    <input v-model="form.region" type="text" id="region" class="form-input" />
                 </div>
                 <div>
                     <label for="comuna" class="block text-sm font-semibold text-dark-primary-blue mb-2">Comuna</label>
-                    <input v-model="form.comuna" type="text" id="comuna"
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                    <input v-model="form.comuna" type="text" id="comuna" class="form-input" />
                 </div>
             </div>
              <div>
                 <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección</label>
-                <input v-model="form.direccion" type="text" id="direccion"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep" />
+                <input v-model="form.direccion" type="text" id="direccion" class="form-input" />
             </div>
             
             <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Permisos</h3>
             <div>
                 <label for="rol" class="block text-sm font-semibold text-dark-primary-blue mb-2">Rol del Usuario</label>
-                <select v-model.number="form.id_rol" id="rol"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep bg-white">
+                <select v-model.number="form.id_rol" id="rol" class="form-input bg-white">
                     <option v-if="!roles || roles.length === 0" disabled value="">Cargando roles...</option>
                     <option v-for="rol in roles" :key="rol.id_rol" :value="rol.id_rol">
                         {{ rol.nombre_rol }} (ID: {{ rol.id_rol }})
@@ -110,10 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect, computed } from 'vue'; // (MODIFICADO) Añadido 'computed'
 import { useRoute, useRouter } from 'vue-router';
-// (REVERTIDO) Importamos 'User' y 'Rol'
-import type { User, Rol } from '../../../app/types';
+import type { User, Rol } from '../../app/types'; // (MODIFICADO) Ruta relativa
+
 // 1. Proteger esta página
 definePageMeta({
   middleware: 'auth'
@@ -123,7 +112,7 @@ const route = useRoute();
 const router = useRouter();
 const usuarioId = ref(route.query.id as string);
 
-// (REVERTIDO) Esta es la interfaz completa que incluye el 'id_rol'
+// (MODIFICADO) Interfaz completa (Usuario + Rol)
 interface UserForm {
     id_usuario: number;
     nombre: string;
@@ -134,7 +123,13 @@ interface UserForm {
     region: string | null;
     comuna: string | null;
     direccion: string | null;
-    id_rol: number; // <-- Campo de Rol
+    id_rol: number; // Campo de Rol
+}
+
+// (NUEVO) Interfaz para la respuesta de la API
+interface DetalleUsuarioResponse {
+  usuario: User;
+  rolesDisponibles: Rol[];
 }
 
 // --- Estado del Formulario ---
@@ -143,42 +138,46 @@ const isSaving = ref(false);
 const saveMessage = ref('');
 const saveError = ref(false);
 
-// (REVERTIDO) Cargar la lista de roles
-const { data: roles, pending: pendingRoles } = await useAsyncData<Rol[]>(
-  'lista-roles',
-  () => $fetch('/api/roles') // Llama a la API que ya tenías
-);
+// (ELIMINADO) La llamada a /api/roles se borra, ya que es redundante
+// const { data: roles, pending: pendingRoles } = ...
 
-// --- Carga de Datos ---
-const { data: loadedData, pending, error } = await useAsyncData<User>(
+// --- (MODIFICADO) Carga de Datos ---
+// Ahora cargamos todo (usuario + roles) en una sola llamada
+const { data: loadedData, pending, error } = await useAsyncData<DetalleUsuarioResponse>(
   'usuario-detalle',
   () => {
     if (!usuarioId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de usuario' });
-    return $fetch('/api/admin/usuario-detalle', { query: { id: usuarioId.value } }) //
+    return $fetch('/api/admin/usuario-detalle', { query: { id: usuarioId.value } })
   },
   { watch: [usuarioId] }
 );
 
-// Rellenar el formulario
+// (NUEVO) 'roles' ahora es un 'computed' que lee la data cargada
+const roles = computed(() => {
+  return loadedData.value?.rolesDisponibles || [];
+});
+
+// (MODIFICADO) Rellenar el formulario
 watchEffect(() => {
-  if (loadedData.value) {
-    // (REVERTIDO) Copiamos todos los campos, incluyendo 'id_rol'
+  // Ahora leemos desde 'loadedData.value.usuario'
+  if (loadedData.value && loadedData.value.usuario) {
+    const usuario = loadedData.value.usuario;
     form.value = {
-      id_usuario: loadedData.value.id_usuario,
-      nombre: loadedData.value.nombre || '',
-      apellido_paterno: loadedData.value.apellido_paterno || '',
-      apellido_materno: loadedData.value.apellido_materno,
-      correo: loadedData.value.correo || '',
-      telefono: loadedData.value.telefono,
-      region: loadedData.value.region,
-      comuna: loadedData.value.comuna,
-      direccion: loadedData.value.direccion,
-      id_rol: loadedData.value.id_rol || 1, // Asigna 1 (Cliente) si es nulo
+      id_usuario: usuario.id_usuario,
+      nombre: usuario.nombre || '',
+      apellido_paterno: usuario.apellido_paterno || '',
+      apellido_materno: usuario.apellido_materno,
+      correo: usuario.correo || '',
+      telefono: usuario.telefono,
+      region: usuario.region,
+      comuna: usuario.comuna,
+      direccion: usuario.direccion,
+      id_rol: usuario.id_rol || 1, // Asigna 1 (Cliente) si es nulo
     };
   }
 });
 
-// --- Guardar Cambios ---
+// --- Guardar Cambios (Sin cambios) ---
 const guardarCambios = async () => {
   if (!form.value) return;
 
@@ -187,8 +186,6 @@ const guardarCambios = async () => {
   saveError.value = false;
 
   try {
-    // (REVERTIDO) El 'body' ahora vuelve a enviar el objeto completo
-    // incluyendo 'id_rol'
     await $fetch('/api/admin/editar-usuario', {
       method: 'PUT',
       body: form.value 
@@ -209,7 +206,7 @@ const guardarCambios = async () => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="postcss">
 /* (Estilos sin cambios) */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; } 
@@ -228,4 +225,9 @@ const guardarCambios = async () => {
 .text-red-700 { color: #721c24; }
 .border-red-300 { border-color: #f5c6cb; }
 .bg-red-50 { background-color: #fef2f2; }
+
+/* (NUEVO) Clase reutilizable para inputs */
+.form-input {
+  @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep;
+}
 </style>

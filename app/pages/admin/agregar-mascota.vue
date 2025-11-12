@@ -61,8 +61,11 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faPlus, faArrowLeft } from '@fortawesome/free-solid-svg-icons'; 
 
 library.add(faPlus, faArrowLeft);
+
+// (CORRECCIÓN)
+// Cambiado de 'auth' a 'admin'
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'admin' 
 });
 
 const router = useRouter();
@@ -79,13 +82,12 @@ const message = ref('');
 const messageClass = ref('');
 const isLoading = ref(false);
 
-// (MODIFICADO) Conexión a la API POST
 const handleSubmit = async () => {
   isLoading.value = true;
   message.value = '';
 
   try {
-    await $fetch('/api/admin/agregar-memorial', {
+    await $fetch('../api/admin/agregar-memorial', {
       method: 'POST',
       body: form.value
     });
@@ -119,8 +121,8 @@ const handleSubmit = async () => {
 .bg-white-subtle { background-color: #F8F4FA; }
 .bg-green-100 { background-color: #D1FAE5; }
 .text-green-800 { color: #065F46; }
-.bg-red-100 { background-color: #fef2f2; } /* (NUEVO) */
-.text-red-800 { color: #991b1b; } /* (NUEVO) */
-.disabled\:opacity-50:disabled { opacity: 0.5; } /* (NUEVO) */
-.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; } /* (NUEVO) */
+.bg-red-100 { background-color: #fef2f2; }
+.text-red-800 { color: #991b1b; }
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 </style>

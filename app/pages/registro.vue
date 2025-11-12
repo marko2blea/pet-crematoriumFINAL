@@ -1,242 +1,160 @@
 <template>
-  <div class="pt-14 py-20 min-h-screen flex justify-center items-start">
-    
-    <div class="w-full max-w-lg bg-white-subtle p-8 rounded-xl shadow-2xl border-b-8 border-purple-light">
+  <div class="min-h-screen flex items-center justify-center bg-gray-100 pt-20 pb-10">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl border-t-8 border-purple-deep">
       
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-extrabold text-purple-dark mb-2">
-          Únete a la Familia
-        </h1>
-        <p class="text-gray-600 font-medium">Crea tu cuenta de cliente en San Antonio.</p>
+      <div class="text-center mb-6">
+          <img src="/logo2.png" alt="Logo Crematorio" class="w-32 mx-auto mb-4">
+          <h1 class="text-3xl font-extrabold text-purple-dark">Crear una Cuenta</h1>
+          <p class="text-gray-600 mt-2">Completa tus datos para registrarte.</p>
       </div>
 
-      <!-- MENSAJE DE ERROR/ÉXITO (NUEVO) -->
-      <div v-if="message" class="mb-4 p-3 rounded-lg text-center text-sm"
-           :class="isError ? 'bg-red-100 border border-red-400 text-red-700' : 'bg-green-100 border border-green-400 text-green-700'">
-        {{ message }}
-      </div>
-
-      <form @submit.prevent="handleRegister">
+      <form @submit.prevent="handleRegister" class="space-y-6">
         
-        <div class="grid md:grid-cols-2 gap-4 mb-5">
-          <div>
-            <label for="firstName" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre</label>
-            <input 
-              id="firstName" 
-              v-model="nombre" 
-              type="text" 
-              required
-              class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-              placeholder="Tu Nombre"
-              @input="clearMessages"
-            />
-          </div>
-          <div>
-            <label for="lastName" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido</label>
-            <input 
-              id="lastName" 
-              v-model="apellido_paterno" 
-              type="text" 
-              required
-              class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-              placeholder="Tu Apellido"
-              @input="clearMessages"
-            />
-          </div>
-        </div>
-        
-        <div class="mb-5">
-          <label for="phoneNumber" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono de Contacto (Ej: 912345678)</label>
-          <div class="relative">
-            <input 
-              id="phoneNumber" 
-              v-model="telefono" 
-              type="tel" 
-              required
-              class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-              placeholder="912345678"
-              pattern="[0-9]{9}"
-              title="Debe ser un número de 9 dígitos (ej: 912345678)"
-              @input="clearMessages"
-            />
-            <font-awesome-icon icon="fas fa-phone" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-
-        <div class="mb-5">
-          <label for="email" class="block text-sm font-semibold text-dark-primary-blue mb-2">Correo Electrónico</label>
-          <div class="relative">
-            <input 
-              id="email" 
-              v-model="correo" 
-              type="email" 
-              required
-              class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-              placeholder="usuario@ejemplo.cl"
-              @input="clearMessages"
-            />
-            <font-awesome-icon icon="fas fa-envelope" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label for="password" class="block text-sm font-semibold text-dark-primary-blue mb-2">Contraseña</label>
-            <div class="relative">
-              <input 
-                id="password" 
-                v-model="contraseña" 
-                type="password" 
-                required
-                minlength="8"
-                class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-                placeholder="Mínimo 8 caracteres"
-                @input="clearMessages"
-              />
-              <font-awesome-icon icon="fas fa-key" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <h3 class="text-xl font-semibold text-purple-deep border-b pb-2">Información Personal</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label for="nombre" class="block text-sm font-semibold text-dark-primary-blue mb-2">Nombre</label>
+                <input v-model="form.nombre" type="text" id="nombre" class="form-input" required />
             </div>
-          </div>
-          <div>
-            <label for="confirmPassword" class="block text-sm font-semibold text-dark-primary-blue mb-2">Confirmar Contraseña</label>
-            <input 
-              id="confirmPassword" 
-              v-model="confirmPassword" 
-              type="password" 
-              required
-              class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep transition duration-150 text-gray-800"
-              placeholder="Repetir contraseña"
-              @input="clearMessages"
-            />
-          </div>
+            <div>
+                <label for="apellido_paterno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Paterno</label>
+                <input v-model="form.apellido_paterno" type="text" id="apellido_paterno" class="form-input" required />
+            </div>
+            <div>
+                <label for="apellido_materno" class="block text-sm font-semibold text-dark-primary-blue mb-2">Apellido Materno</label>
+                <input v-model="form.apellido_materno" type="text" id="apellido_materno" class="form-input" />
+            </div>
+        </div>
+
+        <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Información de Acceso</h3>
+        <div>
+            <label for="email" class="block text-sm font-semibold text-dark-primary-blue mb-2">Correo Electrónico</label>
+            <input v-model="form.correo" type="email" id="email" class="form-input" placeholder="tu@correo.com" required />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="password" class="block text-sm font-semibold text-dark-primary-blue mb-2">Contraseña</label>
+                <input v-model="form.password" type="password" id="password" class="form-input" placeholder="••••••••" required />
+            </div>
+            <div>
+                <label for="confirmPassword" class="block text-sm font-semibold text-dark-primary-blue mb-2">Confirmar Contraseña</label>
+                <input v-model="form.confirmPassword" type="password" id="confirmPassword" class="form-input" placeholder="••••••••" required />
+            </div>
+        </div>
+
+        <h3 class="text-xl font-semibold text-purple-deep border-b pb-2 mt-6">Información de Contacto (Opcional)</h3>
+        <div>
+            <label for="telefono" class="block text-sm font-semibold text-dark-primary-blue mb-2">Teléfono</label>
+            <input v-model.number="form.telefono" type="tel" id="telefono" class="form-input" placeholder="912345678" />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="region" class="block text-sm font-semibold text-dark-primary-blue mb-2">Región</label>
+                <input v-model="form.region" type="text" id="region" class="form-input" />
+            </div>
+            <div>
+                <label for="comuna" class="block text-sm font-semibold text-dark-primary-blue mb-2">Comuna</label>
+                <input v-model="form.comuna" type="text" id="comuna" class="form-input" />
+            </div>
+        </div>
+        <div>
+            <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección</label>
+            <input v-model="form.direccion" type="text" id="direccion" class="form-input" />
         </div>
 
         <button 
           type="submit" 
           :disabled="isLoading"
-          class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold uppercase tracking-wider hover:bg-purple-light transition duration-150 shadow-lg shadow-purple-200/50
+          class="w-full bg-purple-deep text-white py-3 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md mt-6
                  disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isLoading ? 'Creando cuenta...' : 'Crear Cuenta' }}
+          {{ isLoading ? 'Creando...' : 'Crear Cuenta' }}
         </button>
-
       </form>
 
-      <div class="mt-8 pt-4 border-t border-gray-200 text-center text-sm">
-        <NuxtLink to="/login" class="text-purple-light hover:text-purple-dark font-semibold transition duration-150">
-          ¿Ya tienes cuenta? Inicia sesión
-        </NuxtLink>
-      </div>
+      <p v-if="errorMessage" class="mt-4 text-center text-red-600 bg-red-100 p-3 rounded-lg">
+        {{ errorMessage }}
+      </p>
 
+      <div class="mt-6 text-center">
+        <p class="text-gray-600">
+          ¿Ya tienes cuenta? 
+          <NuxtLink to="/login" class="font-bold text-purple-deep hover:underline">Inicia sesión aquí</NuxtLink>
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router'; // Importar useRouter
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { faEnvelope, faKey, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'vue-router';
 
-library.add(faEnvelope, faKey, faPhone);
-
-// --- ESTADO DEL FORMULARIO ---
-// Los nombres coinciden con el 'body' esperado en la API
-const nombre = ref('');
-const apellido_paterno = ref('');
-const telefono = ref('');
-const correo = ref('');
-const contraseña = ref('');
-const confirmPassword = ref(''); // Solo para validación frontend
-
-// --- ESTADO DE UI ---
-const message = ref('');
-const isError = ref(false);
-const isLoading = ref(false);
 const router = useRouter();
 
-const clearMessages = () => {
-  message.value = '';
-  isError.value = false;
-};
-
-// --- FUNCIÓN DE REGISTRO (ACTUALIZADA) ---
-const handleRegister = async () => {
-  clearMessages();
-  
-  // 1. Validar contraseña
-  if (contraseña.value !== confirmPassword.value) {
-    message.value = 'Las contraseñas no coinciden.';
-    isError.value = true;
-    return;
-  }
-  
-  if (contraseña.value.length < 8) {
-    message.value = 'La contraseña debe tener al menos 8 caracteres.';
-    isError.value = true;
-    return;
-  }
-
-  isLoading.value = true;
-
-  try {
-    // 2. Llamar a la API de registro
-    const response = await $fetch('/api/auth/registro', {
-      method: 'POST',
-      body: {
-        nombre: nombre.value,
-        apellido_paterno: apellido_paterno.value,
-        telefono: telefono.value, // La API lo parseará a Int
-        correo: correo.value,
-        contraseña: contraseña.value,
-      },
-    });
-
-    // 3. Éxito
-    isLoading.value = false;
-    isError.value = false;
-    message.value = '¡Usuario creado! Redirigiendo al login...';
-
-    // 4. Redirigir al login después de 2 segundos
-    setTimeout(() => {
-      router.push('/login');
-    }, 2000);
-
-  } catch (error: any) {
-    // 5. Manejar error
-    isLoading.value = false;
-    isError.value = true;
-    console.error('Error en el registro:', error);
-    
-    // 'error.data.statusMessage' es el mensaje de la API (ej: "El correo ya existe")
-    message.value = error.data?.statusMessage || 'Error desconocido. Intente de nuevo.';
-  }
-};
-
-definePageMeta({
-    title: 'Crear Cuenta'
+// (MODIFICADO) 'form' ahora incluye 'confirmPassword'
+const form = ref({
+  nombre: '',
+  apellido_paterno: '',
+  apellido_materno: '',
+  correo: '',
+  password: '',
+  confirmPassword: '', // <-- NUEVO
+  telefono: null as number | null,
+  region: '',
+  comuna: '',
+  direccion: ''
 });
+const errorMessage = ref('');
+const isLoading = ref(false); // (NUEVO) Estado de carga
+
+const handleRegister = async () => {
+    errorMessage.value = '';
+    isLoading.value = true;
+
+    // (NUEVO) Validación de contraseña
+    if (form.value.password !== form.value.confirmPassword) {
+        errorMessage.value = 'Las contraseñas no coinciden.';
+        isLoading.value = false;
+        return; // Detiene la ejecución
+    }
+    
+    if (form.value.password.length < 6) {
+        errorMessage.value = 'La contraseña debe tener al menos 6 caracteres.';
+        isLoading.value = false;
+        return; // Detiene la ejecución
+    }
+
+    try {
+        await $fetch('/api/auth/registro', {
+            method: 'POST',
+            body: form.value // La API (registro.post.ts) ignorará el campo 'confirmPassword'
+        });
+        
+        router.push('/login?registrado=true');
+
+    } catch (err: any) {
+        errorMessage.value = err.data?.statusMessage || 'Error al registrar la cuenta.';
+    } finally {
+        isLoading.value = false;
+    }
+};
 </script>
 
-<style scoped>
-/* CLASES DE COLOR */
-.text-purple-dark { color: #4A235A; } 
-.bg-purple-dark { background-color: #4A235A; } 
+<style scoped lang="postcss">
+.text-purple-dark { color: #4A235A; }
+.text-purple-deep { color: #5C2A72; }
+.border-purple-deep { border-color: #5C2A72; }
+.bg-purple-deep { background-color: #5C2A72; }
 .bg-purple-light { background-color: #6C3483; }
-.text-purple-light { color: #6C3483; }
-
-.bg-purple-deep { background-color: #5C2A72; } 
-.border-purple-deep { border-color: #5C2A72; } 
-
-.focus\:border-purple-deep:focus { border-color: #5C2A72; }
+.text-dark-primary-blue { color: #34495e; }
 .focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
-
-.bg-white-subtle { background-color: #F8F4FA; } /* Fondo de tarjeta claro con tinte púrpura */
-
-.text-dark-primary-blue { color: #34495e; } /* Gris Carbón */
-/* Sombra Púrpura sutil para el botón */
-.shadow-purple-200\/50 { --tw-shadow-color: #e0b4f8; --tw-shadow: var(--tw-shadow-ring-offset-shadow, 0 0 #0000), var(--tw-shadow-ring-shadow, 0 0 #0000), 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color); }
-
-/* (NUEVO) Estilos para el estado deshabilitado del botón */
+.focus\:border-purple-deep:focus { border-color: #5C2A72; }
 .disabled\:opacity-50:disabled { opacity: 0.5; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+
+/* (NUEVO) Clase reutilizable para inputs */
+.form-input {
+  @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep;
+}
 </style>

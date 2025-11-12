@@ -17,7 +17,7 @@
       </div>
     </section>
 
-    <div class="container mx-auto px-4 py-16 space-y-16">
+    <div class="container mx-auto px-4 py-2 space-y-16">
       
       <div v-if="feedbackMessage" 
           :class="isError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"

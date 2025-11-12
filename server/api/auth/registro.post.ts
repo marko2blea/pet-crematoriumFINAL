@@ -1,29 +1,37 @@
-// RUTA CORREGIDA: Cambiamos '~/server/utils/prisma' por la ruta relativa '../utils/prisma'
+// RUTA: Sube dos niveles (desde /api/auth/ a /server/)
 import { db } from '../../utils/prisma';
 import bcrypt from 'bcryptjs';
 
 /**
- * API para registrar un nuevo usuario.
- * Ruta: /api/register
+ * API para registrar (POST) un nuevo usuario (Cliente).
+ * Ruta: /api/auth/registro
  * Método: POST
  */
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Leer los datos que vienen del formulario (ej: de registro.vue)
-    const body = await readBody(event);
-    const { nombre, apellido_paterno, correo, contraseña } = body;
+    // (MODIFICADO) Leer todos los campos del body
+    const { 
+      nombre, 
+      apellido_paterno, 
+      apellido_materno, 
+      correo, 
+      password,
+      telefono,
+      region,
+      comuna,
+      direccion
+    } = await readBody(event);
 
-    // 2. Validar datos básicos
-    if (!correo || !contraseña || !nombre) {
+    if (!nombre || !apellido_paterno || !correo || !password) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Faltan campos obligatorios (nombre, correo, contraseña).',
+        statusMessage: 'Nombre, Apellido Paterno, Correo y Contraseña son obligatorios.',
       });
     }
 
-    // 3. Revisar si el usuario ya existe
+    // 1. Revisar si el correo ya existe
     const existingUser = await db.usuario.findUnique({
-      where: { correo: correo },
+      where: { correo },
     });
 
     if (existingUser) {
@@ -33,43 +41,41 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // 4. Encriptar la contraseña (¡MUY IMPORTANTE!)
-    // Usamos el campo 'contrase_a' que definiste en tu schema.prisma
-    const hashedPassword = await bcrypt.hash(contraseña, 10); // 10 rondas de salt
+    // 2. Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5. Crear el usuario en la base de datos
+    // 3. Crear el nuevo usuario
     const newUser = await db.usuario.create({
       data: {
         nombre,
         apellido_paterno,
+        apellido_materno,
         correo,
-        contrase_a: hashedPassword, // Guardamos la clave encriptada
-        id_rol: 1, // Asumimos '1' = Cliente (según tu SQL)
+        contrase_a: hashedPassword,
+        // (MODIFICADO) Guardar los nuevos campos
+        telefono: telefono ? Number(telefono) : null,
+        region,
+        comuna,
+        direccion,
+        id_rol: 1, // 1 = Cliente por defecto
         fecha_registro: new Date(),
       },
     });
 
-    // 6. Quitar la contraseña del objeto antes de devolverlo
-    const { contrase_a, ...userWithoutPassword } = newUser;
-
-    return {
-      statusCode: 201, // 201 Created
-      message: 'Usuario creado exitosamente.',
-      user: userWithoutPassword,
+    // 4. Éxito
+    return { 
+      statusCode: 201, 
+      message: 'Usuario registrado exitosamente.'
     };
 
   } catch (error: any) {
-    console.error("Error en API register:", error);
-
-    // Si el error ya tiene un statusCode (como el 409), úsalo
-    if (error.statusCode) {
+    if (error.statusCode === 409 || error.statusCode === 400) {
       throw error;
     }
-
-    // Error genérico
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Error interno del servidor al registrar el usuario.',
+    console.error("Error al registrar usuario:", error);
+    throw createError({ 
+      statusCode: 500, 
+      statusMessage: 'Error interno del servidor al registrar el usuario.' 
     });
   }
 });
