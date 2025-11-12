@@ -1,5 +1,5 @@
 <template>
-<div class="min-h-screen pt-14 font-sans antialiased"> 
+<div class="min-h-screen pt-12 font-sans antialiased"> 
     
     <!-- BANNER DE HEROE -->
     <div class="relative w-full h-96 overflow-hidden -mt-14">
