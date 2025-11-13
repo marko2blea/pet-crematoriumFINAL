@@ -59,26 +59,16 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-2xl overflow-hidden mb-12">
+    <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
         <div class="p-6 border-b border-gray-200">
             <h2 class="text-2xl font-bold text-purple-dark">
                 <font-awesome-icon icon="fas fa-chart-line" class="mr-2 text-purple-deep" />
                 Ingresos por Ventas
             </h2>
-            <p class="text-gray-600">Mostrando datos para: <span class="font-semibold text-purple-deep">{{ periodTitle }}</span></p>
         </div>
-        
-        <div v-if="salesPending" class="text-center py-10 text-gray-500">
-            Cargando gráfico de ventas...
-        </div>
-        <div v-else-if="salesError" class="text-center py-10 text-red-600 bg-red-50">
-            Error al cargar el reporte de ventas: {{ salesError.message }}
-        </div>
+        <div v-if="salesPending" class="text-center py-10 text-gray-500">Cargando gráfico de ventas...</div>
+        <div v-else-if="salesError" class="text-center py-10 text-red-600 bg-red-50">Error al cargar el reporte: {{ salesError.message }}</div>
         <div v-else class="p-6">
-            <div class="bg-purple-deep text-white p-6 rounded-lg shadow-xl mb-6 max-w-sm">
-                <p class="text-sm uppercase tracking-wider text-purple-200">Total de Ingresos (Neto)</p>
-                <p class="text-4xl font-extrabold">{{ (salesData?.total ?? 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) }}</p>
-            </div>
             <div class="h-96">
                 <VentasChart 
                   v-if="salesData && salesData.data.length > 0" 
@@ -94,32 +84,28 @@
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
             <div class="p-6 border-b border-gray-200">
                 <h2 class="text-2xl font-bold text-purple-dark">
-                    <font-awesome-icon icon="fas fa-box-open" class="mr-2 text-bd-gold-accent" />
-                    Urnas Más Vendidas
+                    <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" />
+                    Servicios Más Vendidos
                 </h2>
             </div>
-            <div v-if="urnasPending" class="text-center py-10 text-gray-500">
-                Calculando reporte de urnas...
-            </div>
-            <div v-else-if="urnasError" class="text-center py-10 text-red-600 bg-red-50">
-                Error al cargar el reporte de urnas: {{ urnasError.message }}
-            </div>
+            <div v-if="serviciosPending" class="text-center py-10 text-gray-500">Calculando reporte...</div>
+            <div v-else-if="serviciosError" class="text-center py-10 text-red-600 bg-red-50">Error: {{ serviciosError.message }}</div>
             <div v-else>
-                <table v-if="urnasData && urnasData.length > 0" class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
+                <table v-if="serviciosData && serviciosData.length > 0" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-purple-dark tracking-wider w-8/12">Nombre</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold uppercase text-purple-dark tracking-wider w-4/12">Ventas</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500 tracking-wider w-8/12">Nombre</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold uppercase text-gray-500 tracking-wider w-4/12">Ventas</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="urna in urnasData" :key="urna.nombre" class="hover:bg-purple-card">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark-primary-blue">{{ urna.nombre }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-700">{{ urna.ventas }}</td>
+                        <tr v-for="servicio in serviciosData" :key="servicio.nombre" class="hover:bg-purple-card">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark-primary-blue">{{ servicio.nombre }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-700">{{ servicio.ventas }}</td>
                         </tr>
                     </tbody>
                 </table>
-                <p v-else class="text-center text-gray-500 py-10">No se vendieron urnas en este período.</p>
+                <p v-else class="text-center text-gray-500 py-10">No se vendieron servicios en este período.</p>
             </div>
         </div>
 
@@ -150,46 +136,43 @@
                 <p v-else class="text-center text-gray-500 py-10">No se vendieron accesorios en este período.</p>
             </div>
         </div>
-
+        
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
             <div class="p-6 border-b border-gray-200">
                 <h2 class="text-2xl font-bold text-purple-dark">
-                    <font-awesome-icon icon="fas fa-heart" class="mr-2 text-red-500" />
-                    Servicios Más Vendidos
+                    <font-awesome-icon icon="fas fa-box-open" class="mr-2 text-bd-gold-accent" />
+                    Urnas Más Vendidas
                 </h2>
             </div>
-            <div v-if="serviciosPending" class="text-center py-10 text-gray-500">
-                Calculando reporte de servicios...
-            </div>
-            <div v-else-if="serviciosError" class="text-center py-10 text-red-600 bg-red-50">
-                Error al cargar el reporte de servicios: {{ serviciosError.message }}
-            </div>
+            <div v-if="urnasPending" class="text-center py-10 text-gray-500">Calculando reporte...</div>
+            <div v-else-if="urnasError" class="text-center py-10 text-red-600 bg-red-50">Error: {{ urnasError.message }}</div>
             <div v-else>
-                <table v-if="serviciosData && serviciosData.length > 0" class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
+                <table v-if="urnasData && urnasData.length > 0" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-purple-dark tracking-wider w-8/12">Nombre</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold uppercase text-purple-dark tracking-wider w-4/12">Ventas</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500 tracking-wider w-8/12">Nombre</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold uppercase text-gray-500 tracking-wider w-4/12">Ventas</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="servicio in serviciosData" :key="servicio.nombre" class="hover:bg-purple-card">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark-primary-blue">{{ servicio.nombre }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-700">{{ servicio.ventas }}</td>
+                        <tr v-for="urna in urnasData" :key="urna.nombre" class="hover:bg-purple-card">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark-primary-blue">{{ urna.nombre }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-700">{{ urna.ventas }}</td>
                         </tr>
                     </tbody>
                 </table>
-                <p v-else class="text-center text-gray-500 py-10">No se vendieron servicios en este período.</p>
+                <p v-else class="text-center text-gray-500 py-10">No se vendieron urnas en este período.</p>
             </div>
         </div>
 
-    </div> <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+    </div> 
+    
+    <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
         <div class="p-6 border-b border-gray-200">
             <h2 class="text-2xl font-bold text-purple-dark">
                 <font-awesome-icon icon="fas fa-receipt" class="mr-2 text-gray-500" />
                 Últimas Transacciones (Pagadas)
             </h2>
-            <p class="text-gray-600">Mostrando datos para: <span class="font-semibold text-purple-deep">{{ periodTitle }}</span></p>
         </div>
         
         <div v-if="transaccionesPending" class="text-center py-10 text-gray-500">
@@ -199,28 +182,30 @@
             Error al cargar las transacciones: {{ transaccionesError.message }}
         </div>
         <div v-else>
-            <table v-if="transaccionesData && transaccionesData.length > 0" class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-purple-dark text-white">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">ID Pago</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Fecha</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Cliente</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Método</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Monto</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="tx in transaccionesData" :key="tx.id" class="hover:bg-purple-card transition duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-primary-blue">{{ tx.id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ tx.fecha }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-dark">{{ tx.cliente }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ tx.metodo }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-700">
-                            {{ tx.monto.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div v-if="transaccionesData && transaccionesData.length > 0" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-purple-dark text-white">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">ID Pago</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Cliente</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Método</th>
+                            <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="tx in transaccionesData" :key="tx.id" class="hover:bg-purple-card transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-primary-blue">{{ tx.id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ tx.fecha }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-dark">{{ tx.cliente }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ tx.metodo }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-700">
+                                {{ tx.monto.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <p v-else class="text-center text-gray-500 py-10">No se encontraron transacciones en el período seleccionado.</p>
         </div>
     </div>
@@ -231,12 +216,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { ChartData } from 'chart.js';
-import VentasChart from '../../../components/VentasChart.vue'; 
-// (NUEVO) Importar iconos
+// (ELIMINADO) La importación manual
+// import VentasChart from '~/components/VentasChart.vue'; 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faChartLine, faBoxOpen, faHeart, faReceipt } from '@fortawesome/free-solid-svg-icons';
+import { 
+    // (CORREGIDO) Añadidos los iconos que faltaban para los KPIs
+    faChartLine, faBoxOpen, faHeart, faReceipt, 
+    faDollarSign, faCheckCircle, faBox, faPuzzlePiece
+} from '@fortawesome/free-solid-svg-icons';
 
-library.add(faChartLine, faBoxOpen, faHeart, faReceipt);
+library.add(
+    faChartLine, faBoxOpen, faHeart, faReceipt, 
+    faDollarSign, faCheckCircle, faBox, faPuzzlePiece
+);
 
 definePageMeta({
   middleware: 'auth'
@@ -276,8 +268,12 @@ const {
   error: salesError 
 } = await useAsyncData<SalesData>(
   'reporte-ventas',
+  // (CORREGIDO) Ruta absoluta, no relativa
   () => $fetch('/api/admin/reporte-ventas', { query: { period: period.value } }),
-  { watch: [period] }
+  { 
+    watch: [period],
+    default: () => ({ labels: [], data: [], total: 0 }) 
+  }
 );
 
 // --- Carga de Datos de Urnas (Tabla) ---
@@ -287,44 +283,70 @@ const {
   error: urnasError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-urnas',
-  () => $fetch('../api/admin/reporte-urnas', { query: { period: period.value } }),
-  { watch: [period] }
+  // (CORREGIDO) Ruta absoluta
+  () => $fetch('/api/admin/reporte-urnas', { query: { period: period.value } }),
+  { 
+    watch: [period],
+    default: () => [] 
+  }
 );
 
-// --- (NUEVO) Carga de Datos de Servicios (Tabla) ---
+// --- Carga de Datos de Servicios (Tabla) ---
 const { 
   data: serviciosData, 
   pending: serviciosPending, 
   error: serviciosError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-servicios',
-  () => $fetch('../api/admin/reporte-servicios', { query: { period: period.value } }),
-  { watch: [period] }
+  // (CORREGIDO) Ruta absoluta
+  () => $fetch('/api/admin/reporte-servicios', { query: { period: period.value } }),
+  { 
+    watch: [period],
+    default: () => [] 
+  }
 );
 
-// --- (NUEVO) Carga de Datos de Transacciones (Tabla) ---
-const { 
-  data: transaccionesData, 
-  pending: transaccionesPending, 
-  error: transaccionesError 
-} = await useAsyncData<Transaccion[]>(
-  'reservas-recientes',
-  () => $fetch('../api/admin/reservas-recientes', { query: { period: period.value } }),
-  { watch: [period] }
-);
-
+// --- Carga de Datos de Accesorios (Tabla) ---
 const { 
   data: accesoriosData, 
   pending: accesoriosPending, 
   error: accesoriosError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-accesorios',
-  () => $fetch('../api/admin/reporte-accesorios', { query: { period: period.value } }),
+  // (CORREGIDO) Ruta absoluta
+  () => $fetch('/api/admin/reporte-accesorios', { query: { period: period.value } }),
   { 
     watch: [period],
     default: () => [] 
   }
 );
+
+// --- Carga de Datos de Transacciones (Tabla) ---
+const { 
+  data: transaccionesData, 
+  pending: transaccionesPending, 
+  error: transaccionesError 
+} = await useAsyncData<Transaccion[]>(
+  'reservas-recientes',
+  // (CORREGIDO) Ruta absoluta
+  () => $fetch('/api/admin/reservas-recientes', { query: { period: period.value } }),
+  { 
+    watch: [period],
+    default: () => [] 
+  }
+);
+
+
+// --- KPIs Calculados ---
+const totalIngresos = computed(() => salesData.value?.total ?? 0);
+const totalReservasPagadas = computed(() => transaccionesData.value?.length ?? 0);
+
+const totalProductosVendidos = computed(() => {
+    const urnas = urnasData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
+    const servicios = serviciosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
+    const accesorios = accesoriosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0; 
+    return urnas + servicios + accesorios; 
+});
 
 
 // --- Formato de datos para el gráfico de ventas ---
@@ -335,7 +357,7 @@ const salesChartData = computed((): ChartData<'line'> => {
     datasets: [
       {
         label: 'Ingresos (CLP)',
-        backgroundColor: '#6C3483', 
+        backgroundColor: 'rgba(108, 52, 131, 0.2)', 
         borderColor: '#4A235A',     
         data: data?.data || [],
         fill: true,
@@ -343,16 +365,6 @@ const salesChartData = computed((): ChartData<'line'> => {
       },
     ],
   };
-});
-
-const totalIngresos = computed(() => salesData.value?.total ?? 0);
-const totalReservasPagadas = computed(() => transaccionesData.value?.length ?? 0);
-
-const totalProductosVendidos = computed(() => {
-    const urnas = urnasData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
-    const servicios = serviciosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
-    const accesorios = accesoriosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0; 
-    return urnas + servicios + accesorios; 
 });
 </script>
 
@@ -370,4 +382,6 @@ const totalProductosVendidos = computed(() => {
 }
 .text-bd-gold-accent { color: #FFD700; }
 .text-red-500 { color: #EF4444; }
+.text-green-500 { color: #22c55e; }
+.text-blue-500 { color: #3b82f6; } 
 </style>
