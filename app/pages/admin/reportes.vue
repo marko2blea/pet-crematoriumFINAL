@@ -1,33 +1,62 @@
 <template>
-  <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
+  <div class="pt-14 py-16 min-h-screen container mx-auto px-4 space-y-8">
     
-    <div class="flex justify-between items-center mb-8 border-b-2 border-gray-300 pb-3">
-        <h1 class="text-3xl font-bold text-purple-dark">Reportes</h1>
+    <div class="flex flex-col md:flex-row justify-between items-center pb-3">
+        <h1 class="text-3xl font-bold text-purple-dark mb-4 md:mb-0">
+            Dashboard de Reportes
+        </h1>
+        
+        <div class="p-2 bg-white rounded-lg shadow-md flex justify-center space-x-1">
+            <button
+              @click="period = 'month'"
+              :class="period === 'month' ? 'bg-purple-deep text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              class="px-4 py-2 rounded-lg font-bold transition duration-150 text-sm"
+            >
+              Mes Actual
+            </button>
+            <button
+              @click="period = 'quarter'"
+              :class="period === 'quarter' ? 'bg-purple-deep text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              class="px-4 py-2 rounded-lg font-bold transition duration-150 text-sm"
+            >
+              Trimestre Actual
+            </button>
+            <button
+              @click="period = 'year'"
+              :class="period === 'year' ? 'bg-purple-deep text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              class="px-4 py-2 rounded-lg font-bold transition duration-150 text-sm"
+            >
+              Año Actual
+            </button>
+        </div>
     </div>
+    <p class="text-gray-600 -mt-6">Mostrando datos para: <span class="font-semibold text-purple-deep">{{ periodTitle }}</span></p>
 
-    <div class="mb-6 p-4 bg-white rounded-lg shadow-md flex justify-center space-x-2">
-        <span class="font-semibold text-gray-700 self-center mr-2">Filtrar por:</span>
-        <button
-          @click="period = 'month'"
-          :class="period === 'month' ? 'bg-purple-deep text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          class="px-4 py-2 rounded-lg font-bold transition duration-150"
-        >
-          Mes Actual
-        </button>
-        <button
-          @click="period = 'quarter'"
-          :class="period === 'quarter' ? 'bg-purple-deep text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          class="px-4 py-2 rounded-lg font-bold transition duration-150"
-        >
-          Trimestre Actual
-        </button>
-        <button
-          @click="period = 'year'"
-          :class="period === 'year' ? 'bg-purple-deep text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          class="px-4 py-2 rounded-lg font-bold transition duration-150"
-        >
-          Año Actual
-        </button>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-purple-deep text-white p-6 rounded-xl shadow-2xl flex items-center space-x-4">
+            <font-awesome-icon icon="fas fa-dollar-sign" class="text-4xl text-bd-gold-accent opacity-70" />
+            <div>
+                <p class="text-sm uppercase tracking-wider text-purple-200">Total de Ingresos (Neto)</p>
+                <p v-if="salesPending" class="text-3xl font-extrabold">Cargando...</p>
+                <p v-else class="text-3xl font-extrabold">{{ totalIngresos.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) }}</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-2xl flex items-center space-x-4">
+            <font-awesome-icon icon="fas fa-check-circle" class="text-4xl text-green-500 opacity-70" />
+            <div>
+                <p class="text-sm uppercase tracking-wider text-gray-500">Reservas Pagadas</p>
+                <p v-if="transaccionesPending" class="text-3xl font-extrabold text-purple-dark">Cargando...</p>
+                <p v-else class="text-3xl font-extrabold text-purple-dark">{{ totalReservasPagadas }}</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-2xl flex items-center space-x-4">
+            <font-awesome-icon icon="fas fa-box" class="text-4xl text-purple-dark opacity-70" />
+            <div>
+                <p class="text-sm uppercase tracking-wider text-gray-500">Productos Vendidos (Urnas + Serv. + Acc.)</p>
+                <p v-if="urnasPending || serviciosPending || accesoriosPending" class="text-3xl font-extrabold text-purple-dark">Cargando...</p>
+                <p v-else class="text-3xl font-extrabold text-purple-dark">{{ totalProductosVendidos }}</p>
+            </div>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-2xl overflow-hidden mb-12">
@@ -60,7 +89,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
             <div class="p-6 border-b border-gray-200">
@@ -91,6 +120,34 @@
                     </tbody>
                 </table>
                 <p v-else class="text-center text-gray-500 py-10">No se vendieron urnas en este período.</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-purple-dark">
+                    <font-awesome-icon icon="fas fa-puzzle-piece" class="mr-2 text-blue-500" />
+                    Accesorios Más Vendidos
+                </h2>
+            </div>
+            <div v-if="accesoriosPending" class="text-center py-10 text-gray-500">Calculando reporte...</div>
+            <div v-else-if="accesoriosError" class="text-center py-10 text-red-600 bg-red-50">Error: {{ accesoriosError.message }}</div>
+            <div v-else>
+                <table v-if="accesoriosData && accesoriosData.length > 0" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500 tracking-wider w-8/12">Nombre</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold uppercase text-gray-500 tracking-wider w-4/12">Ventas</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="accesorio in accesoriosData" :key="accesorio.nombre" class="hover:bg-purple-card">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark-primary-blue">{{ accesorio.nombre }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-700">{{ accesorio.ventas }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p v-else class="text-center text-gray-500 py-10">No se vendieron accesorios en este período.</p>
             </div>
         </div>
 
@@ -230,7 +287,7 @@ const {
   error: urnasError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-urnas',
-  () => $fetch('/api/admin/reporte-urnas', { query: { period: period.value } }),
+  () => $fetch('../api/admin/reporte-urnas', { query: { period: period.value } }),
   { watch: [period] }
 );
 
@@ -241,7 +298,7 @@ const {
   error: serviciosError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-servicios',
-  () => $fetch('/api/admin/reporte-servicios', { query: { period: period.value } }),
+  () => $fetch('../api/admin/reporte-servicios', { query: { period: period.value } }),
   { watch: [period] }
 );
 
@@ -252,8 +309,21 @@ const {
   error: transaccionesError 
 } = await useAsyncData<Transaccion[]>(
   'reservas-recientes',
-  () => $fetch('/api/admin/reservas-recientes', { query: { period: period.value } }),
+  () => $fetch('../api/admin/reservas-recientes', { query: { period: period.value } }),
   { watch: [period] }
+);
+
+const { 
+  data: accesoriosData, 
+  pending: accesoriosPending, 
+  error: accesoriosError 
+} = await useAsyncData<TopProduct[]>(
+  'reporte-accesorios',
+  () => $fetch('../api/admin/reporte-accesorios', { query: { period: period.value } }),
+  { 
+    watch: [period],
+    default: () => [] 
+  }
 );
 
 
@@ -273,6 +343,16 @@ const salesChartData = computed((): ChartData<'line'> => {
       },
     ],
   };
+});
+
+const totalIngresos = computed(() => salesData.value?.total ?? 0);
+const totalReservasPagadas = computed(() => transaccionesData.value?.length ?? 0);
+
+const totalProductosVendidos = computed(() => {
+    const urnas = urnasData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
+    const servicios = serviciosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
+    const accesorios = accesoriosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0; 
+    return urnas + servicios + accesorios; 
 });
 </script>
 
