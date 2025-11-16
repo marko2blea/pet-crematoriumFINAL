@@ -71,7 +71,7 @@
         <div v-else class="p-6">
             <div class="h-96">
                 <VentasChart 
-                  v-if="salesData && salesData.data.length > 0" 
+                  v-if="salesData.data.length > 0" 
                   :chartData="salesChartData" 
                 />
                 <p v-else class="text-center text-gray-500 pt-16">No hay datos de ventas para el período seleccionado.</p>
@@ -91,7 +91,7 @@
             <div v-if="serviciosPending" class="text-center py-10 text-gray-500">Calculando reporte...</div>
             <div v-else-if="serviciosError" class="text-center py-10 text-red-600 bg-red-50">Error: {{ serviciosError.message }}</div>
             <div v-else>
-                <table v-if="serviciosData && serviciosData.length > 0" class="min-w-full divide-y divide-gray-200">
+                <table v-if="serviciosData.length > 0" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500 tracking-wider w-8/12">Nombre</th>
@@ -119,7 +119,7 @@
             <div v-if="accesoriosPending" class="text-center py-10 text-gray-500">Calculando reporte...</div>
             <div v-else-if="accesoriosError" class="text-center py-10 text-red-600 bg-red-50">Error: {{ accesoriosError.message }}</div>
             <div v-else>
-                <table v-if="accesoriosData && accesoriosData.length > 0" class="min-w-full divide-y divide-gray-200">
+                <table v-if="accesoriosData.length > 0" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500 tracking-wider w-8/12">Nombre</th>
@@ -147,7 +147,7 @@
             <div v-if="urnasPending" class="text-center py-10 text-gray-500">Calculando reporte...</div>
             <div v-else-if="urnasError" class="text-center py-10 text-red-600 bg-red-50">Error: {{ urnasError.message }}</div>
             <div v-else>
-                <table v-if="urnasData && urnasData.length > 0" class="min-w-full divide-y divide-gray-200">
+                <table v-if="urnasData.length > 0" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500 tracking-wider w-8/12">Nombre</th>
@@ -182,7 +182,7 @@
             Error al cargar las transacciones: {{ transaccionesError.message }}
         </div>
         <div v-else>
-            <div v-if="transaccionesData && transaccionesData.length > 0" class="overflow-x-auto">
+            <div v-if="transaccionesData.length > 0" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-purple-dark text-white">
                         <tr>
@@ -216,11 +216,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { ChartData } from 'chart.js';
-// (ELIMINADO) La importación manual
-// import VentasChart from '~/components/VentasChart.vue'; 
+// (CORRECCIÓN 1) ELIMINAR la importación manual
+// import VentasChart from '../../../components/VentasChart.vue'; 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { 
-    // (CORREGIDO) Añadidos los iconos que faltaban para los KPIs
+    // (CORRECCIÓN 2) Añadir los iconos que faltaban
     faChartLine, faBoxOpen, faHeart, faReceipt, 
     faDollarSign, faCheckCircle, faBox, faPuzzlePiece
 } from '@fortawesome/free-solid-svg-icons';
@@ -261,105 +261,95 @@ const periodTitle = computed(() => {
   return 'Este Mes';
 });
 
-// --- Carga de Datos de Ventas (Gráfico) ---
+// --- (CORRECCIÓN 3) Carga de Datos (Rutas Absolutas) ---
 const { 
-  data: salesData, 
+  data: _salesData, 
   pending: salesPending, 
   error: salesError 
 } = await useAsyncData<SalesData>(
   'reporte-ventas',
-  // (CORREGIDO) Ruta absoluta, no relativa
   () => $fetch('/api/admin/reporte-ventas', { query: { period: period.value } }),
   { 
-    watch: [period],
-    default: () => ({ labels: [], data: [], total: 0 }) 
+    watch: [period]
   }
 );
+const salesData = computed(() => _salesData.value || { labels: [], data: [], total: 0 });
 
-// --- Carga de Datos de Urnas (Tabla) ---
 const { 
-  data: urnasData, 
+  data: _urnasData, 
   pending: urnasPending, 
   error: urnasError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-urnas',
-  // (CORREGIDO) Ruta absoluta
   () => $fetch('/api/admin/reporte-urnas', { query: { period: period.value } }),
   { 
-    watch: [period],
-    default: () => [] 
+    watch: [period]
   }
 );
+const urnasData = computed(() => _urnasData.value || []);
 
-// --- Carga de Datos de Servicios (Tabla) ---
 const { 
-  data: serviciosData, 
+  data: _serviciosData, 
   pending: serviciosPending, 
   error: serviciosError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-servicios',
-  // (CORREGIDO) Ruta absoluta
   () => $fetch('/api/admin/reporte-servicios', { query: { period: period.value } }),
   { 
-    watch: [period],
-    default: () => [] 
+    watch: [period]
   }
 );
+const serviciosData = computed(() => _serviciosData.value || []);
 
-// --- Carga de Datos de Accesorios (Tabla) ---
 const { 
-  data: accesoriosData, 
+  data: _accesoriosData, 
   pending: accesoriosPending, 
   error: accesoriosError 
 } = await useAsyncData<TopProduct[]>(
   'reporte-accesorios',
-  // (CORREGIDO) Ruta absoluta
   () => $fetch('/api/admin/reporte-accesorios', { query: { period: period.value } }),
   { 
-    watch: [period],
-    default: () => [] 
+    watch: [period]
   }
 );
+const accesoriosData = computed(() => _accesoriosData.value || []);
 
-// --- Carga de Datos de Transacciones (Tabla) ---
 const { 
-  data: transaccionesData, 
+  data: _transaccionesData, 
   pending: transaccionesPending, 
   error: transaccionesError 
 } = await useAsyncData<Transaccion[]>(
   'reservas-recientes',
-  // (CORREGIDO) Ruta absoluta
   () => $fetch('/api/admin/reservas-recientes', { query: { period: period.value } }),
   { 
-    watch: [period],
-    default: () => [] 
+    watch: [period]
   }
 );
+const transaccionesData = computed(() => _transaccionesData.value || []);
 
 
 // --- KPIs Calculados ---
-const totalIngresos = computed(() => salesData.value?.total ?? 0);
-const totalReservasPagadas = computed(() => transaccionesData.value?.length ?? 0);
+const totalIngresos = computed(() => salesData.value.total);
+const totalReservasPagadas = computed(() => transaccionesData.value.length);
 
 const totalProductosVendidos = computed(() => {
-    const urnas = urnasData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
-    const servicios = serviciosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0;
-    const accesorios = accesoriosData.value?.reduce((sum, item) => sum + item.ventas, 0) ?? 0; 
+    const urnas = urnasData.value.reduce((sum, item) => sum + item.ventas, 0);
+    const servicios = serviciosData.value.reduce((sum, item) => sum + item.ventas, 0);
+    const accesorios = accesoriosData.value.reduce((sum, item) => sum + item.ventas, 0); 
     return urnas + servicios + accesorios; 
 });
 
 
 // --- Formato de datos para el gráfico de ventas ---
 const salesChartData = computed((): ChartData<'line'> => {
-  const data = salesData.value;
   return {
-    labels: data?.labels || [],
+    labels: salesData.value.labels,
     datasets: [
       {
         label: 'Ingresos (CLP)',
         backgroundColor: 'rgba(108, 52, 131, 0.2)', 
         borderColor: '#4A235A',     
-        data: data?.data || [],
+        data: salesData.value.data,
         fill: true,
         tension: 0.1,
       },

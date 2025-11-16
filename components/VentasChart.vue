@@ -14,7 +14,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  Filler, // Importante para el 'backgroundColor' (fill: true)
+  Filler,
 } from 'chart.js';
 
 // Registrar todos los componentes necesarios de Chart.js
@@ -42,7 +42,6 @@ const chartOptions = {
     y: {
       beginAtZero: true,
       ticks: {
-        // Formatear el eje Y como moneda CLP
         callback: (value: string | number) => {
           if (typeof value === 'number') {
             return value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
@@ -54,11 +53,10 @@ const chartOptions = {
   },
   plugins: {
     legend: {
-      display: false, // Ocultar la leyenda (ya que solo es 1 dataset)
+      display: false, // Ocultar la leyenda
     },
     tooltip: {
       callbacks: {
-        // Formatear el tooltip (al pasar el mouse) como moneda CLP
         label: (context: any) => {
           let label = context.dataset.label || '';
           if (label) {

@@ -1,16 +1,16 @@
 <template>
   <div>
-    <section class="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center text-white px-4">
+    <section class="relative h-[80vh] min-h-[400px] flex items-center justify-center text-center text-white px-4">
       <div class="absolute inset-0 bg-black opacity-40 z-10"></div>
       <div class="absolute inset-0 z-0">
           <img src="/index.jpg" alt="Fondo de mascota" class="w-full h-full object-cover">
       </div>
       <div class="relative z-20 max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight text-bd-gold-accent" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-              APOYO EN LOS MOMENTOS MÁS DIFÍCILES
+              Dignidad y Respeto en el Último Adiós
           </h1>
           <p class="text-xl md:text-2xl font-light mb-8" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-              ENTREGANDO UN SERVICIO PROFESIONAL, RESPETUOSO Y EMPÁTICO PARA QUIENES PIERDEN A UN SER QUERIDO
+              Servicios de cremación individuales para tu querida mascota.
           </p>
           <NuxtLink to="/#catalogo" class="bg-purple-deep text-white py-3 px-8 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-300 shadow-xl">
               Ver Catálogo
@@ -120,7 +120,7 @@
             </div>
 
             <div v-if="urnasFiltradas.length > 0" class="mt-16">
-                <h2 class="text-3xl font-extrabold text-purple-dark mb-8 text-center">Productos especiales para recordar a tu mascota</h2>
+                <h2 class="text-3xl font-extrabold text-purple-dark mb-8 text-center">Urnas y Accesorios</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <div 
                         v-for="urna in urnasFiltradas" 
@@ -164,6 +164,48 @@
       </div>
     </section>
 
+    <section v-if="aboutBlock" class="py-16 bg-white-subtle">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center bg-white p-8 md:p-12 rounded-xl shadow-2xl">
+                <div class="h-64 md:h-80 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                    <img src="/logo2.png" alt="Logo" class="h-32 opacity-20">
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-purple-dark mb-4">{{ aboutBlock.title }}</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">{{ aboutBlock.body }}</p>
+                    <NuxtLink to="/about" class="bg-purple-deep text-white py-3 px-6 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md inline-flex items-center">
+                        Conoce más sobre nosotros
+                        <font-awesome-icon icon="fas fa-arrow-right" class="ml-2" />
+                    </NuxtLink>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section v-if="instalacionBlock" class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center bg-white p-8 md:p-12 rounded-xl shadow-2xl">
+                <div class="md:order-last">
+                    <h2 class="text-3xl font-bold text-purple-dark mb-4">{{ instalacionBlock.title }}</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">{{ instalacionBlock.body }}</p>
+                    <ul class="space-y-2 mb-6">
+                        <li v-for="feature in instalacionBlock.features.slice(0, 3)" :key="feature" class="flex items-center text-gray-700">
+                            <font-awesome-icon icon="fas fa-check" class="text-green-500 mr-3" />
+                            <span>{{ feature }}</span>
+                        </li>
+                    </ul>
+                    <NuxtLink to="/instalaciones" class="bg-purple-deep text-white py-3 px-6 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md inline-flex items-center">
+                        Ver nuestras instalaciones
+                        <font-awesome-icon icon="fas fa-arrow-right" class="ml-2" />
+                    </NuxtLink>
+                </div>
+                <div class="h-64 md:h-80 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 md:order-first">
+                    <img src="/logo2.png" alt="Logo" class="h-32 opacity-20">
+                </div>
+            </div>
+        </div>
+    </section>
+
   </div>
 </template>
 
@@ -172,21 +214,36 @@ import { ref, computed } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { 
     faHeart as faHeartSolid, faCheck, faShoppingCart, faArrowRight, 
-    faFilter, faSearch, faTimes, faTimesCircle
+    faFilter, faSearch, faTimes, faTimesCircle,
+    faBuilding, faUsers // (NUEVO) Iconos para las secciones
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import type { Product } from '../../app/types';
 
 library.add(
     faCheck, faShoppingCart, faArrowRight, faHeartSolid, faHeartRegular,
-    faFilter, faSearch, faTimes, faTimesCircle
+    faFilter, faSearch, faTimes, faTimesCircle,
+    faBuilding, faUsers // (NUEVO)
 );
 
-// (IMPORTANTE) Usar los composables
+// (NUEVO) Tipado para las vistas previas
+interface InstalacionPreview {
+  id_instalacion: number;
+  title: string;
+  body: string;
+  features: string[];
+}
+interface AboutPreview {
+  id_block: number;
+  title: string;
+  body: string;
+}
+
+// (NUEVO) Usar composables de Carrito y Favoritos
 const { favorites, toggleFavorite, isFavorite } = useFavorites();
 const { addToCart } = useCart();
 
-// --- (CORREGIDO) Carga de Datos ---
+// --- Carga de Datos ---
 const { 
   data: productosData, 
   pending, 
@@ -194,11 +251,24 @@ const {
 } = await useAsyncData<Product[]>(
   'lista-productos-publica',
   () => $fetch('/api/productos'), 
-  { 
-  } 
+  { } 
 );
-// (ESTA ES LA CORRECCIÓN CLAVE PARA EL ERROR 'length')
 const productos = computed(() => productosData.value || []);
+
+// (NUEVO) Cargar vista previa de "Nosotros" (solo el primer bloque)
+const { data: aboutData } = await useAsyncData<AboutPreview[]>(
+  'preview-about',
+  () => $fetch('/api/about-content')
+);
+const aboutBlock = computed(() => aboutData.value?.[0]); // Tomar solo el primero (Misión)
+
+// (NUEVO) Cargar vista previa de "Instalaciones" (solo el primer bloque)
+const { data: instalacionData } = await useAsyncData<InstalacionPreview[]>(
+  'preview-instalaciones',
+  () => $fetch('/api/instalaciones')
+);
+const instalacionBlock = computed(() => instalacionData.value?.[0]); // Tomar solo el primero (Recepción)
+
 
 // --- ESTADO DE FILTRO Y BÚSQUEDA ---
 const busquedaTexto = ref('');
@@ -226,9 +296,7 @@ const aplicarFiltroPrecio = (precio: number, filtro: string) => {
 const productosFiltrados = computed(() => {
     const textoMinuscula = busquedaTexto.value.toLowerCase();
     
-    // (AQUÍ ESTÁ LA VARIABLE)
-    // 'productos.value' (el computed) siempre es un array, por lo que '.filter' es seguro
-    return productos.value.filter(item => { 
+    return productos.value.filter(item => {
         const tipoDeseado = filtroTipo.value.toLowerCase();
         const itemTipo = item.tipo.toLowerCase();
         
@@ -251,11 +319,8 @@ const urnasFiltradas = computed(() => {
   return productosFiltrados.value.filter(p => p.tipo === 'Urna' || p.tipo === 'Accesorio');
 });
 
-// (AQUÍ ESTÁ LA VARIABLE)
-// 'favoriteProducts' también se define aquí. El error de tu editor es un Falso Positivo.
-const favoriteProducts = computed(() => {
-    return productos.value.filter(p => isFavorite(p.id));
-});
+// (ELIMINADO) 'favoriteProducts' ---
+// Ya no es necesario, el filtro principal se encarga.
 
 // --- Función para Clases de Etiqueta (Badge) ---
 const getBadgeClass = (tipo: string) => {
@@ -295,6 +360,8 @@ const getBadgeClass = (tipo: string) => {
 .hover\:bg-yellow-500:hover { background-color: #ECC94B; }
 .bg-red-50 { background-color: #fef2f2; }
 .text-red-400 { color: #f87171; }
+.bg-white-subtle { background-color: #F8F4FA; } /* (NUEVO) */
+.text-gray-700 { color: #374151; }
 
 /* Colores de las etiquetas de categoría (como en Inventario) */
 .bg-purple-100 { background-color: #f3e5f5; }

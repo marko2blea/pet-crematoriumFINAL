@@ -36,7 +36,7 @@ async function main() {
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const adminUser = await db.usuario.upsert({
-    where: { correo: adminEmail },
+    where: { correo: adminEmail }, // 'correo' es @unique y funciona bien
     update: { id_rol: rolAdmin.id_rol },
     create: {
       nombre: 'Admin',
@@ -90,7 +90,7 @@ async function main() {
   console.log(`Proveedor '${prov2.proveedor}' creado.`);
 
   // ================================================================
-  // 6. (MODIFICADO) Crear Productos, Servicios y Accesorios
+  // 6. (MODIFICADO) Productos y Servicios base
   // ================================================================
   
   // -- SERVICIO 1 (Para la reserva de ejemplo) --
@@ -100,7 +100,8 @@ async function main() {
       nombre_producto: 'Cremación Tradicional',
       precio_unitario: 150000,
       tipo_producto: 'Servicio',
-      descripcion: 'Nuestro servicio de cremación individual tradicional asegura un proceso respetuoso y digno, garantizando que las cenizas devueltas son únicamente de su mascota.'
+      descripcion: 'Nuestro servicio de cremación individual tradicional asegura un proceso respetuoso y digno, garantizando que las cenizas devueltas son únicamente de su mascota.',
+      imagen_url: 'servicio-tradicional.jpg'
     },
     create: { 
       cod_producto: 1, 
@@ -109,7 +110,8 @@ async function main() {
       stock_actual: 9999,
       disponible: true,
       tipo_producto: 'Servicio',
-      descripcion: 'Nuestro servicio de cremación individual tradicional asegura un proceso respetuoso y digno, garantizando que las cenizas devueltas son únicamente de su mascota.'
+      descripcion: 'Nuestro servicio de cremación individual tradicional asegura un proceso respetuoso y digno, garantizando que las cenizas devueltas son únicamente de su mascota.',
+      imagen_url: 'servicio-tradicional.jpg'
     },
   });
 
@@ -121,7 +123,8 @@ async function main() {
       precio_unitario: 45000,
       tipo_producto: 'Urna',
       id_proveedor: prov2.id_proveedor,
-      descripcion: 'Una urna elegante y atemporal, fabricada en mármol genuino para honrar la memoria de su compañero. Su peso y solidez proporcionan un lugar seguro y perpetuo para el descanso.'
+      descripcion: 'Una urna elegante y atemporal, fabricada en mármol genuino para honrar la memoria de su compañero. Su peso y solidez proporcionan un lugar seguro y perpetuo para el descanso.',
+      imagen_url: 'urna-marmol.jpg'
     },
     create: {
       cod_producto: 2, 
@@ -131,7 +134,8 @@ async function main() {
       disponible: true,
       tipo_producto: 'Urna', 
       id_proveedor: prov2.id_proveedor,
-      descripcion: 'Una urna elegante y atemporal, fabricada en mármol genuino para honrar la memoria de su compañero. Su peso y solidez proporcionan un lugar seguro y perpetuo para el descanso.'
+      descripcion: 'Una urna elegante y atemporal, fabricada en mármol genuino para honrar la memoria de su compañero. Su peso y solidez proporcionan un lugar seguro y perpetuo para el descanso.',
+      imagen_url: 'urna-marmol.jpg'
     },
   });
 
@@ -143,7 +147,8 @@ async function main() {
       precio_unitario: 15000,
       tipo_producto: 'Accesorio', 
       id_proveedor: prov2.id_proveedor,
-      descripcion: 'Una placa de bronce pulido con grabado láser del nombre y fechas de su mascota. Se adhiere a la urna.'
+      descripcion: 'Una placa de bronce pulido con grabado láser del nombre y fechas de su mascota. Se adhiere a la urna.',
+      imagen_url: 'placa-grabada.jpg'
     },
     create: {
       cod_producto: 3, 
@@ -153,7 +158,8 @@ async function main() {
       disponible: true,
       tipo_producto: 'Accesorio', 
       id_proveedor: prov2.id_proveedor,
-      descripcion: 'Una placa de bronce pulido con grabado láser del nombre y fechas de su mascota. Se adhiere a la urna.'
+      descripcion: 'Una placa de bronce pulido con grabado láser del nombre y fechas de su mascota. Se adhiere a la urna.',
+      imagen_url: 'placa-grabada.jpg'
     },
   });
 
@@ -164,7 +170,8 @@ async function main() {
       nombre_producto: 'Cremación Presencial',
       precio_unitario: 200000,
       tipo_producto: 'Servicio',
-      descripcion: 'Permite a la familia estar presente en una sala privada durante el inicio del proceso de cremación, ofreciendo una despedida final y personal.'
+      descripcion: 'Permite a la familia estar presente en una sala privada durante el inicio del proceso de cremación, ofreciendo una despedida final y personal.',
+      imagen_url: 'servicio-presencial.jpg'
     },
     create: { 
       cod_producto: 4, 
@@ -173,7 +180,8 @@ async function main() {
       stock_actual: 9999,
       disponible: true,
       tipo_producto: 'Servicio',
-      descripcion: 'Permite a la familia estar presente en una sala privada durante el inicio del proceso de cremación, ofreciendo una despedida final y personal.'
+      descripcion: 'Permite a la familia estar presente en una sala privada durante el inicio del proceso de cremación, ofreciendo una despedida final y personal.',
+      imagen_url: 'servicio-presencial.jpg'
     },
   });
 
@@ -184,7 +192,8 @@ async function main() {
       nombre_producto: 'Servicio Eutanasia',
       precio_unitario: 50000,
       tipo_producto: 'Servicio',
-      descripcion: 'Servicio de eutanasia a domicilio, realizado por un veterinario profesional, asegurando un adiós tranquilo y sin dolor en la comodidad de su hogar.'
+      descripcion: 'Servicio de eutanasia a domicilio, realizado por un veterinario profesional, asegurando un adiós tranquilo y sin dolor en la comodidad de su hogar.',
+      imagen_url: 'servicio-eutanasia.jpg'
     },
     create: { 
       cod_producto: 5, 
@@ -193,10 +202,11 @@ async function main() {
       stock_actual: 9999,
       disponible: true,
       tipo_producto: 'Servicio',
-      descripcion: 'Servicio de eutanasia a domicilio, realizado por un veterinario profesional, asegurando un adiós tranquilo y sin dolor en la comodidad de su hogar.'
+      descripcion: 'Servicio de eutanasia a domicilio, realizado por un veterinario profesional, asegurando un adiós tranquilo y sin dolor en la comodidad de su hogar.',
+      imagen_url: 'servicio-eutanasia.jpg'
     },
   });
-  console.log('Productos, servicios y accesorios de ejemplo creados.');
+  console.log('Productos (3 servicios, 1 urna, 1 accesorio) de ejemplo creados.');
 
 
   // ================================================================
@@ -204,6 +214,7 @@ async function main() {
   // ================================================================
   console.log('Creando reserva de ejemplo...');
   try {
+    // 7.1. Crear un cliente de ejemplo
     const clienteEmail = 'juan.cliente@email.com';
     const clientePass = await bcrypt.hash('cliente123', 10);
     const clienteUser = await db.usuario.upsert({
@@ -221,66 +232,85 @@ async function main() {
             direccion: 'Calle Falsa 123'
         }
     });
-    const mascotaFido = await db.mascota.create({
-        data: {
+
+    // 7.2. (CORREGIDO) Crear mascota con UPSERT
+    const mascotaFido = await db.mascota.upsert({
+        where: { id_mascota: 1 }, // Usamos ID 1
+        update: {},
+        create: {
+            id_mascota: 1,
             nombre_mascota: 'Fido',
             peso: 12.5,
             edad: 8,
             id_especie: especiePerro.id_especie,
         }
     });
-    await db.usuario.update({
-        where: { id_usuario: clienteUser.id_usuario },
-        data: { id_mascota: mascotaFido.id_mascota }
-    });
-    console.log(`Cliente '${clienteUser.correo}' y mascota '${mascotaFido.nombre_mascota}' creados.`);
+    
+    // 7.3. (CORREGIDO) Vincular mascota al cliente (solo si no la tiene ya)
+    if (!clienteUser.id_mascota) {
+        await db.usuario.update({
+            where: { id_usuario: clienteUser.id_usuario },
+            data: { id_mascota: mascotaFido.id_mascota }
+        });
+    }
+    console.log(`Cliente '${clienteUser.correo}' y mascota '${mascotaFido.nombre_mascota}' creados/asegurados.`);
 
+    // 7.4. (CORREGIDO) Crear la transacción solo si no existe
+    // Usamos el ID de la reserva para el 'upsert'
     const precioBase = Number(servicioTradicional.precio_unitario);
     const precioTotalConIVA = roundCLP(precioBase * 1.19);
 
-    await db.$transaction(async (tx) => {
-        const detalle = await tx.detalle_reserva.create({
-            data: {
-                nombre_servicio: servicioTradicional.nombre_producto,
-                precio_servicio: precioBase,
-                tipo_servicio: 'Servicio',
-                cantidad: 1,
-                precio_total: precioTotalConIVA,
-                cod_producto: servicioTradicional.cod_producto
-            }
-        });
-        const pago = await tx.pago.create({
-            data: {
-                nombre_metodo: metodoTransf.nombre_metodo,
-                fecha_pago: new Date(),
-                monto: precioTotalConIVA,
-                estado: 'Pagado',
-                id_metodo: metodoTransf.id_metodo
-            }
-        });
-        await tx.reserva.create({
-            data: {
-                cod_trazabilidad: 'ABC-12345',
-                fecha_reservada: new Date(),
-                hora_reservada: new Date(),
-                region: clienteUser.region,
-                comuna: clienteUser.comuna,
-                direccion: clienteUser.direccion,
-                precio_total: precioTotalConIVA,
-                estado: true,
-                id_usuario: clienteUser.id_usuario,
-                id_pago: pago.id_pago,
-                id_detalle_reserva: detalle.id_detalle_reserva,
-            }
-        });
+    const reservaEjemplo = await db.reserva.findUnique({
+        where: { id_reserva: 1 }
     });
-    console.log('Reserva de ejemplo (Pagada y Finalizada) creada con éxito.');
-  } catch (e: any) {
-    if (e.code === 'P2002' && e.meta?.target?.includes('correo')) {
-      console.log('El usuario de ejemplo (juan.cliente@email.com) ya existe, omitiendo creación de reserva.');
+
+    if (!reservaEjemplo) {
+        await db.$transaction(async (tx) => {
+            const detalle = await tx.detalle_reserva.create({
+                data: {
+                    id_detalle_reserva: 1, // Asignamos ID
+                    nombre_servicio: servicioTradicional.nombre_producto,
+                    precio_servicio: precioBase,
+                    tipo_servicio: 'Servicio',
+                    cantidad: 1,
+                    precio_total: precioTotalConIVA,
+                    cod_producto: servicioTradicional.cod_producto
+                }
+            });
+            const pago = await tx.pago.create({
+                data: {
+                    id_pago: 1, // Asignamos ID
+                    nombre_metodo: metodoTransf.nombre_metodo,
+                    fecha_pago: new Date(),
+                    monto: precioTotalConIVA,
+                    estado: 'Pagado',
+                    id_metodo: metodoTransf.id_metodo
+                }
+            });
+            await tx.reserva.create({
+                data: {
+                    id_reserva: 1, // Asignamos ID
+                    cod_trazabilidad: 'ABC-12345',
+                    fecha_reservada: new Date(),
+                    hora_reservada: new Date(),
+                    region: clienteUser.region,
+                    comuna: clienteUser.comuna,
+                    direccion: clienteUser.direccion,
+                    precio_total: precioTotalConIVA,
+                    estado: true,
+                    id_usuario: clienteUser.id_usuario,
+                    id_pago: pago.id_pago,
+                    id_detalle_reserva: detalle.id_detalle_reserva,
+                }
+            });
+        });
+        console.log('Reserva de ejemplo (Pagada y Finalizada) creada con éxito.');
     } else {
-      console.error('Error al crear la reserva de ejemplo:', e);
+        console.log('La reserva de ejemplo ya existe.');
     }
+
+  } catch (e: any) {
+    console.error('Error al crear la reserva de ejemplo:', e.message);
   }
 
   // ================================================================

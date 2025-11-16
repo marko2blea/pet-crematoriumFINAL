@@ -84,8 +84,8 @@ model producto {
   tipo_producto   String?           @db.VarChar(100)
   id_proveedor    Int?
   
-  descripcion     String?           @db.Text // <-- AÑADE ESTA LÍNEA
-  imagen_url      String?           @db.VarChar(500)
+  imagen_url      String?           @db.VarChar(500) // <-- AÑADE ESTA LÍNEA
+  descripcion     String?           @db.Text
 
   detalle_reserva detalle_reserva[]
   proveedor       proveedor?        @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction)

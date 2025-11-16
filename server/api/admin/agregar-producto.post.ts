@@ -1,61 +1,35 @@
-// RUTA CORREGIDA: Sube dos niveles (desde /api/admin/ a /server/)
 import { db } from '../../utils/prisma';
-
-/**
- * API para CREAR (POST) un nuevo producto.
- * Ruta: /api/admin/agregar-producto
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Leer los datos que vienen del formulario 'agregar-producto.vue'
     const body = await readBody(event);
-    
-    // Extraemos los datos del formulario
     const { 
-      nombre, 
-      stock, 
-      precio, 
-      disponible,
-      tipo,
-      id_proveedor
+      nombre, tipo, stock, precio, disponible, id_proveedor,
+      descripcion, // <-- Nuevo
+      imagen_url   // <-- Nuevo
     } = body;
 
-    // Validación simple
-    if (!nombre || !tipo) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'El nombre y el tipo de producto son obligatorios.',
-      });
+    if (!nombre || !tipo || stock === undefined || !precio) {
+      throw createError({ statusCode: 400, statusMessage: 'Faltan campos obligatorios.' });
     }
 
-    // 2. Crear el nuevo registro en la tabla 'producto'
     const nuevoProducto = await db.producto.create({
       data: {
         nombre_producto: nombre,
-        stock_actual: Number(stock) || 0,
-        precio_unitario: Number(precio) || 0,
-        disponible: disponible, // boolean
-        tipo_producto: tipo, // string
+        tipo_producto: tipo,
+        stock_actual: Number(stock),
+        precio_unitario: Number(precio),
+        disponible: Boolean(disponible),
         id_proveedor: id_proveedor ? Number(id_proveedor) : null,
+        descripcion: descripcion, // <-- Guardar
+        imagen_url: imagen_url,   // <-- Guardar
       },
     });
 
-    // 3. Éxito
-    return {
-      statusCode: 201, // 201 Created
-      message: 'Producto creado exitosamente.',
-      data: nuevoProducto,
-    };
-
+    return { statusCode: 201, message: 'Producto creado.', producto: nuevoProducto };
   } catch (error: any) {
-    console.error("Error al crear el producto:", error);
-    if (error.statusCode) {
-      throw error;
+    if (error.code === 'P2002') {
+      throw createError({ statusCode: 409, statusMessage: `Ya existe un producto con ese nombre.` });
     }
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Error interno del servidor al crear el producto.',
-    });
+    throw createError({ statusCode: 500, statusMessage: 'Error al crear el producto.' });
   }
 });

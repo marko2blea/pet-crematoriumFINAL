@@ -122,7 +122,7 @@ const isLoading = ref(false);
 // Cargar roles para el dropdown
 const { data: roles, pending: pendingRoles } = await useAsyncData<Rol[]>(
   'lista-roles',
-  () => $fetch('../api/roles') //
+  () => $fetch('../../../api/roles') //
 );
 
 // (MODIFICADO) Lógica de envío
