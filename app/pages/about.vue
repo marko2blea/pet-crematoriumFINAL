@@ -1,27 +1,27 @@
 <template>
-  <div class="bg-white-subtle">
+  <div class="pt-14 bg-white-subtle min-h-screen">
     
-    <section class="container mx-auto px-4 py-16">
-      <div class="grid grid-cols-1 lg:grid-cols-2 bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-purple-dark">
-        <div class="lg:col-span-1 p-10 md:p-16 flex flex-col justify-center">
-          <img src="/logo2.png" alt="Logo Crematorio San Antonio" class="w-32 mb-6">
-          <h1 class="text-4xl md:text-5xl font-extrabold text-purple-dark mb-6 leading-tight">
-            Sobre Nosotros
+    <section class="relative h-80 flex items-center justify-center text-white px-4">
+      <div class="absolute inset-0 bg-black opacity-40 z-10"></div>
+      <div class="absolute inset-0 z-0">
+          <img src="/fondo nosotros.jpg" alt="Fondo Sobre Nosotros" class="w-full h-full object-cover">
+      </div>
+      <div class="relative z-20 max-w-3xl text-center">
+          <img src="/logo2.png" alt="Logo Crematorio" class="w-24 mx-auto mb-4 bg-white p-2 rounded-full shadow-lg">
+          <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              Sobre Nosotros
           </h1>
-          <p class="text-lg text-gray-700 leading-relaxed">
-            Conoce nuestra historia, valores y el compromiso que tenemos con tu familia. Somos una microempresa familiar dedicada a honrar la vida de tu compañero.
+          <p class="text-xl md:text-2xl font-light" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+              Conoce nuestro compromiso y valores.
           </p>
-        </div>
-        <div class="lg:col-span-1 h-64 lg:h-full min-h-[300px] bg-cover bg-center" style="background-image: url('/fondo nosotros.jpg');">
-        </div>
       </div>
     </section>
 
-    <div class="container mx-auto px-4 py-2 space-y-16">
+    <div class="container mx-auto px-4 py-16 space-y-16">
       
       <div v-if="feedbackMessage" 
           :class="isError ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'"
-          class="mb-6 p-4 rounded-lg border text-sm font-medium text-center max-w-4xl mx-auto">
+          class="p-4 rounded-lg border text-sm font-medium text-center max-w-4xl mx-auto">
           {{ feedbackMessage }}
       </div>
 
@@ -38,10 +38,10 @@
       <section 
         v-for="(block, index) in contentBlocks" 
         :key="block.id_block"
-        class="bg-white p-8 md:p-12 rounded-xl shadow-2xl relative"
+        class="bg-white rounded-xl shadow-2xl overflow-hidden relative"
         :class="block.isEditing ? 'border-2 border-dashed border-purple-deep' : 'border border-gray-200'"
       >
-        <div v-if="user && user.id_rol !== 1" class="absolute top-4 right-4 flex items-center space-x-2 ml-4 z-10">
+        <div v-if="user && user.id_rol !== 1" class="absolute top-4 right-4 flex items-center space-x-2 z-10">
             <button 
                 @click="block.isEditing ? saveBlock(index) : editBlock(index)"
                 class="text-white transition duration-150 p-2 rounded-full shadow-md w-12 h-12"
@@ -56,16 +56,32 @@
             </button>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
             
             <div 
-              class="h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500"
+              class="h-80 bg-gray-100 flex items-center justify-center text-gray-500 overflow-hidden relative"
               :class="{ 'md:order-last': index % 2 === 0 }"
             >
-              <img src="/logo2.png" alt="Logo" class="h-32 opacity-20">
+              <img 
+                :src="block.previewUrl || block.imagen_url || '/logo2.png'" 
+                alt="Imagen de sección"
+                class="w-full h-full object-cover"
+              >
+              <div v-if="block.isEditing" class="absolute bottom-4 right-4">
+                <label class="bg-purple-dark text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-lg cursor-pointer hover:bg-purple-light transition">
+                  <font-awesome-icon icon="fas fa-upload" class="mr-2" />
+                  Cambiar Imagen
+                  <input 
+                    type="file" 
+                    class="hidden"
+                    accept="image/png, image/jpeg, image/webp"
+                    @change="onFileSelected($event, index)"
+                  >
+                </label>
+              </div>
             </div>
 
-            <div :class="{ 'md:order-first': index % 2 === 0 }">
+            <div class="p-8 md:p-12" :class="{ 'md:order-first': index % 2 === 0 }">
               <h2 
                 class="text-3xl font-bold text-purple-dark mb-4"
                 :contenteditable="block.isEditing"
@@ -126,25 +142,29 @@
 <script setup lang="ts">
 import { ref, type Ref, watchEffect } from 'vue'; 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faPencilAlt, faSave, faPlus, faTrash, faTimes, faCheck } from '@fortawesome/free-solid-svg-icons'; 
+import { faPencilAlt, faSave, faPlus, faTrash, faTimes, faCheck, faUpload } from '@fortawesome/free-solid-svg-icons'; 
 
-library.add(faPencilAlt, faSave, faPlus, faTrash, faTimes, faCheck);
+library.add(faPencilAlt, faSave, faPlus, faTrash, faTimes, faCheck, faUpload);
 
 definePageMeta({
   title: 'Sobre Nosotros'
 });
 
-// --- (SIN CAMBIOS) Tipado de la API ---
+// --- Tipado de la API + UI ---
 interface AboutBlock {
     id_block: number;
     title: string;
     body: string;
     items: string[];
-    isEditing: boolean;
+    imagen_url: string | null;
+    isEditing: boolean; 
+    selectedFile: File | null;
+    previewUrl: string | null;
 }
 
-// --- (SIN CAMBIOS) Carga de Datos y Estado ---
+// --- Carga de Datos y Estado ---
 const user = useUser();
+const { upload } = useCloudinaryUpload();
 const contentBlocks: Ref<AboutBlock[]> = ref([]); 
 const isLoading = ref(false); 
 const feedbackMessage = ref('');
@@ -159,12 +179,32 @@ watchEffect(() => {
   if (data.value) {
     contentBlocks.value = data.value.map(block => ({
       ...block,
-      isEditing: false 
+      isEditing: false,
+      selectedFile: null,
+      previewUrl: null
     }));
   }
 });
 
-// --- (SIN CAMBIOS) Funciones de Edición ---
+// --- (CORREGIDO) Manejador de Archivo ---
+const onFileSelected = (event: Event, index: number) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0] && contentBlocks.value[index]) {
+        const file = target.files[0];
+        contentBlocks.value[index].selectedFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+            // (CORREGIDO) 'loadEvent.target' es el FileReader, su 'result' es lo que queremos
+            if (loadEvent.target) {
+              contentBlocks.value[index].previewUrl = loadEvent.target.result as string;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+// --- Funciones de Edición ---
 const editBlock = (index: number) => {
     if (!contentBlocks.value?.[index]) return; 
     contentBlocks.value[index].isEditing = true;
@@ -197,25 +237,53 @@ const removeItem = (blockIndex: number, itemIndex: number) => {
       contentBlocks.value[blockIndex].items.splice(itemIndex, 1);
     }
 };
+
+// Función 'Save'
 const saveBlock = async (index: number) => {
-    if (!contentBlocks.value[index]) return;
+    const block = contentBlocks.value[index];
+    if (!block) return;
+    
     isLoading.value = true;
     feedbackMessage.value = '';
     isError.value = false;
+    let finalImageUrl = block.imagen_url; 
+
     try {
+      if (block.selectedFile) {
+        feedbackMessage.value = 'Subiendo nueva imagen...';
+        const newUrl = await upload(block.selectedFile);
+        if (!newUrl) {
+          throw new Error('Error al subir la imagen a Cloudinary.');
+        }
+        finalImageUrl = newUrl; 
+      }
+
       await $fetch('/api/admin/about-content', {
         method: 'PUT',
-        body: contentBlocks.value[index] 
+        body: { 
+          id_block: block.id_block,
+          title: block.title,
+          body: block.body,
+          items: block.items,
+          imagen_url: finalImageUrl 
+        }
       });
-      contentBlocks.value[index].isEditing = false;
+      
+      block.isEditing = false;
+      block.imagen_url = finalImageUrl;
+      block.selectedFile = null;
+      block.previewUrl = null;
       feedbackMessage.value = '¡Bloque guardado con éxito!';
+      
     } catch (err: any) {
       isError.value = true;
-      feedbackMessage.value = err.data?.statusMessage || 'Error al guardar.';
+      feedbackMessage.value = err.data?.statusMessage || err.message || 'Error al guardar.';
     } finally {
       isLoading.value = false;
     }
 };
+
+// Función 'addBlock'
 const addBlock = async () => {
     isLoading.value = true;
     feedbackMessage.value = '';
@@ -234,6 +302,8 @@ const addBlock = async () => {
       isLoading.value = false;
     }
 };
+
+// Función 'removeBlock'
 const removeBlock = async (index: number) => {
     if (!contentBlocks.value[index]) return; 
     const block = contentBlocks.value[index];
@@ -257,6 +327,7 @@ const removeBlock = async (index: number) => {
       isLoading.value = false;
     }
 };
+
 </script>
 
 <style scoped lang="postcss">
@@ -269,10 +340,6 @@ const removeBlock = async (index: number) => {
 .hover\:bg-purple-light:hover { background-color: #6C3483; }
 .border-purple-deep { border-color: #5C2A72; }
 .bg-white-subtle { background-color: #F8F4FA; }
-.text-bd-gold-accent { 
-    color: #FFD700; 
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
 .disabled\:opacity-50:disabled { opacity: 0.5; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 .bg-green-600 { background-color: #059669; }
@@ -290,10 +357,9 @@ const removeBlock = async (index: number) => {
 .border-green-300 { border-color: #86efac; }
 .text-gray-700 { color: #374151; }
 
-/* (CORREGIDO) 
-  Definimos 'outline-purple-deep' aquí para que Tailwind la reconozca.
-*/
+/* (Definiciones de color para @apply) */
 .outline-purple-deep { outline-color: #5C2A72; }
+.bg-blue-50 { background-color: #EFF6FF; }
 
 /* (NUEVO) Estilo para los campos editables */
 .editable-field:focus {

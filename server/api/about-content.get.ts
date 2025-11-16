@@ -1,19 +1,21 @@
-// RUTA: Sube un nivel (desde /api/ a /server/)
 import { db } from '../utils/prisma';
-
-/**
- * API PÚBLICA para listar todos los bloques de "Nosotros".
- * Ruta: /api/about-content
- * Método: GET
- */
 export default defineEventHandler(async (event) => {
   try {
     const bloques = await db.about_block.findMany({
-      orderBy: {
-        orden: 'asc', // Ordenar por el campo 'orden'
-      },
+      orderBy: { orden: 'asc' },
     });
-    return bloques;
+    
+    // (MODIFICADO) Mapear a un objeto simple (serializar)
+    return bloques.map(b => ({
+      id_block: b.id_block,
+      title: b.title,
+      body: b.body,
+      items: b.items,
+      orden: b.orden,
+      creado_en: b.creado_en,
+      imagen_url: b.imagen_url // <-- AÑADIDO
+    }));
+
   } catch (error: any) {
     throw createError({
       statusCode: 500,

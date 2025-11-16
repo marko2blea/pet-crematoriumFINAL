@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col font-sans main-background">
     
     <header class="bg-bd-purple-dark shadow-lg py-2 fixed top-0 left-0 right-0 z-50">
-      <div class="container mx-auto px-4 flex items-center text-white h-14">
+      <div class="container mx-auto px-4 flex items-center justify-between text-white h-14">
         
         <div class="flex-shrink-0">
             <NuxtLink to="/" class="flex items-center p-2 bg-white rounded-lg shadow-md">
@@ -31,12 +31,6 @@
           <template v-if="user && user.id_rol !== 1">
             <NuxtLink to="/admin/dashboard" :class="isActive('/admin/dashboard', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
               <font-awesome-icon icon="fas fa-chart-line" /><span>Dashboard</span>
-            </NuxtLink>
-             <NuxtLink to="/admin/reportes" :class="isActive('/admin/reportes', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
-              <font-awesome-icon icon="fas fa-file-alt" /><span>Reportes</span>
-            </NuxtLink>
-            <NuxtLink to="/admin/reservas" :class="isActive('/admin/reservas', true)" class="bg-white text-bd-purple-dark py-2 px-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150 border-2 border-white flex-shrink-0 text-center whitespace-nowrap shadow-md w-40 flex items-center space-x-2 justify-center">
-              <font-awesome-icon icon="fas fa-book" /><span>Reservas</span>
             </NuxtLink>
           </template>
         </div>
@@ -138,14 +132,6 @@
                               class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
                         <font-awesome-icon icon="fas fa-chart-line" class="mr-3 w-6" />Dashboard
                     </NuxtLink>
-                    <NuxtLink to="/admin/reservas" @click="closeMobileMenu" 
-                              class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
-                        <font-awesome-icon icon="fas fa-book" class="mr-3 w-6" />Reservas
-                    </NuxtLink>
-                    <NuxtLink to="/admin/reportes" @click="closeMobileMenu" 
-                              class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
-                        <font-awesome-icon icon="fas fa-file-alt" class="mr-3 w-6" />Reportes
-                    </NuxtLink>
                     <NuxtLink to="/admin/gestionar-usuario" @click="closeMobileMenu" 
                               class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition duration-150 text-purple-deep [&.router-link-active]:bg-purple-deep [&.router-link-active]:text-white">
                         <font-awesome-icon icon="fas fa-users-cog" class="mr-3 w-6" />Gestionar Usuarios
@@ -168,7 +154,6 @@
             </div>
         </div>
     </div>
-
 
     <main class="flex-grow pt-20"> 
         <slot /> 
@@ -282,7 +267,7 @@ const logout = () => {
     router.push('/'); 
 };
 
-// (ACTUALIZADO) Lógica de clase activa (w-40 y fix de admin)
+// (Lógica de clase activa sin cambios)
 const isActive = (path: string, isAdminLink: boolean = false): string => {
     const currentPath = route.path;
     const isRootHome = path === '/' && currentPath === '/';
@@ -293,7 +278,6 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
     
     if (isActiveLink) {
         if (isAdminLink) {
-            // (CAMBIO 3) Se cambió 'border-bd-purple-dark' por 'border-bd-gold-accent'
             return `bg-white border-b-4 border-bd-gold-accent text-bd-purple-dark ${alignmentClasses}`;
         }
         return `bg-bd-purple-dark-hover border-b-4 border-bd-gold-accent text-white ${alignmentClasses}`; 
@@ -310,15 +294,7 @@ const isActive = (path: string, isAdminLink: boolean = false): string => {
     background-color: #f4f7f6; 
 }
 
-/* (ARREGLADO) 
- Ya no necesitamos .mobile-link ni .router-link-active aquí,
- porque las clases de Tailwind están puestas directamente en el HTML
- con la sintaxis:
- [&.router-link-active]:bg-purple-deep 
- [&.router-link-active]:text-white
-*/
-
-/* ... Paleta de colores (sin cambios) ... */
+/* (Paleta de colores sin cambios) */
 .bg-bd-purple-dark { background-color: #4A148C; } 
 .text-bd-purple-dark { color: #4A148C; }
 .border-bd-purple-dark { border-color: #4A148C; }

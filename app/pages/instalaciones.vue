@@ -2,12 +2,20 @@
   <div class="container mx-auto px-4 py-16 font-sans pt-20">
     
     <div class="flex justify-center items-center mb-6 max-w-4xl mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-purple-dark">Nuestras Instalaciones</h1>
+      <h1 
+        class="text-3xl md:text-4xl font-extrabold text-purple-dark"
+        :contenteditable="isAnyEditing"
+        @blur="null" 
+        :class="{'editable-field': isAnyEditing}"
+      >
+        Nuestras Instalaciones
+      </h1>
     </div>
-    
     <p 
       class="text-xl text-gray-600 mb-12 text-center max-w-3xl mx-auto"
-      title="Texto introductorio"
+      :contenteditable="isAnyEditing"
+      @blur="null"
+      :class="{'editable-field': isAnyEditing}"
     >
       Diseñadas para ofrecer un ambiente de paz y respeto, nuestras instalaciones proporcionan la comodidad y privacidad necesarias para despedir a su compañero de vida.
     </p>
@@ -38,7 +46,7 @@
               class="text-3xl font-bold text-purple-dark flex-grow"
               :contenteditable="section.isEditing"
               @blur="handleContentUpdate($event, index, 'title')"
-              :class="{'border-b-2 border-purple-light': section.isEditing}"
+              :class="{'editable-field': section.isEditing}"
               title="Título de la sección"
             >
               {{ section.title }}
@@ -67,7 +75,7 @@
                 class="text-gray-700 mb-4"
                 :contenteditable="section.isEditing"
                 @blur="handleContentUpdate($event, index, 'body')"
-                :class="{'border-2 border-dashed border-purple-deep p-2 bg-white': section.isEditing}"
+                :class="{'editable-field': section.isEditing}"
                 title="Párrafo"
               >
                 {{ section.body }}
@@ -80,7 +88,7 @@
                   <span 
                     :contenteditable="section.isEditing" 
                     @blur="handleFeatureUpdate($event, index, i)"
-                    :class="{'border-b border-purple-light': section.isEditing}"
+                    :class="{'editable-field': section.isEditing}"
                     class="flex-grow"
                   >
                     {{ item }}
@@ -99,15 +107,26 @@
               </ul>
             </div>
 
-            <div class="h-64 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 font-medium border border-gray-400">
-                <div v-if="section.isEditing" class="h-full w-full flex flex-col justify-center items-center cursor-pointer hover:bg-gray-300 transition duration-150" title="Haga clic para subir imagen">
-                    <font-awesome-icon icon="fas fa-plus-circle" class="text-5xl text-purple-dark mb-2" />
-                    <h2 class="text-lg font-semibold text-gray-600 mt-2 text-center">Subir Imagen (Próximamente)</h2>
-                </div>
-                <span v-else>
-                    [Imagen de Instalación]
-                </span>
+            <div class="h-64 bg-gray-100 rounded-md flex items-center justify-center text-gray-500 overflow-hidden relative">
+              <img 
+                :src="section.previewUrl || section.imagen_url || '/logo2.png'" 
+                alt="Imagen de sección"
+                class="w-full h-full object-cover"
+              >
+              <div v-if="section.isEditing" class="absolute bottom-4 right-4">
+                <label class="bg-purple-dark text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-lg cursor-pointer hover:bg-purple-light transition">
+                  <font-awesome-icon icon="fas fa-upload" class="mr-2" />
+                  Cambiar Imagen
+                  <input 
+                    type="file" 
+                    class="hidden"
+                    accept="image/png, image/jpeg, image/webp"
+                    @change="onFileSelected($event, index)"
+                  >
+                </label>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -129,56 +148,79 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, watchEffect } from 'vue'; 
+import { ref, type Ref, watchEffect, computed } from 'vue'; 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faPencilAlt, faSave, faPlus, faTrash, faTimes, faPlusCircle } from '@fortawesome/free-solid-svg-icons'; 
+// (MODIFICADO) Añadidos iconos
+import { faPencilAlt, faSave, faPlus, faTrash, faTimes, faUpload, faCheck } from '@fortawesome/free-solid-svg-icons'; 
 
-library.add(faPencilAlt, faSave, faPlus, faTrash, faTimes, faPlusCircle);
+library.add(faPencilAlt, faSave, faPlus, faTrash, faTimes, faUpload, faCheck);
 
 definePageMeta({
   title: 'Instalaciones'
 });
 
-// --- (NUEVO) Tipado de la API ---
+// --- (MODIFICADO) Tipado de la API ---
 interface InstalacionSection {
     id_instalacion: number;
     title: string;
     body: string;
     features: string[];
-    isEditing: boolean; // Estado de edición (solo en UI)
+    imagen_url: string | null; // <-- (NUEVO)
+    isEditing: boolean; 
+    selectedFile: File | null; // <-- (NUEVO)
+    previewUrl: string | null; // <-- (NUEVO)
 }
 
-// --- (NUEVO) Carga de Datos y Estado ---
+// --- (MODIFICADO) Carga de Datos y Estado ---
 const user = useUser();
+const { upload } = useCloudinaryUpload(); // <-- (NUEVO)
 const sections: Ref<InstalacionSection[]> = ref([]);
-const isLoading = ref(false); // Para deshabilitar botones al crear/borrar
+const isLoading = ref(false); 
 const feedbackMessage = ref('');
 const isError = ref(false);
 
 const { data, pending, error, refresh } = await useAsyncData<InstalacionSection[]>(
   'lista-instalaciones',
-  // (IMPORTANTE) Esta API también falta en tus archivos
   () => $fetch('/api/instalaciones') 
 );
 
-// (NUEVO) Poblar el ref local cuando 'useAsyncData' termina
+// (NUEVO) Variable para saber si CUALQUIER tarjeta está en modo edición
+const isAnyEditing = computed(() => sections.value.some(s => s.isEditing));
+
+// (MODIFICADO) Poblar el ref local
 watchEffect(() => {
   if (data.value) {
     sections.value = data.value.map(section => ({
       ...section,
-      isEditing: false 
+      isEditing: false,
+      selectedFile: null,
+      previewUrl: null
     }));
   }
 });
 
-// --- (MODIFICADO) Funciones de Edición (conectadas a API) ---
+// --- (NUEVO) Manejador de Archivo ---
+const onFileSelected = (event: Event, index: number) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0] && sections.value[index]) {
+        const file = target.files[0];
+        sections.value[index].selectedFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+            if (loadEvent.target) {
+              sections.value[index].previewUrl = loadEvent.target.result as string;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
+// --- Funciones de Edición (Modificadas) ---
 const editCard = (index: number) => {
     if (!sections.value?.[index]) return; 
     sections.value[index].isEditing = true;
 };
-
-// Guarda los cambios locales en el 'ref'
 const handleContentUpdate = (event: Event, index: number, field: 'title' | 'body') => {
     const target = event.target as HTMLElement;
     const newContent = target.innerText.trim();
@@ -186,52 +228,71 @@ const handleContentUpdate = (event: Event, index: number, field: 'title' | 'body
       sections.value[index][field] = newContent;
     }
 };
-
 const handleFeatureUpdate = (event: Event, sectionIndex: number, featureIndex: number) => {
     const target = event.target as HTMLElement;
     const newContent = target.innerText.trim();
     if (sections.value[sectionIndex]?.features[featureIndex] !== undefined) {
       if (!newContent) {
-        removeFeature(sectionIndex, featureIndex); // Borra si está vacío
+        removeFeature(sectionIndex, featureIndex);
       } else {
         sections.value[sectionIndex].features[featureIndex] = newContent;
       }
     }
 };
-
 const addFeature = (sectionIndex: number) => {
     if (sections.value[sectionIndex]) {
       sections.value[sectionIndex].features.push('Nueva Característica');
     }
 };
-
 const removeFeature = (sectionIndex: number, featureIndex: number) => {
     if (sections.value[sectionIndex]?.features[featureIndex] !== undefined) {
       sections.value[sectionIndex].features.splice(featureIndex, 1);
     }
 };
 
-// (MODIFICADO) Función 'Save' llama a la API PUT
+// (MODIFICADO) Función 'Save' llama a la API PUT (con imagen)
 const saveCard = async (index: number) => {
-    if (!sections.value[index]) return;
+    const section = sections.value[index];
+    if (!section) return;
     
     isLoading.value = true;
     feedbackMessage.value = '';
     isError.value = false;
+    let finalImageUrl = section.imagen_url; 
     
     try {
-      // (IMPORTANTE) Esta API también falta en tus archivos
+      // 1. (NUEVO) Si se seleccionó un archivo nuevo, subirlo
+      if (section.selectedFile) {
+        feedbackMessage.value = 'Subiendo nueva imagen...';
+        const newUrl = await upload(section.selectedFile);
+        if (!newUrl) {
+          throw new Error('Error al subir la imagen a Cloudinary.');
+        }
+        finalImageUrl = newUrl; 
+      }
+
+      // 2. Guardar en la BD
       await $fetch('/api/admin/instalacion', {
         method: 'PUT',
-        body: sections.value[index] // Envía el objeto completo actualizado
+        body: {
+          id_instalacion: section.id_instalacion,
+          title: section.title,
+          body: section.body,
+          features: section.features,
+          imagen_url: finalImageUrl 
+        }
       });
       
-      sections.value[index].isEditing = false;
+      // 3. Actualizar estado local
+      section.isEditing = false;
+      section.imagen_url = finalImageUrl;
+      section.selectedFile = null;
+      section.previewUrl = null;
       feedbackMessage.value = '¡Sección guardada con éxito!';
       
     } catch (err: any) {
       isError.value = true;
-      feedbackMessage.value = err.data?.statusMessage || 'Error al guardar.';
+      feedbackMessage.value = err.data?.statusMessage || err.message || 'Error al guardar.';
     } finally {
       isLoading.value = false;
     }
@@ -242,21 +303,17 @@ const addSection = async () => {
     isLoading.value = true;
     feedbackMessage.value = '';
     isError.value = false;
-
     try {
-      // (ESTA ES LA CONEXIÓN DEL BOTÓN +)
       await $fetch('/api/admin/instalacion', {
         method: 'POST',
-        body: { // Datos por defecto para la nueva sección
+        body: { 
           title: 'Título de la Nueva Sección',
           body: 'Añade una descripción aquí.',
           features: ['Característica 1']
         }
       });
-      
       feedbackMessage.value = 'Sección añadida. Refrescando...';
-      refresh(); // Vuelve a cargar los datos
-      
+      refresh(); 
     } catch (err: any) {
       isError.value = true;
       feedbackMessage.value = err.data?.statusMessage || 'Error al crear la sección.';
@@ -268,26 +325,20 @@ const addSection = async () => {
 // (MODIFICADO) Función 'removeSection' llama a la API DELETE
 const removeSection = async (index: number) => {
     if (!sections.value[index]) return; 
-    
     const section = sections.value[index];
     if (!confirm(`ADVERTENCIA: ¿Estás seguro de eliminar la sección "${section.title}"?`)) {
       return;
     }
-
     isLoading.value = true;
     feedbackMessage.value = '';
     isError.value = false;
-
     try {
-      // (IMPORTANTE) Esta API también falta en tus archivos
       await $fetch('/api/admin/instalacion', {
         method: 'DELETE',
-        body: { id_instalacion: section.id_instalacion } // Envía el ID
+        body: { id_instalacion: section.id_instalacion } 
       });
-      
       feedbackMessage.value = 'Sección eliminada. Refrescando...';
-      refresh(); // Vuelve a cargar los datos
-      
+      refresh(); 
     } catch (err: any) {
       isError.value = true;
       feedbackMessage.value = err.data?.statusMessage || 'Error al eliminar.';
@@ -298,7 +349,7 @@ const removeSection = async (index: number) => {
 
 </script>
 
-<style scoped>
+<style scoped lang="postcss">
 /* (Estilos del archivo original) */
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; }
@@ -321,12 +372,15 @@ const removeSection = async (index: number) => {
 .bg-green-100 { background-color: #dcfce7; }
 .text-green-700 { color: #15803d; }
 .border-green-300 { border-color: #86efac; }
-[contenteditable="true"]:focus {
-  outline: 2px solid #5C2A72;
-  cursor: text;
-  background-color: #f0faff;
-  padding: 4px;
-  border-radius: 4px;
-  display: block; 
+.text-green-500 { color: #22c55e; }
+.text-gray-700 { color: #374151; }
+
+/* (Definiciones de color para @apply) */
+.outline-purple-deep { outline-color: #5C2A72; }
+.bg-blue-50 { background-color: #EFF6FF; }
+
+/* (NUEVO) Estilo para los campos editables */
+.editable-field:focus {
+  @apply outline-2 outline-purple-deep cursor-text bg-blue-50 p-1 rounded-md;
 }
 </style>

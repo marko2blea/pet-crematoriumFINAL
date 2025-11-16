@@ -180,11 +180,19 @@ model memorial {
 
 model instalacion {
   id_instalacion Int      @id @default(autoincrement())
-  title          String   @unique @db.VarChar(255) // <-- CORREGIDO: Añadido @unique
+  title          String   @unique @db.VarChar(255)
   body           String   @db.Text
   features       String[]
   orden          Int      @default(autoincrement())
   creado_en      DateTime @default(now())
+
+  imagen_url     String?  @db.VarChar(500) // <-- AÑADE ESTA LÍNEA
+}
+
+model PageContent {
+  page_key String  @id @unique // "instalaciones", "nosotros-header", etc.
+  title    String  @db.Text
+  subtitle String? @db.Text
 }
 
 model about_block {
@@ -194,6 +202,8 @@ model about_block {
   items     String[] // Para la lista de Valores
   orden     Int      @default(autoincrement())
   creado_en DateTime @default(now())
+
+  imagen_url String?  @db.VarChar(500) // <-- AÑADE ESTA LÍNEA
 }
 
 model Valoracion {

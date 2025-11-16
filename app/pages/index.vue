@@ -7,10 +7,10 @@
       </div>
       <div class="relative z-20 max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight text-bd-gold-accent" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-              Dignidad y Respeto en el Último Adiós
+              APOYO EN LOS MOMENTOS MÁS DIFÍCILES
           </h1>
           <p class="text-xl md:text-2xl font-light mb-8" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-              Servicios de cremación individuales para tu querida mascota.
+              ENTREGANDO UN SERVICIO PROFESIONAL, RESPETUOSO Y EMPÁTICO PARA QUIENES PIERDEN A UN SER QUERIDO.
           </p>
           <NuxtLink to="/#catalogo" class="bg-purple-deep text-white py-3 px-8 rounded-lg font-bold text-lg hover:bg-purple-light transition duration-300 shadow-xl">
               Ver Catálogo
@@ -121,9 +121,9 @@
 
             <div v-if="urnasFiltradas.length > 0" class="mt-16">
                 <h2 class="text-3xl font-extrabold text-purple-dark mb-8 text-center">Urnas y Accesorios</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     <div 
-                        v-for="urna in urnasFiltradas" 
+                        v-for="urna in urnasPaginadas" 
                         :key="urna.id" 
                         class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300 relative flex flex-col"
                     >
@@ -159,6 +159,33 @@
                         </NuxtLink>
                     </div>
                 </div>
+                
+                <div v-if="urnasTotalPages > 1" class="flex justify-between items-center mt-8">
+                    <button 
+                        @click="urnasPrevPage"
+                        :disabled="urnasPage === 1"
+                        class="bg-white text-purple-deep py-2 px-4 rounded-lg font-bold hover:bg-gray-100 transition duration-150 shadow-md flex items-center space-x-2
+                               disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <font-awesome-icon icon="fas fa-chevron-left" />
+                        <span>Anterior</span>
+                    </button>
+                    
+                    <span class="text-sm font-semibold text-gray-700">
+                        Página {{ urnasPage }} de {{ urnasTotalPages }}
+                    </span>
+
+                    <button 
+                        @click="urnasNextPage"
+                        :disabled="urnasPage === urnasTotalPages"
+                        class="bg-white text-purple-deep py-2 px-4 rounded-lg font-bold hover:bg-gray-100 transition duration-150 shadow-md flex items-center space-x-2
+                               disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span>Siguiente</span>
+                        <font-awesome-icon icon="fas fa-chevron-right" />
+                    </button>
+                </div>
+
             </div>
         </div>
       </div>
@@ -171,8 +198,10 @@
                     <img src="/logo2.png" alt="Logo" class="h-32 opacity-20">
                 </div>
                 <div>
-                    <h2 class="text-3xl font-bold text-purple-dark mb-4">{{ aboutBlock.title }}</h2>
-                    <p class="text-lg text-gray-700 leading-relaxed mb-6">{{ aboutBlock.body }}</p>
+                    <h2 class="text-3xl font-bold text-purple-dark mb-4">Sobre Nosotros</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                      Conoce nuestra historia, valores y el compromiso que tenemos con tu familia. Somos una microempresa familiar dedicada a honrar la vida de tu compañero.
+                    </p>
                     <NuxtLink to="/about" class="bg-purple-deep text-white py-3 px-6 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md inline-flex items-center">
                         Conoce más sobre nosotros
                         <font-awesome-icon icon="fas fa-arrow-right" class="ml-2" />
@@ -186,14 +215,10 @@
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center bg-white p-8 md:p-12 rounded-xl shadow-2xl">
                 <div class="md:order-last">
-                    <h2 class="text-3xl font-bold text-purple-dark mb-4">{{ instalacionBlock.title }}</h2>
-                    <p class="text-lg text-gray-700 leading-relaxed mb-6">{{ instalacionBlock.body }}</p>
-                    <ul class="space-y-2 mb-6">
-                        <li v-for="feature in instalacionBlock.features.slice(0, 3)" :key="feature" class="flex items-center text-gray-700">
-                            <font-awesome-icon icon="fas fa-check" class="text-green-500 mr-3" />
-                            <span>{{ feature }}</span>
-                        </li>
-                    </ul>
+                    <h2 class="text-3xl font-bold text-purple-dark mb-4">Nuestras Instalaciones</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                      Diseñadas para ofrecer un ambiente de paz y respeto, nuestras instalaciones proporcionan la comodidad y privacidad necesarias para despedir a su compañero de vida.
+                    </p>
                     <NuxtLink to="/instalaciones" class="bg-purple-deep text-white py-3 px-6 rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md inline-flex items-center">
                         Ver nuestras instalaciones
                         <font-awesome-icon icon="fas fa-arrow-right" class="ml-2" />
@@ -210,12 +235,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { 
     faHeart as faHeartSolid, faCheck, faShoppingCart, faArrowRight, 
     faFilter, faSearch, faTimes, faTimesCircle,
-    faBuilding, faUsers // (NUEVO) Iconos para las secciones
+    faBuilding, faUsers, faChevronLeft, faChevronRight // (NUEVO) Iconos
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import type { Product } from '../../app/types';
@@ -223,7 +248,7 @@ import type { Product } from '../../app/types';
 library.add(
     faCheck, faShoppingCart, faArrowRight, faHeartSolid, faHeartRegular,
     faFilter, faSearch, faTimes, faTimesCircle,
-    faBuilding, faUsers // (NUEVO)
+    faBuilding, faUsers, faChevronLeft, faChevronRight // (NUEVO)
 );
 
 // (NUEVO) Tipado para las vistas previas
@@ -239,7 +264,7 @@ interface AboutPreview {
   body: string;
 }
 
-// (NUEVO) Usar composables de Carrito y Favoritos
+// Usar composables
 const { favorites, toggleFavorite, isFavorite } = useFavorites();
 const { addToCart } = useCart();
 
@@ -316,11 +341,42 @@ const serviciosFiltrados = computed(() => {
 });
 
 const urnasFiltradas = computed(() => {
+  // Esta es la lista completa de urnas/accesorios que coinciden con el filtro
   return productosFiltrados.value.filter(p => p.tipo === 'Urna' || p.tipo === 'Accesorio');
 });
 
-// (ELIMINADO) 'favoriteProducts' ---
-// Ya no es necesario, el filtro principal se encarga.
+// --- (NUEVA) LÓGICA DE PAGINACIÓN (Req. 2) ---
+const URNAS_PER_PAGE = 10;
+const urnasPage = ref(1);
+
+// Calcula el número total de páginas
+const urnasTotalPages = computed(() => {
+    return Math.ceil(urnasFiltradas.value.length / URNAS_PER_PAGE);
+});
+
+// Devuelve solo los 10 productos de la página actual
+const urnasPaginadas = computed(() => {
+    const inicio = (urnasPage.value - 1) * URNAS_PER_PAGE;
+    const fin = inicio + URNAS_PER_PAGE;
+    return urnasFiltradas.value.slice(inicio, fin);
+});
+
+// Funciones para los botones de flecha
+const urnasNextPage = () => {
+    if (urnasPage.value < urnasTotalPages.value) {
+        urnasPage.value++;
+    }
+};
+const urnasPrevPage = () => {
+    if (urnasPage.value > 1) {
+        urnasPage.value--;
+    }
+};
+// Resetear la página si los filtros cambian
+watchEffect(() => {
+    urnasPage.value = 1;
+});
+
 
 // --- Función para Clases de Etiqueta (Badge) ---
 const getBadgeClass = (tipo: string) => {
@@ -360,7 +416,7 @@ const getBadgeClass = (tipo: string) => {
 .hover\:bg-yellow-500:hover { background-color: #ECC94B; }
 .bg-red-50 { background-color: #fef2f2; }
 .text-red-400 { color: #f87171; }
-.bg-white-subtle { background-color: #F8F4FA; } /* (NUEVO) */
+.bg-white-subtle { background-color: #F8F4FA; }
 .text-gray-700 { color: #374151; }
 
 /* Colores de las etiquetas de categoría (como en Inventario) */
@@ -381,4 +437,8 @@ select {
     background-repeat: no-repeat;
     padding-right: 2.5rem;
 }
+
+/* (NUEVO) Estilos para botones de paginación */
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 </style>
