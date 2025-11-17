@@ -1,11 +1,6 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/eliminar-memorial.delete.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para ELIMINAR (DELETE) un memorial.
- * Ruta: /api/admin/eliminar-memorial
- * Método: DELETE
- */
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
@@ -18,6 +13,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // (MODIFICADO) Usa PascalCase: db.memorial
     await db.memorial.delete({
       where: { id_memorial: Number(id) },
     });

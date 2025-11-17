@@ -101,7 +101,7 @@
 <script setup lang="ts">
 import { ref, watchEffect, computed } from 'vue'; // (MODIFICADO) Añadido 'computed'
 import { useRoute, useRouter } from 'vue-router';
-import type { User, Rol } from '../../app/types'; // (MODIFICADO) Ruta relativa
+import type { User, Rol } from '../../../app/types'; // (MODIFICADO) Ruta relativa
 
 // 1. Proteger esta página
 definePageMeta({
@@ -147,7 +147,7 @@ const { data: loadedData, pending, error } = await useAsyncData<DetalleUsuarioRe
   'usuario-detalle',
   () => {
     if (!usuarioId.value) throw createError({ statusCode: 400, statusMessage: 'Falta ID de usuario' });
-    return $fetch('/api/admin/usuario-detalle', { query: { id: usuarioId.value } })
+    return $fetch('../api/admin/usuario-detalle', { query: { id: usuarioId.value } })
   },
   { watch: [usuarioId] }
 );

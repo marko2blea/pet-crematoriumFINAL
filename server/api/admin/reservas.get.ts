@@ -1,12 +1,11 @@
-// RUTA CORREGIDA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/reservas.get.ts
 import { db } from '../../utils/prisma';
 import type { Prisma } from '@prisma/client';
 
 /**
- * API para obtener la lista COMPLETA de reservas, con filtros.
+ * API para obtener la lista COMPLETA de Pedidos (Reservas y Envios).
  * Ruta: /api/admin/reservas
  * Método: GET
- * Query Params: ?status= (Todos | Pendiente | En Proceso | Finalizado | Cancelado)
  */
 export default defineEventHandler(async (event) => {
   try {
@@ -14,76 +13,62 @@ export default defineEventHandler(async (event) => {
     const status = query.status as string | undefined;
 
     // 1. Construir el filtro de Prisma (Where clause)
-    // Usamos el 'estado' (Boolean) de la reserva y el 'estado' (String) del pago
-    // para crear los 4 estados que usa el frontend.
-    const where: Prisma.reservaWhereInput = {};
+    const where: Prisma.PedidoWhereInput = {};
+    
+    // Solo mostrar Pedidos que son Reservas (Servicios)
+    where.es_reserva = true; 
 
-    if (status === 'Pendiente') {
-      // Un pago 'Pendiente'
-      where.pago = { estado: 'Pendiente' };
-    } else if (status === 'En Proceso') {
-      // Una reserva 'activa' (estado=false) pero con pago NO 'Pendiente'
-      where.estado = false;
-      where.pago = { NOT: { estado: 'Pendiente' } };
-    } else if (status === 'Finalizado') {
-      // Una reserva 'cerrada' (estado=true)
-      where.estado = true;
-    } else if (status === 'Cancelado') {
-      // Un pago 'Cancelado'
-      where.pago = { estado: 'Cancelado' };
+    if (status && status !== 'Todos') {
+       where.estado_pedido = status; // "Pendiente", "Pagado", "Cancelado"
     }
-    // Si status === 'Todos', el 'where' queda vacío y trae todo.
-
-
+    
     // 2. Ejecutar la consulta
-    const reservas = await db.reserva.findMany({
+    const pedidos = await db.pedido.findMany({
       where: where,
       orderBy: {
-        fecha_reservada: 'desc', // Las más nuevas primero
+        fecha_pedido: 'desc',
       },
       include: {
         usuario: {
           select: {
             nombre: true,
             apellido_paterno: true,
-            mascota: {
+            // (CORRECCIÓN 1) Cambiado a 'mascotas' (plural) y tomando solo 1
+            mascotas: {
               select: { nombre_mascota: true },
+              take: 1 
             },
           },
         },
-        detalle_reserva: {
-          select: { nombre_servicio: true },
-        },
-        pago: { // Incluimos el pago para saber el monto y el estado (Pendiente/Cancelado)
-          select: { 
-            monto: true,
-            estado: true 
+        detalles_pedido: {
+          select: {
+            producto: { select: { nombre_producto: true } }
           },
+          take: 1 // Solo tomar el primer item para el nombre
         },
+        pago: { 
+          select: { monto: true }
+        },
+        reserva: { // Incluir la reserva para el código y estado
+          select: { cod_trazabilidad: true, estado_reserva: true }
+        }
       },
     });
 
-    // 3. Formatear la respuesta para que coincida con lo que espera 'reservas.vue'
-    const formattedReservas = reservas.map((r) => {
-      // Determinar el estado basado en la lógica del filtro
-      let computedStatus: 'Pendiente' | 'En Proceso' | 'Finalizado' | 'Cancelado' = 'En Proceso'; // Default
-      if (r.pago?.estado === 'Pendiente') {
-        computedStatus = 'Pendiente';
-      } else if (r.pago?.estado === 'Cancelado') {
-        computedStatus = 'Cancelado';
-      } else if (r.estado === true) {
-        computedStatus = 'Finalizado';
-      }
-
+    // 3. Formatear la respuesta
+    const formattedReservas = pedidos.map((p) => {
+      const servicio = p.detalles_pedido[0]?.producto.nombre_producto || 'N/A';
+      
       return {
-        id: r.id_reserva,
-        clientName: `${r.usuario?.nombre || 'Cliente'} ${r.usuario?.apellido_paterno || ''}`.trim(),
-        petName: r.usuario?.mascota?.nombre_mascota || 'Mascota',
-        petBreed: '', // El schema 'especie' no está en esta consulta, lo omitimos
-        serviceName: r.detalle_reserva?.nombre_servicio || 'N/A',
-        trackingCode: r.cod_trazabilidad,
-        status: computedStatus,
-        amount: Number(r.pago?.monto) || Number(r.precio_total) || 0,
+        id: p.id_pedido,
+        clientName: `${p.usuario?.nombre || 'Cliente'} ${p.usuario?.apellido_paterno || ''}`.trim(),
+        // (CORRECCIÓN 2) Leer del array 'mascotas'
+        petName: p.usuario?.mascotas[0]?.nombre_mascota || 'Mascota',
+        serviceName: servicio,
+        trackingCode: p.reserva?.cod_trazabilidad || 'N/A',
+        status: p.estado_pedido,
+        amount: Number(p.pago?.monto) || 0,
+        statusReserva: p.reserva?.estado_reserva || 'N/A' 
       };
     });
 

@@ -1,11 +1,6 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/agregar-memorial.post.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para CREAR (POST) un nuevo memorial.
- * Ruta: /api/admin/agregar-memorial
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
@@ -18,11 +13,12 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // (MODIFICADO) Usa PascalCase: db.memorial
     const nuevoMemorial = await db.memorial.create({
       data: {
         nombre: nombre,
         raza: raza,
-        fecha: new Date(fecha), // Asegurarse que la fecha sea un objeto Date
+        fecha: new Date(fecha),
         dedicatoria: dedicatoria,
       },
     });

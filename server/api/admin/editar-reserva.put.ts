@@ -1,80 +1,81 @@
-// RUTA CORREGIDA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/editar-reserva.put.ts
 import { db } from '../../utils/prisma';
 
 /**
- * API para ACTUALIZAR (PUT) una reserva existente.
+ * API para ACTUALIZAR (PUT) un pedido/reserva existente.
  * Ruta: /api/admin/editar-reserva
  * Método: PUT
  */
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Leer los datos que vienen del formulario 'editar-reserva.vue'
     const body = await readBody(event);
-    
-    // Extraemos los datos del formulario (form.id, form.estadoReserva, etc.)
     const { 
-      id: reservaId, 
-      estadoReserva, 
-      estadoPago, 
+      id: pedidoId, 
+      estadoPedido,  // "Pendiente", "Pagado", "Cancelado"
+      estadoReserva, // "Pendiente", "Confirmada", "En Proceso", "Finalizada"
       codTrazabilidad 
     } = body;
 
-    if (!reservaId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'ID de reserva no proporcionado.',
-      });
+    if (!pedidoId) {
+      throw createError({ statusCode: 400, statusMessage: 'ID de pedido no proporcionado.' });
     }
 
-    // 2. Traducir los estados del formulario a los valores de la BD
-    // 'estadoReserva' (Frontend) -> 'estado' (BD - Boolean)
-    const nuevoEstadoReserva = estadoReserva === 'Finalizado'; // true si es 'Finalizado', false si es 'En Proceso'
-
-    // 3. Obtener el ID del pago asociado a esta reserva
-    // Necesitamos esto para actualizar la tabla 'pago' por separado.
-    const reserva = await db.reserva.findUnique({
-      where: { id_reserva: Number(reservaId) },
-      select: { id_pago: true } // Solo necesitamos saber el id_pago
+    // 1. Encontrar el Pedido para obtener el ID del pago
+    const pedido = await db.pedido.findUnique({
+      where: { id_pedido: Number(pedidoId) },
+      select: { id_pago: true, reserva: { select: { id_reserva: true }} }
     });
 
-    if (!reserva || !reserva.id_pago) {
-      throw createError({ statusCode: 404, statusMessage: 'Reserva o pago asociado no encontrado.' });
+    if (!pedido) {
+      throw createError({ statusCode: 404, statusMessage: 'Pedido no encontrado.' });
+    }
+    
+    // 2. Determinar el estado del PAGO basado en el estado del PEDIDO
+    let estadoPagoFinal = 'Pendiente';
+    if (estadoPedido === 'Pagado') {
+      estadoPagoFinal = 'Pagado';
+    } else if (estadoPedido === 'Cancelado') {
+      estadoPagoFinal = 'Fallido'; // o 'Cancelado', según tu lógica
     }
 
-    // 4. Usar una transacción de Prisma para actualizar AMBAS tablas
-    // Esto asegura que si una actualización falla, la otra también se revierte.
-    const [reservaActualizada, pagoActualizado] = await db.$transaction([
+    // 3. Usar una transacción
+    await db.$transaction([
       
-      // Operación 1: Actualizar la tabla 'reserva'
-      db.reserva.update({
-        where: { id_reserva: Number(reservaId) },
+      // Op 1: Actualizar el Pedido
+      db.pedido.update({
+        where: { id_pedido: Number(pedidoId) },
         data: {
-          estado: nuevoEstadoReserva, // El boolean
-          cod_trazabilidad: codTrazabilidad, // El string
+          estado_pedido: estadoPedido,
         },
       }),
 
-      // Operación 2: Actualizar la tabla 'pago'
+      // Op 2: Actualizar el Pago
       db.pago.update({
-        where: { id_pago: reserva.id_pago },
+        where: { id_pago: pedido.id_pago! }, // Usamos el id_pago del pedido
         data: {
-          estado: estadoPago, // El string ('Pagado', 'Pendiente', 'Cancelado')
+          estado: estadoPagoFinal,
+        },
+      }),
+
+      // Op 3: Actualizar la Reserva (si existe)
+      db.reserva.update({
+        where: { id_reserva: pedido.reserva!.id_reserva }, // Usamos el id_reserva
+        data: {
+          estado_reserva: estadoReserva,
+          cod_trazabilidad: codTrazabilidad,
         },
       }),
     ]);
 
-    // 5. Éxito
+    // 4. Éxito
     return {
       statusCode: 200,
-      message: 'Reserva actualizada exitosamente.',
-      data: reservaActualizada,
+      message: 'Reserva (Pedido) actualizada exitosamente.',
     };
 
   } catch (error: any) {
     console.error("Error al actualizar la reserva:", error);
-    if (error.statusCode) {
-      throw error;
-    }
+    if (error.statusCode) throw error;
     throw createError({
       statusCode: 500,
       statusMessage: 'Error interno del servidor al actualizar la reserva.',

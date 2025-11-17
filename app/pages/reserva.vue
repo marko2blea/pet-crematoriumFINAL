@@ -2,27 +2,22 @@
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
     
     <div class="max-w-4xl mx-auto">
-      <!-- Encabezado -->
       <div class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-purple-dark mb-3">Finalizar Reserva</h1>
-        <p class="text-lg text-gray-600">Complete los datos de su mascota y el lugar de retiro.</p>
+        <h1 class="text-4xl font-extrabold text-purple-dark mb-3">Finalizar Pedido</h1>
+        <p class="text-lg text-gray-600">Complete los datos de su mascota y el lugar de retiro/envío.</p>
       </div>
 
-      <!-- (NUEVO) Mensaje de Error/Carga -->
       <div v-if="isLoading" class="mb-4 p-4 rounded-lg text-center text-lg bg-blue-100 border border-blue-400 text-blue-700">
-        Procesando su reserva...
+        Procesando su pedido...
       </div>
       <div v-if="errorMessage" class="mb-4 p-4 rounded-lg text-center text-sm bg-red-100 border border-red-400 text-red-700">
         {{ errorMessage }}
       </div>
 
-      <!-- Formulario Principal -->
       <form @submit.prevent="handleSubmit" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- Columna Izquierda: Formularios -->
         <div class="lg:col-span-2 space-y-8">
           
-          <!-- Sección 1: Datos de la Mascota -->
           <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-purple-dark">
             <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">
               1. Datos de la Mascota
@@ -35,7 +30,7 @@
                   id="petName" 
                   type="text" 
                   required
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  class="form-input"
                   placeholder="Nombre de su mascota"
                 />
               </div>
@@ -48,7 +43,7 @@
                   step="0.1"
                   min="0"
                   required
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  class="form-input"
                   placeholder="Ej: 10.5"
                 />
               </div>
@@ -60,17 +55,16 @@
                   type="number" 
                   min="0"
                   required
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  class="form-input"
                   placeholder="Ej: 5"
                 />
               </div>
             </div>
           </div>
 
-          <!-- Sección 2: Datos de Retiro/Entrega -->
           <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-purple-dark">
             <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">
-              2. Dirección de Retiro del Servicio
+              2. Dirección de Retiro / Envío
             </h2>
             <div class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -81,7 +75,7 @@
                     id="region" 
                     type="text" 
                     required
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                    class="form-input"
                     placeholder="Ej: Biobío"
                   />
                 </div>
@@ -92,19 +86,19 @@
                     id="comuna" 
                     type="text" 
                     required
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                    class="form-input"
                     placeholder="Ej: Concepción"
                   />
                 </div>
               </div>
               <div>
-                <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección de Retiro</label>
+                <label for="direccion" class="block text-sm font-semibold text-dark-primary-blue mb-2">Dirección</label>
                 <input 
                   v-model="formDireccion.direccion"
                   id="direccion" 
                   type="text" 
                   required
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-deep focus:ring-1 focus:ring-purple-deep"
+                  class="form-input"
                   placeholder="Calle, Número, Depto (Opcional)"
                 />
               </div>
@@ -112,12 +106,10 @@
           </div>
         </div>
 
-        <!-- Columna Derecha: Resumen del Pedido -->
         <div class="lg:col-span-1">
           <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-bd-gold-accent sticky top-24">
             <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">Resumen</h2>
             
-            <!-- (NUEVO) Lista de items en el resumen -->
             <ul class="space-y-2 mb-4">
               <li v-for="item in cart" :key="item.id" class="flex justify-between items-center text-sm">
                 <span class="text-gray-700">{{ item.nombre }} <span class="text-gray-500">x{{ item.quantity }}</span></span>
@@ -141,13 +133,12 @@
                 </div>
             </div>
 
-            <!-- Info de Pago -->
             <div class="mt-6 bg-purple-50 p-4 rounded-lg border border-purple-200 text-center">
               <p class="text-sm text-purple-dark font-semibold">
                 El pago se gestiona vía Transferencia Bancaria.
               </p>
               <p class="text-xs text-gray-600 mt-1">
-                Al confirmar, su reserva quedará "Pendiente" y recibirá un correo con los datos para la transferencia.
+                Al confirmar, su pedido quedará "Pendiente" y recibirá un correo con los datos para la transferencia.
               </p>
             </div>
 
@@ -157,13 +148,12 @@
                            bg-purple-deep text-white hover:bg-purple-light hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-deep/50
                            disabled:opacity-50 disabled:cursor-not-allowed">
                 <font-awesome-icon icon="fas fa-check-circle" class="mr-2" />
-                Confirmar Reserva
+                Confirmar Pedido
             </button>
           </div>
         </div>
         
       </form>
-
     </div>
   </div>
 </template>
@@ -176,19 +166,17 @@ import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 library.add(faCheckCircle);
 
-// 1. Proteger esta página (solo usuarios logueados)
-
+definePageMeta({
+  middleware: 'auth' // Requiere que el usuario esté logueado
+});
 
 const router = useRouter();
-const user = useUser(); // Estado global del usuario
-const { cart, cartTotal, loadCart, clearCart } = useCart(); // Estado global del carrito
+const user = useUser();
+const { cart, cartTotal, loadCart, clearCart } = useCart();
 
-// --- Estado de UI ---
 const isLoading = ref(false);
 const errorMessage = ref('');
 
-// --- Formularios Reactivos ---
-// (Separados para que coincida con la lógica de la API de checkout)
 const formMascota = ref({
   petName: '',
   petWeight: null as number | null,
@@ -201,9 +189,8 @@ const formDireccion = ref({
   direccion: '',
 });
 
-// 2. Rellenar el formulario de dirección con los datos del usuario
 onMounted(() => {
-  loadCart(); // Cargar el carrito desde sessionStorage
+  loadCart(); 
   
   if (user.value) {
     formDireccion.value = {
@@ -211,30 +198,28 @@ onMounted(() => {
       comuna: user.value.comuna || '',
       direccion: user.value.direccion || '',
     };
+  } else {
+    router.push('/login?redirectTo=/reserva');
   }
 });
 
-// --- Totales ---
-// (La API de checkout calcula el IVA, pero lo mostramos aquí también)
 const iva = computed(() => Math.round(cartTotal.value * 0.19));
 const totalGeneral = computed(() => cartTotal.value + iva.value);
 
-
-// --- (ACTUALIZADO) Función de Envío (Checkout) ---
 const handleSubmit = async () => {
   isLoading.value = true;
   errorMessage.value = '';
 
-  // 1. Validaciones
   if (!user.value || !user.value.id_usuario) {
     errorMessage.value = "Error de sesión. Por favor, inicie sesión de nuevo.";
     isLoading.value = false;
+    router.push('/login?redirectTo=/reserva');
     return;
   }
   if (cart.value.length === 0) {
     errorMessage.value = "Tu carrito está vacío.";
     isLoading.value = false;
-    router.push('/'); // Si está vacío, lo mandamos al inicio
+    router.push('/');
     return;
   }
   if (!formMascota.value.petName || !formMascota.value.petWeight) {
@@ -243,12 +228,11 @@ const handleSubmit = async () => {
     return;
   }
   if (!formDireccion.value.region || !formDireccion.value.comuna || !formDireccion.value.direccion) {
-    errorMessage.value = "Por favor, complete los datos de dirección de retiro.";
+    errorMessage.value = "Por favor, complete los datos de dirección.";
     isLoading.value = false;
     return;
   }
 
-  // 2. (CORREGIDO) Construir el body que la API (checkout.post.ts) espera
   const bodyPayload = {
     formData: {
       petName: formMascota.value.petName,
@@ -257,41 +241,40 @@ const handleSubmit = async () => {
       region: formDireccion.value.region,
       comuna: formDireccion.value.comuna,
       direccion: formDireccion.value.direccion,
-      metodoPago: 'Transferencia Bancaria' // Hardcodeado, como espera la API
+      metodoPago: 'Transferencia Bancaria'
     },
     cartItems: cart.value,
-    cartTotal: cartTotal.value, // Subtotal (la API calculará el IVA)
+    cartTotal: cartTotal.value,
     userId: user.value.id_usuario
   };
 
   try {
-    // 3. Llamar a la API de Checkout
-    const response = await $fetch('/api/checkout', {
+    const response = await $fetch<{ trackingCode: string | null, pedidoId: number }>('/api/checkout', {
       method: 'POST',
       body: bodyPayload
     });
 
-    // 4. Éxito
     isLoading.value = false;
-    clearCart(); // Limpiar el carrito
+    clearCart();
 
-    // 5. Redirigir a la página de tracking con el nuevo código
-    alert('¡Reserva creada con éxito! Serás redirigido a la página de seguimiento.');
-    // (Usamos 'response.trackingCode' que es lo que devuelve la API)
-    router.push(`/tracking?codigo=${response.trackingCode}`);
+    // (CORRECCIÓN) Se usa response.trackingCode
+    if (response.trackingCode) {
+      alert('¡Reserva creada con éxito! Serás redirigido a la página de seguimiento.');
+      router.push(`/tracking?codigo=${response.trackingCode}`);
+    } else {
+      alert('¡Pedido de productos creado con éxito!');
+      router.push('/');
+    }
 
   } catch (error: any) {
-    // 6. Error
     isLoading.value = false;
     console.error('Error en el checkout:', error);
-    errorMessage.value = error.data?.statusMessage || 'Error desconocido. No se pudo crear la reserva.';
+    errorMessage.value = error.data?.statusMessage || 'Error desconocido. No se pudo crear el pedido.';
   }
 };
-
 </script>
 
-<style scoped>
-/* Estilos (Copiados de carrito.vue) */
+<style scoped lang="postcss">
 .text-purple-dark { color: #4A235A; }
 .bg-purple-dark { background-color: #4A235A; } 
 .bg-purple-light { background-color: #6C3483; }
@@ -315,4 +298,8 @@ const handleSubmit = async () => {
 .border-purple-200 { border-color: #ce93d8; }
 .focus\:border-purple-deep:focus { border-color: #5C2A72; }
 .focus\:ring-purple-deep:focus { --tw-ring-color: #5C2A72; }
+
+.form-input {
+  @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-deep focus:border-purple-deep;
+}
 </style>

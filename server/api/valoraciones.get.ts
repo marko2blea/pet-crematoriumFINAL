@@ -1,12 +1,6 @@
-// RUTA: Sube un nivel (desde /api/ a /server/)
+// server/api/valoraciones.get.ts
 import { db } from '../utils/prisma';
-import type { Prisma } from '@prisma/client';
-/**
- * API PÚBLICA para obtener las valoraciones de UN producto.
- * Ruta: /api/valoraciones
- * Método: GET
- * Query Params: ?id= (El ID del producto)
- */
+
 export default defineEventHandler(async (event) => {
   const { id } = getQuery(event);
 
@@ -15,18 +9,17 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // (MODIFICADO) Usa PascalCase: db.valoracion
     const valoraciones = await db.valoracion.findMany({
       where: { id_producto: Number(id) },
       orderBy: { fecha_creacion: 'desc' },
       include: {
-        // Incluimos el nombre del autor
-        usuario: {
+        usuario: { // (MODIFICADO) Usa PascalCase: usuario
           select: { nombre: true, apellido_paterno: true }
         }
       }
     });
     
-    // Formateamos los datos para la UI
     return valoraciones.map(v => ({
       id_valoracion: v.id_valoracion,
       rating: v.rating,

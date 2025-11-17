@@ -1,18 +1,9 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/instalacion.delete.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para ELIMINAR (DELETE) una sección de instalación.
- * Ruta: /api/admin/instalacion
- * Método: DELETE
- */
 export default defineEventHandler(async (event) => {
   try {
-    const body = await readBody(event);
-    
-    // (CORRECCIÓN) Añadimos el tipo explícito al desestructurar
-    // Le decimos a TypeScript que esperamos un objeto con esta forma:
-    const { id_instalacion }: { id_instalacion: number } = body;
+    const { id_instalacion }: { id_instalacion: number } = await readBody(event);
 
     if (!id_instalacion || isNaN(Number(id_instalacion))) {
       throw createError({
@@ -21,6 +12,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // (MODIFICADO) Usa PascalCase: db.instalacion
     await db.instalacion.delete({
       where: { id_instalacion: Number(id_instalacion) },
     });

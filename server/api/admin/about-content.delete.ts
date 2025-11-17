@@ -1,11 +1,6 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/about-content.delete.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para ELIMINAR (DELETE) un bloque de "Nosotros".
- * Ruta: /api/admin/about-content
- * Método: DELETE
- */
 export default defineEventHandler(async (event) => {
   try {
     const { id_block }: { id_block: number } = await readBody(event);
@@ -14,7 +9,8 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'ID de bloque no válido.' });
     }
 
-    await db.about_block.delete({
+    // (MODIFICADO) Usa PascalCase: db.aboutBlock
+    await db.aboutBlock.delete({
       where: { id_block: Number(id_block) },
     });
 

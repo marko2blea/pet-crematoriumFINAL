@@ -1,137 +1,20 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") // "postgresql://marko2blea:1234@localhost:5432/sanantonio_db?schema=public"
 }
 
-model cementerio {
-  id_cementerio Int       @id @default(autoincrement())
-  seccion       String?   @db.VarChar(100)
-  num_parcela   String?   @db.VarChar(50)
-  disponible    Boolean?
-  region        String?   @db.VarChar(100)
-  comuna        String?   @db.VarChar(100)
-  direccion     String?   @db.VarChar(255)
-  reserva       reserva[]
-}
+// ================================================================
+// MODELOS PRINCIPALES
+// ================================================================
 
-model detalle_reserva {
-  id_detalle_reserva Int       @id @default(autoincrement())
-  nombre_servicio    String?   @db.VarChar(255)
-  precio_servicio    Decimal?  @db.Decimal(10, 2)
-  tipo_servicio      String?   @db.VarChar(100)
-  desc_servicio      String?   @db.VarChar(500)
-  cantidad           Int?
-  precio_total       Decimal?  @db.Decimal(10, 2)
-  cod_producto       Int?
-  producto           producto? @relation(fields: [cod_producto], references: [cod_producto], onDelete: NoAction, onUpdate: NoAction)
-  reserva            reserva[]
-}
-
-model especie {
-  id_especie     Int       @id @default(autoincrement())
-  tipo_mascota   String?   @db.VarChar(100)
-  nombre_especie String?   @db.VarChar(100)
-  raza           String?   @db.VarChar(100)
-  mascota        mascota[]
-}
-
-model mascota {
-  id_mascota            Int       @id @default(autoincrement())
-  nombre_mascota        String?   @db.VarChar(100)
-  peso                  Decimal?  @db.Decimal(5, 2)
-  edad                  Int?
-  diagnostico_sanitario String?   @db.VarChar(500)
-  notas_manipulacion    String?   @db.VarChar(500)
-  id_especie            Int?
-  especie               especie?  @relation(fields: [id_especie], references: [id_especie], onDelete: NoAction, onUpdate: NoAction)
-  usuario               usuario[]
-}
-
-model metodo_pago {
-  id_metodo                   Int       @id @default(autoincrement())
-  nombre_metodo               String?   @db.VarChar(100)
-  n_recibo_efectivo           Int?
-  url_comprobante_transferencia String?   @db.VarChar(255)
-  rut_emisor                  String?   @db.VarChar(20)
-  banco_emisor                String?   @db.VarChar(100)
-  tipo_cuenta                 String?   @db.VarChar(50)
-  num_cuenta                  String?   @db.VarChar(50)
-  num_transaccion_externa     String?   @db.VarChar(100)
-  pago                        pago[]
-}
-
-model pago {
-  id_pago       Int         @id @default(autoincrement())
-  nombre_metodo String?     @db.VarChar(100)
-  fecha_pago    DateTime?   @db.Date
-  monto         Decimal?    @db.Decimal(10, 2)
-  estado        String?     @db.VarChar(50)
-  id_metodo     Int?
-  metodo_pago   metodo_pago? @relation(fields: [id_metodo], references: [id_metodo], onDelete: NoAction, onUpdate: NoAction)
-  reserva       reserva[]
-}
-
-model producto {
-  cod_producto    Int               @id @default(autoincrement())
-  nombre_producto String?           @unique @db.VarChar(255)
-  stock_actual    Int?
-  precio_unitario Decimal?          @db.Decimal(10, 2)
-  disponible      Boolean?
-  tipo_producto   String?           @db.VarChar(100)
-  id_proveedor    Int?
-  
-  imagen_url      String?           @db.VarChar(500) // <-- AÑADE ESTA LÍNEA
-  descripcion     String?           @db.Text
-
-  detalle_reserva detalle_reserva[]
-  proveedor       proveedor?        @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction)
-  valoraciones    Valoracion[]
-}
-
-model proveedor {
-  id_proveedor Int        @id @default(autoincrement())
-  proveedor    String?    @db.VarChar(255)
-  contacto     Int?
-  region       String?    @db.VarChar(100)
-  comuna       String?    @db.VarChar(100)
-  direccion    String?    @db.VarChar(255)
-  disponible   Boolean?
-  producto     producto[]
-}
-
-model reserva {
-  id_reserva         Int              @id @default(autoincrement())
-  cod_trazabilidad   String?          @db.Char(9)
-  fecha_reservada    DateTime?        @db.Date
-  hora_reservada     DateTime?        @db.Time(6)
-  region             String?          @db.VarChar(100)
-  comuna             String?          @db.VarChar(100)
-  direccion          String?          @db.VarChar(255)
-  precio_total       Decimal?         @db.Decimal(10, 2)
-  estado             Boolean?
-  id_usuario         Int?
-  id_cementerio      Int?
-  id_pago            Int?
-  id_detalle_reserva Int?
-  cementerio         cementerio?      @relation(fields: [id_cementerio], references: [id_cementerio], onDelete: NoAction, onUpdate: NoAction)
-  detalle_reserva    detalle_reserva? @relation(fields: [id_detalle_reserva], references: [id_detalle_reserva], onDelete: NoAction, onUpdate: NoAction)
-  pago               pago?            @relation(fields: [id_pago], references: [id_pago], onDelete: NoAction, onUpdate: NoAction)
-  usuario            usuario?         @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model rol {
-  id_rol           Int                @id @default(autoincrement())
-  nombre_rol       String?            @db.VarChar(100)
-  descripcion_rol  String?            @db.VarChar(255)
-  usuario          usuario[]
-  usuario_permisos usuario_permisos[]
-}
-
-model usuario {
+model Usuario {
   id_usuario       Int       @id @default(autoincrement())
   nombre           String?   @db.VarChar(100)
   apellido_paterno String?   @db.VarChar(100)
@@ -145,65 +28,165 @@ model usuario {
   comuna           String?   @db.VarChar(100)
   direccion        String?   @db.VarChar(255)
   id_rol           Int?
-  id_mascota       Int?
-  reserva          reserva[]
-  mascota          mascota?  @relation(fields: [id_mascota], references: [id_mascota], onDelete: NoAction, onUpdate: NoAction)
-  rol              rol?      @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
-  usuario_permisos usuario_permisos[]
 
-  // --- CORRECCIONES AÑADIDAS ---
-  reset_token           String?      @unique @db.VarChar(255)
+  rol Rol? @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
+  mascotas     Mascota[]
+  pedidos      Pedido[]
+  valoraciones Valoracion[]
+
+  reset_token           String?   @unique @db.VarChar(255)
   reset_token_expires DateTime?
-  valoraciones          Valoracion[]
+  
+  @@map("usuario") // (CORREGIDO)
 }
 
-model usuario_permisos {
-  id_rol     Int
-  id_usuario Int
-  estado     String? @db.VarChar(50)
-  rol        rol     @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
-  usuario    usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([id_rol, id_usuario])
+model Rol {
+  id_rol          Int       @id @default(autoincrement())
+  nombre_rol      String?   @db.VarChar(100)
+  descripcion_rol String?   @db.VarChar(255)
+  usuario         Usuario[]
+  
+  @@map("rol") // (CORREGIDO)
 }
 
-// --- MODELOS NUEVOS AÑADIDOS ---
+model Producto {
+  cod_producto    Int      @id @default(autoincrement())
+  nombre_producto String?  @unique @db.VarChar(255)
+  stock_actual    Int?
+  precio_unitario Decimal? @db.Decimal(10, 2)
+  disponible      Boolean?
+  tipo_producto   String?  @db.VarChar(100)
+  id_proveedor    Int?
 
-model memorial {
-  id_memorial Int       @id @default(autoincrement())
-  nombre      String    @db.VarChar(100)
-  raza        String?   @db.VarChar(100)
-  fecha       DateTime  @db.Date
-  dedicatoria String?   @db.VarChar(255)
-  creado_en   DateTime  @default(now())
+  descripcion String? @db.Text
+  imagen_url  String? @db.VarChar(500)
+
+  proveedor Proveedor? @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction)
+
+  valoraciones    Valoracion[]
+  detalles_pedido DetallePedido[]
+  
+  @@map("producto") // (CORREGIDO)
 }
 
-model instalacion {
-  id_instalacion Int      @id @default(autoincrement())
-  title          String   @unique @db.VarChar(255)
-  body           String   @db.Text
-  features       String[]
-  orden          Int      @default(autoincrement())
-  creado_en      DateTime @default(now())
+// ================================================================
+// LOGICA DE NEGOCIO
+// ================================================================
 
-  imagen_url     String?  @db.VarChar(500) // <-- AÑADE ESTA LÍNEA
+model Pedido {
+  id_pedido     Int      @id @default(autoincrement())
+  id_usuario    Int
+  id_pago       Int?     @unique
+  fecha_pedido  DateTime @default(now())
+  precio_total  Decimal  @db.Decimal(10, 2)
+  estado_pedido String   @default("Pendiente")
+  es_reserva    Boolean
+
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario])
+  pago    Pago?   @relation(fields: [id_pago], references: [id_pago])
+  reserva Reserva?
+  envio   Envio?
+  detalles_pedido DetallePedido[]
+
+  @@map("pedido")
 }
 
-model PageContent {
-  page_key String  @id @unique // "instalaciones", "nosotros-header", etc.
-  title    String  @db.Text
-  subtitle String? @db.Text
+model DetallePedido {
+  id_detalle_pedido Int     @id @default(autoincrement())
+  id_pedido         Int
+  cod_producto      Int
+  cantidad          Int
+  precio_unitario   Decimal @db.Decimal(10, 2)
+
+  pedido   Pedido   @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade)
+  producto Producto @relation(fields: [cod_producto], references: [cod_producto])
+
+  @@map("detalle_pedido")
 }
 
-model about_block {
-  id_block  Int      @id @default(autoincrement())
-  title     String   @db.VarChar(255)
-  body      String   @db.Text
-  items     String[] // Para la lista de Valores
-  orden     Int      @default(autoincrement())
-  creado_en DateTime @default(now())
+model Pago {
+  id_pago       Int      @id @default(autoincrement())
+  nombre_metodo String?  @db.VarChar(100)
+  fecha_pago    DateTime @default(now())
+  monto         Decimal  @db.Decimal(10, 2)
+  estado        String   @default("Pendiente")
 
-  imagen_url String?  @db.VarChar(500) // <-- AÑADE ESTA LÍNEA
+  pedido Pedido?
+
+  @@map("pago")
+}
+
+model Reserva {
+  id_reserva         Int       @id @default(autoincrement())
+  id_pedido          Int       @unique
+  cod_trazabilidad   String    @unique @db.Char(9)
+  fecha_reservada    DateTime?
+  hora_reservada     DateTime?
+  estado_reserva     String    @default("Pendiente")
+  
+  region             String?   @db.VarChar(100)
+  comuna             String?   @db.VarChar(100)
+  direccion          String?   @db.VarChar(255)
+
+  pedido Pedido @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade)
+
+  @@map("reserva")
+}
+
+model Envio {
+  id_envio        Int    @id @default(autoincrement())
+  id_pedido       Int    @unique
+  region_envio    String
+  comuna_envio    String
+  direccion_envio String
+  estado_envio    String @default("Pendiente")
+
+  pedido Pedido @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade)
+
+  @@map("envio")
+}
+
+// ================================================================
+// MODELOS SECUNDARIOS
+// ================================================================
+
+model Mascota {
+  id_mascota            Int       @id @default(autoincrement())
+  nombre_mascota        String?   @db.VarChar(100)
+  peso                  Decimal?  @db.Decimal(5, 2)
+  edad                  Int?
+  diagnostico_sanitario String?   @db.VarChar(500)
+  notas_manipulacion    String?   @db.VarChar(500)
+  id_especie            Int?
+  id_usuario            Int?
+
+  usuario Usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: SetNull)
+  especie Especie? @relation(fields: [id_especie], references: [id_especie], onDelete: NoAction, onUpdate: NoAction)
+  
+  @@map("mascota") // (CORREGIDO)
+}
+
+model Especie {
+  id_especie     Int       @id @default(autoincrement())
+  tipo_mascota   String?   @db.VarChar(100)
+  nombre_especie String?   @db.VarChar(100)
+  raza           String?   @db.VarChar(100)
+  mascota        Mascota[]
+  
+  @@map("especie") // (CORREGIDO)
+}
+
+model Proveedor {
+  id_proveedor Int        @id @default(autoincrement())
+  proveedor    String?    @db.VarChar(255)
+  contacto     Int?
+  region       String?    @db.VarChar(100)
+  comuna       String?    @db.VarChar(100)
+  direccion    String?    @db.VarChar(255)
+  disponible   Boolean?
+  producto     Producto[]
+  
+  @@map("proveedor") // (CORREGIDO)
 }
 
 model Valoracion {
@@ -211,15 +194,55 @@ model Valoracion {
   rating         Int
   comentario     String?  @db.Text
   fecha_creacion DateTime @default(now())
-
-  // --- Relaciones ---
   id_producto    Int
-  producto       producto @relation(fields: [id_producto], references: [cod_producto], onDelete: Cascade)
-
   id_usuario     Int
-  usuario        usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 
-  // Evita que un usuario valore el mismo producto dos veces
+  producto Producto @relation(fields: [id_producto], references: [cod_producto], onDelete: Cascade)
+  usuario  Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
   @@unique([id_producto, id_usuario])
   @@map("valoracion")
+}
+
+model PageContent {
+  page_key String  @id @unique
+  title    String  @db.Text
+  subtitle String? @db.Text
+  
+  @@map("page_content") // (CORREGIDO)
+}
+
+model Memorial {
+  id_memorial Int       @id @default(autoincrement())
+  nombre      String    @db.VarChar(100)
+  raza        String?   @db.VarChar(100)
+  fecha       DateTime  @db.Date
+  dedicatoria String?   @db.VarChar(255)
+  creado_en   DateTime  @default(now())
+  
+  @@map("memorial") // (CORREGRECTO)
+}
+
+model Instalacion {
+  id_instalacion Int       @id @default(autoincrement())
+  title          String    @unique @db.VarChar(255)
+  body           String    @db.Text
+  features       String[]
+  orden          Int       @default(autoincrement())
+  creado_en      DateTime  @default(now())
+  imagen_url     String?   @db.VarChar(500)
+  
+  @@map("instalacion") // (CORREGIDO)
+}
+
+model AboutBlock {
+  id_block   Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  body       String   @db.Text
+  items      String[]
+  orden      Int      @default(autoincrement())
+  creado_en  DateTime @default(now())
+  imagen_url String?  @db.VarChar(500)
+  
+  @@map("about_block") // (CORREGIDO)
 }

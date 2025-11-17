@@ -1,15 +1,9 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/agregar-usuario.post.ts
 import { db } from '../../utils/prisma';
 import bcrypt from 'bcryptjs';
 
-/**
- * API de ADMIN para CREAR (POST) un nuevo usuario.
- * Ruta: /api/admin/agregar-usuario
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
-    // (MODIFICADO) Leer todos los campos del body
     const { 
       nombre, 
       apellido_paterno, 
@@ -30,22 +24,21 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // 1. Revisar si el correo ya existe
+    // (MODIFICADO) Usa PascalCase: db.usuario
     const existingUser = await db.usuario.findUnique({
       where: { correo },
     });
 
     if (existingUser) {
       throw createError({
-        statusCode: 409, // 409 Conflict
+        statusCode: 409,
         statusMessage: 'El correo electrónico ya está registrado.',
       });
     }
 
-    // 2. Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Crear el nuevo usuario
+    // (MODIFICADO) Usa PascalCase: db.usuario
     const newUser = await db.usuario.create({
       data: {
         nombre,
@@ -54,7 +47,6 @@ export default defineEventHandler(async (event) => {
         correo,
         contrase_a: hashedPassword,
         id_rol: Number(id_rol),
-        // (MODIFICADO) Guardar los nuevos campos
         telefono: telefono ? Number(telefono) : null,
         region,
         comuna,
@@ -63,16 +55,13 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    // 4. Éxito
     return { 
       statusCode: 201, 
       message: 'Usuario creado exitosamente.'
     };
 
   } catch (error: any) {
-    if (error.statusCode === 409 || error.statusCode === 400) {
-      throw error;
-    }
+    if (error.statusCode === 409 || error.statusCode === 400) throw error;
     console.error("Error al crear usuario (admin):", error);
     throw createError({ 
       statusCode: 500, 

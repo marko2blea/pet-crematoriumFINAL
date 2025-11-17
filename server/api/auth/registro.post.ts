@@ -1,15 +1,9 @@
-// RUTA: Sube dos niveles (desde /api/auth/ a /server/)
+// server/api/auth/registro.post.ts
 import { db } from '../../utils/prisma';
 import bcrypt from 'bcryptjs';
 
-/**
- * API para registrar (POST) un nuevo usuario (Cliente).
- * Ruta: /api/auth/registro
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
-    // (MODIFICADO) Leer todos los campos del body
     const { 
       nombre, 
       apellido_paterno, 
@@ -29,22 +23,21 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // 1. Revisar si el correo ya existe
+    // (MODIFICADO) Usa PascalCase: db.usuario
     const existingUser = await db.usuario.findUnique({
       where: { correo },
     });
 
     if (existingUser) {
       throw createError({
-        statusCode: 409, // 409 Conflict
+        statusCode: 409,
         statusMessage: 'El correo electrónico ya está registrado.',
       });
     }
 
-    // 2. Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Crear el nuevo usuario
+    // (MODIFICADO) Usa PascalCase: db.usuario
     const newUser = await db.usuario.create({
       data: {
         nombre,
@@ -52,26 +45,23 @@ export default defineEventHandler(async (event) => {
         apellido_materno,
         correo,
         contrase_a: hashedPassword,
-        // (MODIFICADO) Guardar los nuevos campos
         telefono: telefono ? Number(telefono) : null,
         region,
         comuna,
         direccion,
         id_rol: 1, // 1 = Cliente por defecto
         fecha_registro: new Date(),
+        // id_mascota se setea al crear la primera reserva
       },
     });
 
-    // 4. Éxito
     return { 
       statusCode: 201, 
       message: 'Usuario registrado exitosamente.'
     };
 
   } catch (error: any) {
-    if (error.statusCode === 409 || error.statusCode === 400) {
-      throw error;
-    }
+    if (error.statusCode === 409 || error.statusCode === 400) throw error;
     console.error("Error al registrar usuario:", error);
     throw createError({ 
       statusCode: 500, 

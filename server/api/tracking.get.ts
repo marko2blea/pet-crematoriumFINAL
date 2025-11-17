@@ -1,11 +1,10 @@
-// RUTA CORREGIDA: Sube un nivel (desde /api/ a /server/)
+// server/api/tracking.get.ts
 import { db } from '../utils/prisma';
 
 /**
  * API PÚBLICA para que los clientes rastreen sus servicios.
  * Ruta: /api/tracking
  * Método: GET
- * Query Params: ?codigo= (El código de trazabilidad, ej: "ABC-12345")
  */
 export default defineEventHandler(async (event) => {
   try {
@@ -13,65 +12,45 @@ export default defineEventHandler(async (event) => {
     const codigo = query.codigo as string | undefined;
 
     if (!codigo) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Debe proporcionar un código de trazabilidad.',
-      });
+      throw createError({ statusCode: 400, statusMessage: 'Debe proporcionar un código.' });
     }
 
-    // 1. Buscar la reserva por su código
-    const reserva = await db.reserva.findFirst({ // Usamos findFirst porque el código no es @unique
-      where: {
-        cod_trazabilidad: codigo,
-      },
+    // 1. Buscar la Reserva por su código
+    const reserva = await db.reserva.findUnique({
+      where: { cod_trazabilidad: codigo },
       include: {
-        pago: { // Necesitamos el pago para saber el estado real
-          select: { estado: true }
-        },
-        usuario: { // Incluir mascota
-          select: {
-            mascota: {
-              select: { nombre_mascota: true }
+        pedido: { 
+          include: {
+            usuario: { 
+              include: {
+                // (CORRECCIÓN 1) Cambiado a 'mascotas' (plural) y tomando solo 1
+                mascotas: { 
+                  select: { nombre_mascota: true },
+                  take: 1
+                }
+              }
             }
           }
         }
       },
     });
 
-    // 2. Si no se encuentra
-    if (!reserva) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Código no encontrado. Verifique el código e intente de nuevo.',
-      });
+    if (!reserva || !reserva.pedido || !reserva.pedido.usuario) {
+      throw createError({ statusCode: 404, statusMessage: 'Código no encontrado o pedido corrupto.' });
     }
 
-    // 3. Determinar el estado (Lógica copiada de reservas.get.ts)
-    let computedStatus: 'Pendiente' | 'En Proceso' | 'Finalizado' | 'Cancelado' = 'En Proceso';
-    if (reserva.pago?.estado === 'Pendiente') {
-      computedStatus = 'Pendiente';
-    } else if (reserva.pago?.estado === 'Cancelado') {
-      computedStatus = 'Cancelado';
-    } else if (reserva.estado === true) { // reserva.estado (boolean)
-      computedStatus = 'Finalizado';
-    }
-    
-    // 4. Devolver la respuesta
+    // 2. Devolver la respuesta
     return {
       codigo: reserva.cod_trazabilidad,
-      mascota: reserva.usuario?.mascota?.nombre_mascota || 'Mascota',
-      fecha: reserva.fecha_reservada ? new Date(reserva.fecha_reservada).toLocaleDateString('es-CL') : 'N/A',
-      estado: computedStatus,
+      // (CORRECCIÓN 2) Leer del array 'mascotas'
+      mascota: reserva.pedido.usuario.mascotas[0]?.nombre_mascota || 'Mascota',
+      fecha: reserva.pedido.fecha_pedido.toLocaleDateString('es-CL'),
+      estado: reserva.estado_reserva, 
     };
 
   } catch (error: any) {
     console.error("Error en API de tracking:", error);
-    if (error.statusCode) {
-      throw error;
-    }
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Error interno del servidor.',
-    });
+    if (error.statusCode) throw error;
+    throw createError({ statusCode: 500, statusMessage: 'Error interno del servidor.' });
   }
 });

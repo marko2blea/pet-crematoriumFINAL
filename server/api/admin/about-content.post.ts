@@ -1,20 +1,17 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/about-content.post.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para CREAR (POST) un nuevo bloque de "Nosotros".
- * Ruta: /api/admin/about-content
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
     
-    const nuevoBloque = await db.about_block.create({
+    // (MODIFICADO) Usa PascalCase: db.aboutBlock
+    const nuevoBloque = await db.aboutBlock.create({
       data: {
         title: body.title || 'Nuevo Bloque',
         body: body.body || 'Contenido...',
-        items: body.items || [], // Array vacío por defecto
+        items: body.items || [],
+        imagen_url: body.imagen_url || null,
       },
     });
 

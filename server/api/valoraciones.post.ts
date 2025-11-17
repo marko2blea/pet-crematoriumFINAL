@@ -1,13 +1,7 @@
-// RUTA: Sube un nivel (desde /api/ a /server/)
+// server/api/valoraciones.post.ts
 import { db } from '../utils/prisma';
 
-/**
- * API (Protegida) para ENVIAR una valoración.
- * Ruta: /api/valoraciones
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
-  // Obtenemos los datos del body
   const { id_producto, id_usuario, rating, comentario } = await readBody(event);
 
   if (!id_producto || !id_usuario || !rating) {
@@ -15,10 +9,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Verificamos si el usuario ya valoró este producto (basado en el @@unique del schema)
+    // (MODIFICADO) Usa PascalCase: db.valoracion
     const existing = await db.valoracion.findUnique({
       where: {
-        id_producto_id_usuario: { // Prisma genera este identificador para el @@unique
+        id_producto_id_usuario: {
           id_producto: Number(id_producto),
           id_usuario: Number(id_usuario)
         }
@@ -29,7 +23,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 409, statusMessage: 'Ya has enviado una valoración para este producto.' });
     }
 
-    // Creamos la nueva valoración
+    // (MODIFICADO) Usa PascalCase: db.valoracion
     const nuevaValoracion = await db.valoracion.create({
       data: {
         id_producto: Number(id_producto),
@@ -42,8 +36,7 @@ export default defineEventHandler(async (event) => {
     return { statusCode: 201, message: 'Valoración enviada con éxito' };
 
   } catch (error: any) {
-    if (error.statusCode === 409) throw error; // Re-lanzar el error "409 Conflict"
-    
+    if (error.statusCode === 409) throw error;
     console.error("Error al enviar valoración:", error);
     throw createError({ statusCode: 500, statusMessage: 'Error al guardar la valoración' });
   }

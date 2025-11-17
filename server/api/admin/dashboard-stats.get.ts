@@ -1,54 +1,42 @@
-// RUTA CORREGIDA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/dashboard-stats.get.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API para calcular las estadísticas (KPIs) para el Dashboard Admin.
- * Ruta: /api/admin/dashboard-stats
- * Método: GET
- */
 export default defineEventHandler(async (event) => {
   try {
     // 1. Contar servicios en proceso
-    // (Basado en tu schema, 'estado: false' significa 'En Proceso')
-    const pendingServices = await db.reserva.count({
-      where: { estado: false },
+    const reservasEnProceso = await db.reserva.count({
+      where: {
+        estado_reserva: { in: ['Confirmada', 'En Proceso'] }
+      },
     });
 
-    // 2. Sumar pagos pendientes
-    // (Asumiendo que el estado 'Pendiente' existe en la tabla 'pago')
-    const pendingPaymentsResult = await db.pago.aggregate({
+    // 2. Sumar pagos pendientes (de Pedidos)
+    const pedidosPendientes = await db.pedido.aggregate({
       _sum: {
-        monto: true,
+        precio_total: true,
       },
       where: {
-        estado: 'Pendiente', // Ajusta esto si tu estado se llama diferente
+        estado_pedido: 'Pendiente',
       },
     });
-    const pendingPayments = pendingPaymentsResult._sum.monto || 0;
+    const pagosPendientes = pedidosPendientes._sum.precio_total || 0;
 
-
-    // 3. Contar productos (Urnas) con bajo stock (ej: menos de 5)
+    // 3. Contar productos (Urnas) con bajo stock
     const lowStockItems = await db.producto.count({
       where: {
         tipo_producto: 'Urna',
-        stock_actual: {
-          lt: 5, // 'lt' = less than (menor que)
-        },
+        stock_actual: { lt: 5 },
       },
     });
 
-    // 4. Devolver los KPIs
     return {
-      pendingServices,
-      pendingPayments,
+      pendingServices: reservasEnProceso,
+      pendingPayments: Number(pagosPendientes),
       lowStockItems,
     };
 
   } catch (error: any) {
     console.error("Error al calcular estadísticas del dashboard:", error);
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Error interno del servidor al calcular estadísticas.',
-    });
+    throw createError({ statusCode: 500, statusMessage: 'Error al calcular estadísticas.' });
   }
 });

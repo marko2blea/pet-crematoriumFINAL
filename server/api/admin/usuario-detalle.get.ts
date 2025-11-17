@@ -1,13 +1,6 @@
-// RUTA CORREGIDA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/usuario-detalle.get.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API para obtener el detalle de UN usuario por su ID
- * Y también la lista de TODOS los roles disponibles.
- * Ruta: /api/admin/usuario-detalle
- * Método: GET
- * Query Params: ?id= (El ID del usuario)
- */
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event);
@@ -20,20 +13,30 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // 1. Usar $transaction para hacer dos consultas a la vez
+    // (MODIFICADO) Usa PascalCase: Usuario y Rol
     const [usuario, roles] = await db.$transaction([
-      // Consulta 1: Buscar el usuario específico
       db.usuario.findUniqueOrThrow({
         where: { id_usuario: Number(id) },
         select: {
           id_usuario: true,
           nombre: true,
           apellido_paterno: true,
+          apellido_materno: true,
           correo: true,
-          id_rol: true, // El ID del rol actual
+          telefono: true,
+          region: true,
+          comuna: true,
+          direccion: true,
+          id_rol: true,
+          // (CORRECCIÓN) Se reemplaza 'id_mascota' por la relación 'mascotas'
+          mascotas: {
+            select: {
+              id_mascota: true,
+              nombre_mascota: true
+            }
+          },
         },
       }),
-      // Consulta 2: Buscar todos los roles disponibles
       db.rol.findMany({
         select: {
           id_rol: true,
@@ -42,7 +45,6 @@ export default defineEventHandler(async (event) => {
       }),
     ]);
 
-    // 2. Devolver ambos resultados
     return {
       usuario: usuario,
       rolesDisponibles: roles,
@@ -50,8 +52,8 @@ export default defineEventHandler(async (event) => {
 
   } catch (error: any) {
     console.error("Error al obtener detalle de usuario:", error);
-    if (error.code === 'P2025') { // "Registro no encontrado"
-       throw createError({ statusCode: 404, statusMessage: `Usuario con ID no encontrado.` });
+    if (error.code === 'P2025') {
+       throw createError({ statusCode: 404, statusMessage: `Usuario no encontrado.` });
     }
     throw createError({ statusCode: 500, statusMessage: 'Error al consultar el usuario.' });
   }

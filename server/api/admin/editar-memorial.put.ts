@@ -1,11 +1,6 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/editar-memorial.put.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para ACTUALIZAR (PUT) un memorial.
- * Ruta: /api/admin/editar-memorial
- * Método: PUT
- */
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
@@ -15,6 +10,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Falta el ID del memorial.' });
     }
 
+    // (MODIFICADO) Usa PascalCase: db.memorial
     const memorialActualizado = await db.memorial.update({
       where: { id_memorial: Number(id_memorial) },
       data: {

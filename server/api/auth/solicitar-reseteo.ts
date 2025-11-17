@@ -1,21 +1,15 @@
+// server/api/auth/solicitar-reseteo.ts
 import { db } from '../../utils/prisma';
 import crypto from 'crypto'; 
-import { Resend } from 'resend'; // <-- (1) Importar Resend
+import { Resend } from 'resend';
 
-// (2) Inicializar Resend con la API Key del .env
-// (Asegúrate de haber reiniciado 'npm run dev' después de añadir la key al .env)
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-/**
- * API para solicitar un enlace de reseteo de contraseña.
- * Genera un token y ENVÍA un email.
- * Ruta: /api/auth/solicitar-reseteo
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
     const { email }: { email: string } = await readBody(event);
 
+    // (MODIFICADO) Usa PascalCase: db.usuario
     const usuario = await db.usuario.findUnique({
       where: { correo: email },
     });
@@ -25,10 +19,10 @@ export default defineEventHandler(async (event) => {
       return { message: 'Si tu correo está registrado, recibirás un enlace.' };
     }
 
-    // Generar token
     const token = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 3600000); // 1 hora
 
+    // (MODIFICADO) Usa PascalCase: db.usuario
     await db.usuario.update({
       where: { id_usuario: usuario.id_usuario },
       data: {
@@ -37,13 +31,10 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    // Construir el enlace
     const resetLink = `http://localhost:3000/resetear-contrasena?token=${token}`;
 
-    // (3) ¡¡AQUÍ SE ENVÍA EL CORREO!!
     try {
       await resend.emails.send({
-        // DEBES usar tu dominio verificado
         from: 'Crematorio San Antonio <no-reply@tu-dominio-verificado.com>', 
         to: email,
         subject: 'Reseteo de contraseña - Crematorio San Antonio',

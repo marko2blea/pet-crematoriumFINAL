@@ -1,16 +1,12 @@
-// RUTA: Sube un nivel (desde /api/ a /server/)
+// server/api/memoriales.get.ts
 import { db } from '../utils/prisma';
 
-/**
- * API PÚBLICA para listar todos los memoriales.
- * Ruta: /api/memoriales
- * Método: GET
- */
 export default defineEventHandler(async (event) => {
   try {
+    // (MODIFICADO) Usa PascalCase: db.memorial
     const memoriales = await db.memorial.findMany({
       orderBy: {
-        fecha: 'desc', // Mostrar los más recientes primero
+        fecha: 'desc',
       },
     });
     return memoriales;

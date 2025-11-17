@@ -1,127 +1,108 @@
-// RUTA CORREGIDA: Sube un nivel (desde /api/ a /server/)
+// server/api/checkout.post.ts
 import { db } from '../utils/prisma';
-import type { CartItem } from '../../app/types'; // Importamos el tipo del carrito
+import type { CartItem } from '../../app/types';
 
-/**
- * API para procesar el CHECKOUT (Crear la reserva final).
- * Ruta: /api/checkout
- * Método: POST
- */
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Leer los datos que vienen del formulario 'reserva.vue'
     const body = await readBody(event);
-    
-    // Extraemos los 4 componentes del body
-    const { 
-      formData,  // { petName, petWeight, petAge, region, comuna, direccion, metodoPago }
-      cartItems, // Array de CartItem[]
-      cartTotal, // Número (Subtotal)
-      userId     // Número (ID del usuario logueado)
+    const {
+      formData,
+      cartItems,
+      cartTotal,
+      userId
     } = body;
 
-    // 2. Validaciones
     if (!userId || !cartItems || (cartItems as CartItem[]).length === 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Faltan datos de usuario o el carrito está vacío.',
-      });
+      throw createError({ statusCode: 400, statusMessage: 'Faltan datos de usuario o el carrito está vacío.' });
     }
     if (!formData.petName || !formData.region || !formData.comuna || !formData.direccion) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Faltan datos de la mascota o dirección.',
-      });
+      throw createError({ statusCode: 400, statusMessage: 'Faltan datos de la mascota o dirección.' });
     }
 
-    // 3. Iniciar una transacción de Prisma
-    // Esto asegura que si una consulta falla, todas fallan (atomicidad)
+    const esReserva = (cartItems as CartItem[]).some(item => item.tipo === 'Servicio');
+    const totalConIVA = Math.round(cartTotal * 1.19);
+    const cod_trazabilidad = `${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+
     const transactionResult = await db.$transaction(async (tx) => {
       
-      // 3.1. Crear la Mascota
-      // (Asumimos id_especie=1 (Perro) por ahora, ya que el form no lo pide)
+      // 3.1. Crear la Mascota (con la FK al usuario)
       const nuevaMascota = await tx.mascota.create({
         data: {
           nombre_mascota: formData.petName,
           peso: Number(formData.petWeight) || 0,
           edad: Number(formData.petAge) || 0,
           id_especie: 1, 
+          id_usuario: Number(userId), // <-- Lógica 1-a-N correcta
         },
       });
 
-      // 3.2. Actualizar el Usuario para enlazar esta nueva mascota
-      // (Siguiendo tu schema, esto sobrescribirá el id_mascota anterior del usuario)
-      await tx.usuario.update({
-        where: { id_usuario: Number(userId) },
-        data: { id_mascota: nuevaMascota.id_mascota },
-      });
+      // 3.2. (ELIMINADO) El bloque 'tx.usuario.update' que causaba el error se quita.
 
-      // 3.3. Crear el Detalle de la Reserva (Resumen del carrito)
-      const servicioNombre = (cartItems as CartItem[]).map(item => item.nombre).join(' + ');
-      const totalItems = (cartItems as CartItem[]).reduce((sum, item) => sum + item.quantity, 0);
-      const totalConIVA = cartTotal * 1.19; // Total final
-
-      const nuevoDetalle = await tx.detalle_reserva.create({
-        data: {
-          nombre_servicio: servicioNombre,
-          precio_servicio: cartTotal, // Subtotal
-          tipo_servicio: (cartItems as CartItem[])[0]?.tipo || 'Servicio',
-          desc_servicio: `${totalItems} items en el pedido.`,
-          cantidad: totalItems,
-          precio_total: totalConIVA,
-          cod_producto: (cartItems as CartItem[])[0]?.id ? Number((cartItems as CartItem[])[0].id) : null,
-        },
-      });
-
-      // 3.4. Crear el Pago (marcado como 'Pendiente')
-      // (Asumimos id_metodo=1 (Transferencia) por ahora)
+      // 3.3. Crear el Pago
       const nuevoPago = await tx.pago.create({
         data: {
           nombre_metodo: formData.metodoPago || 'Transferencia Bancaria',
-          fecha_pago: new Date(),
           monto: totalConIVA,
-          estado: 'Pendiente', // El admin debe aprobarlo
-          id_metodo: 1, 
+          estado: 'Pendiente',
         },
       });
 
-      // 3.5. Generar Código de Trazabilidad (Ej: "A5B-CDE12")
-      const cod_trazabilidad = `${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-
-      // 3.6. Crear la Reserva FINAL
-      const nuevaReserva = await tx.reserva.create({
+      // 3.4. Crear el Pedido
+      const nuevoPedido = await tx.pedido.create({
         data: {
-          cod_trazabilidad: cod_trazabilidad,
-          fecha_reservada: new Date(),
-          hora_reservada: new Date(),
-          region: formData.region,
-          comuna: formData.comuna,
-          direccion: formData.direccion,
-          precio_total: totalConIVA,
-          estado: false, // false = "En Proceso"
           id_usuario: Number(userId),
           id_pago: nuevoPago.id_pago,
-          id_detalle_reserva: nuevoDetalle.id_detalle_reserva,
-          // id_cementerio queda nulo (no se selecciona en este flujo)
+          precio_total: totalConIVA,
+          estado_pedido: 'Pendiente',
+          es_reserva: esReserva,
         },
       });
-      
-      // 3.7. Devolver el código de trazabilidad
-      return {
-        trackingCode: nuevaReserva.cod_trazabilidad,
-        reservaId: nuevaReserva.id_reserva
-      };
-    }); // Fin de la transacción
 
-    // 4. Éxito: Devolver el resultado de la transacción
+      // 3.5. Crear los Detalles del Pedido
+      await tx.detallePedido.createMany({
+        data: (cartItems as CartItem[]).map(item => ({
+          id_pedido: nuevoPedido.id_pedido,
+          cod_producto: item.id,
+          cantidad: item.quantity,
+          precio_unitario: item.precio,
+        })),
+      });
+
+      // 3.6. Crear la Reserva o el Envío
+      if (esReserva) {
+        await tx.reserva.create({
+          data: {
+            id_pedido: nuevoPedido.id_pedido,
+            cod_trazabilidad: cod_trazabilidad,
+            estado_reserva: 'Pendiente',
+            region: formData.region,
+            comuna: formData.comuna,
+            direccion: formData.direccion,
+          },
+        });
+      } else {
+        await tx.envio.create({
+          data: {
+            id_pedido: nuevoPedido.id_pedido,
+            region_envio: formData.region,
+            comuna_envio: formData.comuna,
+            direccion_envio: formData.direccion,
+            estado_envio: 'Pendiente',
+          },
+        });
+      }
+
+      return {
+        trackingCode: esReserva ? cod_trazabilidad : null,
+        pedidoId: nuevoPedido.id_pedido
+      };
+    }); 
+
     return transactionResult;
 
   } catch (error: any) {
     console.error("Error en API de checkout:", error);
-    if (error.statusCode) {
-      throw error;
-    }
-    // Error de Prisma (ej: un 'id_especie' que no existe)
+    if (error.statusCode) throw error;
     if (error.code) {
        throw createError({ statusCode: 500, statusMessage: `Error de base de datos: ${error.message}` });
     }

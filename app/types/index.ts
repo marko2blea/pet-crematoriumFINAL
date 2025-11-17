@@ -1,4 +1,6 @@
-// (Esto es lo que probablemente ya tienes, basado en tu schema)
+// app/types/index.ts
+
+// (CORRECCIÓN) El tipo User ya no debe tener 'id_mascota'
 export type User = {
   id_usuario: number;
   nombre: string | null;
@@ -10,11 +12,10 @@ export type User = {
   comuna: string | null;
   direccion: string | null;
   id_rol: number | null;
-  // ... (otros campos que puedas tener)
+  // (Opcional) Puedes añadir esto si lo necesitas en el frontend
+  // mascotas?: { id_mascota: number, nombre_mascota: string }[];
 }
 
-// (AÑADE ESTE NUEVO TIPO)
-// Esto define la forma de los datos que vienen de la API /api/roles.get.ts
 export type Rol = {
   id_rol: number;
   nombre_rol: string | null;
@@ -25,4 +26,12 @@ export type Product = {
   nombre: string;
   precio: number;
   tipo: string;
+}
+
+export type CartItem = {
+  id: number;
+  nombre: string;
+  precio: number;
+  tipo: string;
+  quantity: number;
 }

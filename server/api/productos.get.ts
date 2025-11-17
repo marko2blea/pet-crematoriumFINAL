@@ -1,32 +1,24 @@
-// RUTA CORREGIDA: Sube un nivel (desde /api/ a /server/)
+// server/api/productos.get.ts
 import { db } from '../utils/prisma';
-import type { Prisma } from '@prisma/client';
 
-/**
- * API PÚBLICA para listar todos los productos/servicios DISPONIBLES.
- * Ruta: /api/productos
- * Método: GET
- */
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Ejecutar la consulta
+    // (CORRECCION) Usa PascalCase: db.Producto
     const productos = await db.producto.findMany({
       where: {
-        disponible: true, // ¡Solo mostrar productos disponibles!
+        disponible: true,
       },
       orderBy: {
-        nombre_producto: 'asc', // Ordenar alfabéticamente
+        nombre_producto: 'asc',
       },
     });
 
-    // 2. Formatear la respuesta
     const formattedProductos = productos.map((p) => {
       return {
         id: p.cod_producto,
         nombre: p.nombre_producto || 'Sin Nombre',
         precio: Number(p.precio_unitario) || 0,
         tipo: p.tipo_producto || 'Otro',
-        // (Podríamos añadir una URL de imagen si la tuvieras en la BD)
       };
     });
 

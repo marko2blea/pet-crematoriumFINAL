@@ -1,142 +1,101 @@
 <template>
   <div class="pt-14 py-20 min-h-screen container mx-auto px-4">
-    
-    <div class="max-w-4xl mx-auto">
-      <!-- Encabezado -->
-      <div class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-purple-dark mb-3">Tu Carrito de Compras</h1>
-        <p class="text-lg text-gray-600">Revisa los productos seleccionados antes de continuar.</p>
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-4xl font-extrabold text-purple-dark mb-8 text-center">
+        <font-awesome-icon icon="fas fa-shopping-cart" class="mr-3 text-purple-deep" />
+        Mi Carrito
+      </h1>
+
+      <div v-if="cart.length === 0" class="text-center bg-white p-10 rounded-xl shadow-lg">
+        <p class="text-2xl text-gray-600 mb-6">Tu carrito está vacío.</p>
+        <NuxtLink to="/" 
+                  class="bg-purple-deep text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-purple-light transition duration-300 transform hover:scale-105 shadow-md">
+          Ver Servicios y Productos
+        </NuxtLink>
       </div>
 
-      <!-- (NUEVO) Carrito Vacío -->
-      <div v-if="!cart || cart.length === 0" 
-           class="bg-white p-10 rounded-xl shadow-2xl border-t-8 border-purple-light text-center">
-        <h2 class="text-2xl font-bold text-dark-primary-blue mb-4">Tu carrito está vacío</h2>
-        <p class="text-gray-600 mb-6">Parece que aún no has añadido ningún servicio o producto.</p>
-        <button @click="router.push('/')" 
-                class="px-6 py-3 bg-purple-deep text-white rounded-lg font-bold hover:bg-purple-light transition duration-150 shadow-md">
-            Volver al Catálogo
-        </button>
-      </div>
-
-      <!-- (NUEVO) Carrito Lleno -->
-      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- Columna 1: Lista de Items -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-2xl border-t-8 border-purple-dark">
-          <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">Productos en tu Pedido</h2>
-          
-          <ul class="space-y-4">
-            <li v-for="item in cart" :key="item.id" 
-                class="flex items-center space-x-4 p-4 border rounded-lg shadow-sm">
-              
-              <!-- Imagen Placeholder -->
-              <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <img src="/logo2.png" alt="Logo" class="h-8 opacity-30"/>
+      <div v-else class="bg-white rounded-xl shadow-2xl overflow-hidden">
+        <ul class="divide-y divide-gray-200">
+          <li v-for="item in cart" :key="item.id" class="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between">
+            <div class="flex items-center mb-4 sm:mb-0">
+              <div class="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <font-awesome-icon :icon="getIconForProduct(item.tipo)" class="text-3xl text-gray-400" />
               </div>
-              
-              <div class="flex-grow">
-                <p class="font-semibold text-dark-primary-blue">{{ item.nombre }}</p>
-                <p class="text-sm text-gray-500">
-                  Cantidad: <span class="font-bold">{{ item.quantity }}</span> 
-                  (Tipo: {{ item.tipo }})
-                </p>
+              <div class="ml-4">
+                <h3 class="text-lg font-bold text-purple-dark">{{ item.nombre }}</h3>
+                <p class="text-sm text-gray-500">{{ item.tipo }}</p>
+                <p class="text-md font-semibold text-dark-primary-blue mt-1">${{ item.precio.toLocaleString('es-CL') }} c/u</p>
               </div>
-              
-              <div class="text-right">
-                <p class="text-lg font-bold text-purple-deep">
-                  ${{ (item.precio * item.quantity).toLocaleString('es-CL') }}
-                </p>
-                <button @click="removeFromCart(item.id)" 
-                        class="text-xs text-red-600 hover:text-red-800 hover:underline transition">
-                    Eliminar
+            </div>
+            
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center border border-gray-300 rounded-lg">
+                <button @click="decreaseQuantity(item.id)" class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-l-lg">
+                  <font-awesome-icon icon="fas fa-minus" class="text-sm" />
+                </button>
+                <span class="px-4 py-2 font-bold text-dark-primary-blue">{{ item.quantity }}</span>
+                <button @click="increaseQuantity(item.id)" class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-r-lg">
+                  <font-awesome-icon icon="fas fa-plus" class="text-sm" />
                 </button>
               </div>
-            </li>
-          </ul>
 
-          <button @click="clearCart" 
-                  class="text-sm text-gray-600 hover:text-red-600 transition duration-150 mt-4">
-              <font-awesome-icon icon="fas fa-trash-alt" class="mr-1" />
-              Vaciar Carrito
+              <button @click="removeFromCart(item.id)" 
+                      class="text-red-500 hover:text-red-700 p-2"
+                      title="Eliminar producto">
+                <font-awesome-icon icon="fas fa-trash" class="text-lg" />
+              </button>
+            </div>
+          </li>
+        </ul>
+
+        <div class="p-6 bg-gray-50 border-t border-gray-200">
+          <div class="flex justify-between items-center mb-4">
+            <span class="text-xl font-bold text-dark-primary-blue">Subtotal:</span>
+            <span class="text-3xl font-extrabold text-purple-dark">${{ cartTotal.toLocaleString('es-CL') }}</span>
+          </div>
+          <p class="text-sm text-gray-500 text-right mb-4">El IVA (19%) se calculará en el siguiente paso.</p>
+          
+          <NuxtLink to="/reserva" 
+                    class="block w-full text-center bg-purple-deep text-white font-bold py-4 px-6 rounded-lg text-lg hover:bg-purple-light transition duration-300 transform hover:scale-105 shadow-lg">
+            Proceder al Pago
+          </NuxtLink>
+          <button @click="clearCart" class="w-full text-center text-gray-600 hover:text-red-600 font-medium py-2 mt-3 transition duration-150">
+            Vaciar Carrito
           </button>
         </div>
-
-        <!-- Columna 2: Resumen del Pedido -->
-        <div class="lg:col-span-1">
-          <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-bd-gold-accent sticky top-24">
-            <h2 class="text-2xl font-bold text-purple-dark mb-4 border-b pb-2">Resumen</h2>
-            
-            <div class="space-y-3 text-lg">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Subtotal:</span>
-                    <span class="font-semibold text-dark-primary-blue">${{ cartTotal.toLocaleString('es-CL') }}</span>
-                </div>
-                 <div class="flex justify-between">
-                    <span class="text-gray-600">IVA (19%):</span>
-                    <span class="font-semibold text-dark-primary-blue">${{ (cartTotal * 0.19).toLocaleString('es-CL') }}</span>
-                </div>
-                <hr class="border-gray-300">
-                <div class="flex justify-between text-2xl font-bold text-purple-dark">
-                    <span>Total:</span>
-                    <span>${{ (cartTotal * 1.19).toLocaleString('es-CL') }}</span>
-                </div>
-            </div>
-
-            <button @click="router.push('reserva')" 
-                    class="w-full mt-6 py-3 rounded-xl font-bold text-lg transition duration-300 shadow-lg 
-                           bg-purple-deep text-white hover:bg-purple-light hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-deep/50">
-                <font-awesome-icon icon="fas fa-arrow-right" class="mr-2" />
-                Continuar Compra
-            </button>
-          </div>
-        </div>
-        
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faTrashAlt, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faShoppingCart, faTrash, faPlus, faMinus, 
+  faHeart, faBoxOpen, faPuzzlePiece, faPaw 
+} from '@fortawesome/free-solid-svg-icons';
 
-library.add(faTrashAlt, faArrowRight);
+library.add(faShoppingCart, faTrash, faPlus, faMinus, faHeart, faBoxOpen, faPuzzlePiece, faPaw);
 
-const router = useRouter();
+// (CORRECCIÓN) Se importan todas las funciones necesarias de useCart
+const { cart, cartTotal, removeFromCart, clearCart, increaseQuantity, decreaseQuantity } = useCart();
 
-// 1. Obtener todas las funciones y estados del composable
-const { 
-  cart, 
-  removeFromCart, 
-  clearCart, 
-  loadCart, 
-  cartTotal 
-} = useCart();
-
-// 2. Cargar el carrito desde sessionStorage
-// Esto es crucial por si el usuario refresca la página
-onMounted(() => {
-  loadCart();
-});
-
+const getIconForProduct = (tipo: string) => {
+  if (tipo === 'Servicio') return faHeart;
+  if (tipo === 'Urna') return faBoxOpen;
+  if (tipo === 'Accesorio') return faPuzzlePiece;
+  return faPaw;
+};
 </script>
 
-<style scoped>
-/* Estilos (Copiados de detalle-producto.vue) */
+<style scoped lang="postcss">
 .text-purple-dark { color: #4A235A; }
-.bg-purple-dark { background-color: #4A235A; } 
+.bg-purple-dark { background-color: #4A235A; }
 .bg-purple-light { background-color: #6C3483; }
-.border-purple-light { border-color: #6C3483; }
-.bg-purple-deep { background-color: #5C2A72; } 
-.text-purple-deep { color: #5C2A72; } 
+.text-purple-deep { color: #5C2A72; }
+.bg-purple-deep { background-color: #5C2A72; }
 .text-dark-primary-blue { color: #34495e; }
-.text-bd-gold-accent { color: #FFD700; }
-.border-bd-gold-accent { border-color: #FFD700; }
-.focus\:ring-purple-deep\/50:focus { --tw-ring-color: rgba(92, 42, 114, 0.5); }
-.text-red-600 { color: #dc3545; }
-.hover\:text-red-800:hover { color: #a71d2a; }
+.text-red-500 { color: #ef4444; }
+.hover\:text-red-700:hover { color: #b91c1c; }
+.hover\:text-red-600:hover { color: #dc2626; }
 </style>

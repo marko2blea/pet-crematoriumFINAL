@@ -1,11 +1,6 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/memorial-detalle.get.ts
 import { db } from '../../utils/prisma';
 
-/**
- * API de ADMIN para obtener el detalle de UN memorial por su ID.
- * Ruta: /api/admin/memorial-detalle
- * Método: GET
- */
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event);
@@ -18,11 +13,11 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // (MODIFICADO) Usa PascalCase: db.memorial
     const memorial = await db.memorial.findUniqueOrThrow({
       where: { id_memorial: Number(id) },
     });
     
-    // Formatear la fecha a YYYY-MM-DD para el <input type="date">
     const formattedMemorial = {
       ...memorial,
       fecha: memorial.fecha.toISOString().split('T')[0],

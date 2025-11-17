@@ -1,74 +1,61 @@
-// RUTA: Sube dos niveles (desde /api/admin/ a /server/)
+// server/api/admin/eliminar-reserva.delete.ts
 import { db } from '../../utils/prisma';
 
 /**
- * API para ELIMINAR (DELETE) una reserva completa (Reserva, Pago y Detalle).
+ * API para ELIMINAR (DELETE) un Pedido completo (Pedido, Pago, Detalle, Reserva/Envio).
  * Ruta: /api/admin/eliminar-reserva
  * Método: DELETE
  */
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
-    const { id: reservaId } = body;
+    const { id: pedidoId } = body; // Este es el id_pedido
 
-    if (!reservaId || isNaN(Number(reservaId))) {
+    if (!pedidoId || isNaN(Number(pedidoId))) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'ID de reserva no válido o no proporcionado.',
+        statusMessage: 'ID de pedido no válido o no proporcionado.',
       });
     }
 
-    // 1. Encontrar la reserva para obtener los IDs de sus tablas relacionadas
-    const reserva = await db.reserva.findUniqueOrThrow({
-      where: { id_reserva: Number(reservaId) },
-      select: { 
-        id_pago: true, 
-        id_detalle_reserva: true 
-      },
+    // 1. Encontrar el pedido para obtener el ID del pago
+    const pedido = await db.pedido.findUniqueOrThrow({
+      where: { id_pedido: Number(pedidoId) },
+      select: { id_pago: true },
     });
 
-    const { id_pago, id_detalle_reserva } = reserva;
-
-    // 2. Usar una transacción para eliminar los 3 registros
-    // Si algo falla, se revierte todo.
+    // 2. Usar una transacción para eliminar todo
+    // Gracias al 'onDelete: Cascade' en tu schema, solo necesitamos
+    // borrar el Pedido y el Pago (ya que Pago no tiene cascade)
     await db.$transaction([
-      // A. Eliminar la reserva principal
-      db.reserva.delete({
-        where: { id_reserva: Number(reservaId) },
+      
+      // A. Eliminar el Pedido (esto eliminará DetallePedido, Reserva y Envio)
+      db.pedido.delete({
+        where: { id_pedido: Number(pedidoId) },
       }),
       
-      // B. Eliminar el pago asociado (si existe)
+      // B. Eliminar el Pago asociado (si existe)
       db.pago.delete({
-        where: { id_pago: id_pago ?? 0 },
-      }),
-      
-      // C. Eliminar el detalle de reserva asociado (si existe)
-      db.detalle_reserva.delete({
-        where: { id_detalle_reserva: id_detalle_reserva ?? 0 },
+        where: { id_pago: pedido.id_pago ?? 0 },
       }),
     ]);
 
-    // 3. Éxito
     return { 
       statusCode: 200, 
-      message: 'Reserva eliminada exitosamente (incluyendo pago y detalle).' 
+      message: 'Pedido eliminado exitosamente (incluyendo pago, detalles y reserva/envío).' 
     };
 
   } catch (error: any) {
-    console.error("Error al eliminar la reserva:", error);
-    
-    // 4. Capturar si la reserva, pago o detalle no se encontró
+    console.error("Error al eliminar el pedido:", error);
     if (error.code === 'P2025') {
       throw createError({ 
         statusCode: 404, 
-        statusMessage: 'Error: No se encontró la reserva o sus componentes (pago/detalle) para eliminar.' 
+        statusMessage: 'Error: No se encontró el pedido o sus componentes.' 
       });
     }
-
-    // 5. Otro error
     throw createError({ 
       statusCode: 500, 
-      statusMessage: 'Error interno del servidor al eliminar la reserva.' 
+      statusMessage: 'Error interno del servidor al eliminar el pedido.' 
     });
   }
 });
